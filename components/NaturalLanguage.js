@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import styles from './NaturalLanguage.module.css';
 
 function RegularTextItem(props){
@@ -141,11 +142,12 @@ export default class NaturalLanguage extends React.Component {
         // Change 'hovered' attribute for the item in textItems that has startIndex, endIndex
         // Need to loop through this.state.textItems to find correct item
         this.operateOnItem(startIndex, endIndex, function(item, index){
-            item.hovered = true;
+            const items = _.cloneDeep(this.state.textItems);
+            items[index].hovered = true;
 
             // Update whole textItems to make sure we re-render
             this.setState({
-                textItems: this.state.textItems
+                textItems: items
             });
         });
     }
@@ -158,11 +160,12 @@ export default class NaturalLanguage extends React.Component {
         // Change 'hovered' attribute for the item in textItems that has startIndex, endIndex
         // Need to loop through this.state.textItems to find correct item
         this.operateOnItem(startIndex, endIndex, function(item, index){
-            item.hovered = false;
+            const items = _.cloneDeep(this.state.textItems);
+            items[index].hovered = false;
 
             // Update whole textItems to make sure we re-render
             this.setState({
-                textItems: this.state.textItems
+                textItems: items
             });
         });
     }
@@ -172,11 +175,12 @@ export default class NaturalLanguage extends React.Component {
         console.log("e", e);
         this.operateOnItem(startIndex, endIndex, function(item, index){
             console.log("e.target.value", e.target.value);
-            item.paramName = e.target.value;
+            const items = _.cloneDeep(this.state.textItems);
+            items[index].paramName = e.target.value;
 
             // Update whole textItems to make sure we re-render
             this.setState({
-                textItems: this.state.textItems
+                textItems: items
             });
         });
     }
@@ -191,16 +195,17 @@ export default class NaturalLanguage extends React.Component {
         // Change 'isParam' attribute for the item in textItems that has startIndex, endIndex to false, to clear param
         // Need to loop through this.state.textItems to find correct item
         this.operateOnItem(startIndex, endIndex, function(item, index){
-
-            const items = this.state.textItems.slice();
+            //console.log("index", index);
+            //console.log("item.text", item.text);
+            const items = _.cloneDeep(this.state.textItems);
             // Create new item for each letter. Append to end of list (order doesn't matter, since we sort before rendering)
             for (let i = 0; i < item.text.length; i++) {
                 const char = item.text[i];
                 items.push(
                     {
                         text: char,
-                        startIndex: index + i,
-                        endIndex: index + i+1,
+                        startIndex: startIndex + i, // to account for the chars ahead of this param
+                        endIndex: startIndex + i+1, // to account for the chars ahead of this param
                         isParam: false,
                         paramName: "",
                         possibleValues: [],
