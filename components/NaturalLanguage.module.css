@@ -1,3 +1,14 @@
 .paramText {
     background-color: lightblue;
 }
+
+.removeButton {
+    position: absolute;
+    top: -20px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.relative {
+    position: relative;
+}
