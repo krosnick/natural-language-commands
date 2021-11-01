@@ -159,19 +159,14 @@ export default class NaturalLanguage extends React.Component {
         console.log("startIndex", startIndex);
         console.log("endIndex", endIndex);
 
-        // TODO
         // Need to replace this item with a list of items, one per letter
 
         // Change 'isParam' attribute for the item in textItems that has startIndex, endIndex to false, to clear param
         // Need to loop through this.state.textItems to find correct item
         this.operateOnItem(startIndex, endIndex, function(item, index){
-            /*item.isParam = false;
-            item.paramName = null;
-            item.possibleValues = null;
-            item.hovered = false;*/
 
             const items = this.state.textItems.slice();
-            // TODO - Create new item for each letter. Append to end of list (order doesn't matter, since we sort before rendering)
+            // Create new item for each letter. Append to end of list (order doesn't matter, since we sort before rendering)
             for (let i = 0; i < item.text.length; i++) {
                 const char = item.text[i];
                 items.push(
@@ -187,7 +182,7 @@ export default class NaturalLanguage extends React.Component {
                 );
             }
 
-            // TODO - remove this item from the list
+            // Remove this item from the list
             items.splice(index, 1);
 
             // Update whole textItems to make sure we re-render
