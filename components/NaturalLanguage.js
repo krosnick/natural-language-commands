@@ -18,6 +18,21 @@ class ParamTextItem extends React.Component {
     render() {
         const hovered = this.props.hovered;
         console.log("hovered", hovered);
+
+        const possibleValues = this.props.possibleValues.map((value, i) =>
+            <li
+                // key={`${value}_${i}`}
+                //key={value}
+            >
+                <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => this.props.handleParamValueChange(e, i, this.props.startIndex, this.props.endIndex)}
+                >
+                </input>
+            </li>
+        );
+
         return (
             <span
                 className={styles.relative}
@@ -48,7 +63,17 @@ class ParamTextItem extends React.Component {
                             type="text"
                             value={this.props.paramName}
                             onChange={(e) => this.props.handleParamNameChange(e, this.props.startIndex, this.props.endIndex)}
+                            className={styles.paramDataChunk}
                         />
+                    </label>
+                    <label>
+                        Possible values:
+                        <ul>{possibleValues}</ul>
+                        <button
+                            onClick={() => this.props.handleAddBlankParamValue(this.props.startIndex, this.props.endIndex)}
+                        >
+                            Add a new value
+                        </button>
                     </label>
                 </div>
             </span>
@@ -105,43 +130,46 @@ export default class NaturalLanguage extends React.Component {
             const lastIndex = parseInt(focusElement.getAttribute("end-index"));
             //console.log("endIndex", endIndex);
 
-            // Make sure startIndex is smaller than endIndex (regardless of whether user dragged from left-to-right or right-to-left)
-            let startIndex;
-            let endIndex;
-            if(firstIndex < lastIndex){
-                startIndex = firstIndex;
-                endIndex = lastIndex;
-            }else{
-                startIndex = lastIndex-1; // -1 to fix offset since we had grabbed end-index instead of start-index
-                endIndex = firstIndex+1; // +1 to fix offset since we had grabbed start-index instead of end-index
-            }
-
-            // Clear text selection
-            selectionObj.removeAllRanges();
-
-            // Find corresponding items in textItems and replace them with a single param item
-            // Filter to remove items
-            const updatedTextItems = this.state.textItems.filter(
-                function(item){
-                    return item.startIndex < startIndex || item.endIndex > endIndex;
+            // Only makes sense to highlight text if it's a text span that got selected (so ensure both indices are not NaN)
+            if(!isNaN(firstIndex) && !isNaN(lastIndex)){
+                // Make sure startIndex is smaller than endIndex (regardless of whether user dragged from left-to-right or right-to-left)
+                let startIndex;
+                let endIndex;
+                if(firstIndex < lastIndex){
+                    startIndex = firstIndex;
+                    endIndex = lastIndex;
+                }else{
+                    startIndex = lastIndex-1; // -1 to fix offset since we had grabbed end-index instead of start-index
+                    endIndex = firstIndex+1; // +1 to fix offset since we had grabbed start-index instead of end-index
                 }
-            );
-            
-            // Append new combined param item
-            updatedTextItems.push({
-                text: selectedText,
-                startIndex: startIndex,
-                endIndex: endIndex,
-                isParam: true,
-                paramName: "",
-                possibleValues: [],
-                hovered: true
-            });
 
-            // Update state (update textItems as appropriate)
-            this.setState({
-                textItems: updatedTextItems
-            });
+                // Clear text selection
+                selectionObj.removeAllRanges();
+
+                // Find corresponding items in textItems and replace them with a single param item
+                // Filter to remove items
+                const updatedTextItems = this.state.textItems.filter(
+                    function(item){
+                        return item.startIndex < startIndex || item.endIndex > endIndex;
+                    }
+                );
+                
+                // Append new combined param item
+                updatedTextItems.push({
+                    text: selectedText,
+                    startIndex: startIndex,
+                    endIndex: endIndex,
+                    isParam: true,
+                    paramName: "",
+                    possibleValues: [],
+                    hovered: true
+                });
+
+                // Update state (update textItems as appropriate)
+                this.setState({
+                    textItems: updatedTextItems
+                });
+            }
         }
     }
 
@@ -188,6 +216,34 @@ export default class NaturalLanguage extends React.Component {
             console.log("e.target.value", e.target.value);
             const items = _.cloneDeep(this.state.textItems);
             items[index].paramName = e.target.value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
+    }
+
+    handleParamValueChange(e, i, startIndex, endIndex) {
+        console.log("handleParamValueChange");
+        console.log("e", e);
+        this.operateOnItem(startIndex, endIndex, function(item, index){
+            console.log("e.target.value", e.target.value);
+            const items = _.cloneDeep(this.state.textItems);
+            items[index].possibleValues[i] = e.target.value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
+    }
+
+    handleAddBlankParamValue(startIndex, endIndex){
+        console.log("handleAddBlankParamValue");
+        this.operateOnItem(startIndex, endIndex, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+            items[index].possibleValues.push("");
 
             // Update whole textItems to make sure we re-render
             this.setState({
@@ -265,10 +321,13 @@ export default class NaturalLanguage extends React.Component {
                             startIndex={textItem.startIndex}
                             endIndex={textItem.endIndex}
                             paramName={textItem.paramName}
+                            possibleValues={textItem.possibleValues}
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.startIndex, textItem.endIndex)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.startIndex, textItem.endIndex)}
                             removeParam={() => this.removeParam(textItem.startIndex, textItem.endIndex)}
                             handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.startIndex, textItem.endIndex)}
+                            handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.startIndex, textItem.endIndex)}
+                            handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.startIndex, textItem.endIndex)}
                             hovered={textItem.hovered}
                         />
                     </span>
