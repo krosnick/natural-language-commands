@@ -4,6 +4,7 @@ import styles from './NaturalLanguage.module.css';
 function RegularTextItem(props){
     return (
         <span
+            className={styles.inputNaturalLanguage}
             start-index={props.startIndex}
             end-index={props.endIndex}
         >
@@ -31,12 +32,24 @@ class ParamTextItem extends React.Component {
                     <span></span>
                 )}
                 <span
-                    className={styles.paramText}
+                    className={`${styles.paramText} ${styles.inputNaturalLanguage}`}
                     start-index={this.props.startIndex}
                     end-index={this.props.endIndex}
                 >
                     {this.props.text}
                 </span>
+                <div
+                    className={styles.paramData}
+                >
+                    <label>
+                        Name:
+                        <input
+                            type="text"
+                            value={this.props.paramName}
+                            onChange={(e) => this.props.handleParamNameChange(e, this.props.startIndex, this.props.endIndex)}
+                        />
+                    </label>
+                </div>
             </span>
         );
     }
@@ -55,8 +68,8 @@ export default class NaturalLanguage extends React.Component {
                     startIndex: i,
                     endIndex: i+1,
                     isParam: false,
-                    paramName: null,
-                    possibleValues: null,
+                    paramName: "",
+                    possibleValues: [],
                     hovered: false
                 }
             );
@@ -108,8 +121,8 @@ export default class NaturalLanguage extends React.Component {
                 startIndex: startIndex,
                 endIndex: endIndex,
                 isParam: true,
-                paramName: null,
-                possibleValues: null,
+                paramName: "",
+                possibleValues: [],
                 hovered: true
             });
 
@@ -154,6 +167,20 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    handleParamNameChange(e, startIndex, endIndex) {
+        console.log("handleParamNameChange");
+        console.log("e", e);
+        this.operateOnItem(startIndex, endIndex, function(item, index){
+            console.log("e.target.value", e.target.value);
+            item.paramName = e.target.value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: this.state.textItems
+            });
+        });
+    }
+
     removeParam(startIndex, endIndex, e){
         console.log("removeParam");
         console.log("startIndex", startIndex);
@@ -175,8 +202,8 @@ export default class NaturalLanguage extends React.Component {
                         startIndex: index + i,
                         endIndex: index + i+1,
                         isParam: false,
-                        paramName: null,
-                        possibleValues: null,
+                        paramName: "",
+                        possibleValues: [],
                         hovered: false
                     }
                 );
@@ -221,9 +248,11 @@ export default class NaturalLanguage extends React.Component {
                             text={textItem.text}
                             startIndex={textItem.startIndex}
                             endIndex={textItem.endIndex}
+                            paramName={textItem.paramName}
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.startIndex, textItem.endIndex)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.startIndex, textItem.endIndex)}
                             removeParam={() => this.removeParam(textItem.startIndex, textItem.endIndex)}
+                            handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.startIndex, textItem.endIndex)}
                             hovered={textItem.hovered}
                         />
                     </span>

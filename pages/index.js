@@ -12,7 +12,6 @@ export default function Home() {
         <NaturalLanguage text="Which MLB player had the most home runs this year?"/>
         <style jsx global>{`
             body {
-                font: 30px "Century Gothic", Futura, sans-serif;
                 margin: 100px;
             }
             

@@ -1,3 +1,7 @@
+.inputNaturalLanguage {
+    font: 30px "Century Gothic", Futura, sans-serif;
+}
+
 .paramText {
     background-color: lightblue;
 }
@@ -11,4 +15,11 @@
 
 .relative {
     position: relative;
+}
+
+.paramData {
+    position: absolute;
+    top: 20px;
+    left: 0px;
+    padding: 10px;
 }
