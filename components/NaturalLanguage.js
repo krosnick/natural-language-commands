@@ -98,12 +98,23 @@ export default class NaturalLanguage extends React.Component {
             // Get start and end indices
             const anchorElement= selectionObj.anchorNode.parentElement;
             //console.log("anchorElement", anchorElement);
-            const startIndex = parseInt(anchorElement.getAttribute("start-index"));
+            const firstIndex = parseInt(anchorElement.getAttribute("start-index"));
             //console.log("startIndex", startIndex);
             const focusElement = selectionObj.focusNode.parentElement;
             //console.log("focusElement", focusElement);
-            const endIndex = parseInt(focusElement.getAttribute("end-index"));
+            const lastIndex = parseInt(focusElement.getAttribute("end-index"));
             //console.log("endIndex", endIndex);
+
+            // Make sure startIndex is smaller than endIndex (regardless of whether user dragged from left-to-right or right-to-left)
+            let startIndex;
+            let endIndex;
+            if(firstIndex < lastIndex){
+                startIndex = firstIndex;
+                endIndex = lastIndex;
+            }else{
+                startIndex = lastIndex-1; // -1 to fix offset since we had grabbed end-index instead of start-index
+                endIndex = firstIndex+1; // +1 to fix offset since we had grabbed start-index instead of end-index
+            }
 
             // Clear text selection
             selectionObj.removeAllRanges();
