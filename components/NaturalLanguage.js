@@ -72,7 +72,7 @@ class ParamTextItem extends React.Component {
                         <button
                             onClick={() => this.props.handleAddBlankParamValue(this.props.startIndex, this.props.endIndex)}
                         >
-                            Add a new value
+                            Add another value
                         </button>
                     </label>
                 </div>
@@ -161,7 +161,7 @@ export default class NaturalLanguage extends React.Component {
                     endIndex: endIndex,
                     isParam: true,
                     paramName: "",
-                    possibleValues: [],
+                    possibleValues: [selectedText],
                     hovered: true
                 });
 
