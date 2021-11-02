@@ -38,7 +38,7 @@ class ParamTextItem extends React.Component {
 
         return (
             <span
-                className={styles.relative}
+                className={styles.container}
                 onMouseEnter={() => this.props.onMouseEnter(this.props.startIndex, this.props.endIndex)}
                 onMouseLeave={() => this.props.onMouseLeave(this.props.startIndex, this.props.endIndex)}
             >
@@ -69,7 +69,9 @@ class ParamTextItem extends React.Component {
                             className={styles.paramDataChunk}
                         />
                     </label>
-                    <label>
+                    <label
+                        className={styles.possibleValuesArea}
+                    >
                         Possible values:
                         <ul>{possibleValues}</ul>
                         <button
@@ -337,7 +339,10 @@ export default class NaturalLanguage extends React.Component {
             const key = i + "_" + textItem.text;
             if(textItem.isParam){
                 return(
-                    <span key={key}>
+                    <span
+                        key={key}
+                        className={styles.itemContainer}
+                    >
                         <ParamTextItem
                             text={textItem.text}
                             startIndex={textItem.startIndex}
@@ -357,7 +362,10 @@ export default class NaturalLanguage extends React.Component {
                 );
             }else{
                 return(
-                    <span key={key}>
+                    <span
+                        key={key}
+                        className={styles.itemContainer}
+                    >
                         <RegularTextItem
                             text={textItem.text}
                             startIndex={textItem.startIndex}

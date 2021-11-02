@@ -13,12 +13,14 @@
     border-radius: 50%;
 }
 
-.relative {
+.container {
     position: relative;
+    display: inline-block;
 }
 
 .paramData {
-    position: absolute;
+    /*position: absolute;*/
+    position: relative;
     top: 20px;
     left: 0px;
     padding: 10px;
@@ -26,4 +28,12 @@
 
 .paramDataChunk {
     margin-bottom: 10px;
+}
+
+.itemContainer {
+    vertical-align: top;
+}
+
+.possibleValuesArea {
+    display: block;
 }
