@@ -30,6 +30,9 @@ class ParamTextItem extends React.Component {
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.startIndex, this.props.endIndex)}
                 >
                 </input>
+                <button
+                    onClick={() => this.props.removeValue(i, this.props.startIndex, this.props.endIndex)}
+                >x</button>
             </li>
         );
 
@@ -291,6 +294,25 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    removeValue(i, startIndex, endIndex, e){
+        console.log("removeValue");
+        console.log("i", i);
+        console.log("startIndex", startIndex);
+        console.log("endIndex", endIndex);
+
+        this.operateOnItem(startIndex, endIndex, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+
+            // Remove this particular param value
+            items[index].possibleValues.splice(i, 1);
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
+    }
+
     operateOnItem(startIndex, endIndex, callback){
         for(let i = 0; i < this.state.textItems.length; i++){
             const textItem = this.state.textItems[i];
@@ -325,6 +347,7 @@ export default class NaturalLanguage extends React.Component {
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.startIndex, textItem.endIndex)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.startIndex, textItem.endIndex)}
                             removeParam={() => this.removeParam(textItem.startIndex, textItem.endIndex)}
+                            removeValue={(i) => this.removeValue(i, textItem.startIndex, textItem.endIndex)}
                             handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.startIndex, textItem.endIndex)}
                             handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.startIndex, textItem.endIndex)}
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.startIndex, textItem.endIndex)}
