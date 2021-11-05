@@ -24,6 +24,7 @@
     top: 20px;
     left: 0px;
     padding: 10px;
+    margin-bottom: 30px;
 }
 
 .paramDataChunk {
@@ -36,4 +37,8 @@
 
 .possibleValuesArea {
     display: block;
+}
+
+.request {
+    margin: 40px;
 }

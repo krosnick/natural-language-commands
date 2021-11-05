@@ -377,7 +377,9 @@ export default class NaturalLanguage extends React.Component {
         });
 
         return (
-            <div onMouseUp={() => this.handleTextSelection()}>
+            <div
+                className={styles.request}
+                onMouseUp={() => this.handleTextSelection()}>
                 {domTextItems}
             </div>
         );
