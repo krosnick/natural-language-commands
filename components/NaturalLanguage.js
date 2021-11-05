@@ -50,17 +50,26 @@ class ParamTextItem extends React.Component {
                 ) : (
                     <span></span>
                 )}
-                <span
+                <input
+                    className={`${styles.paramText} ${styles.inputNaturalLanguage}`}
+                    start-index={this.props.startIndex}
+                    end-index={this.props.endIndex}
+                    type="text"
+                    value={this.props.paramName}
+                    onChange={(e) => this.props.handleParamNameChange(e, this.props.startIndex, this.props.endIndex)}
+                >
+                </input>
+                {/* <span
                     className={`${styles.paramText} ${styles.inputNaturalLanguage}`}
                     start-index={this.props.startIndex}
                     end-index={this.props.endIndex}
                 >
                     {this.props.text}
-                </span>
+                </span> */}
                 <div
                     className={styles.paramData}
                 >
-                    <label>
+                    {/* <label>
                         Name:
                         <input
                             type="text"
@@ -68,7 +77,7 @@ class ParamTextItem extends React.Component {
                             onChange={(e) => this.props.handleParamNameChange(e, this.props.startIndex, this.props.endIndex)}
                             className={styles.paramDataChunk}
                         />
-                    </label>
+                    </label> */}
                     <label
                         className={styles.possibleValuesArea}
                     >
@@ -165,7 +174,8 @@ export default class NaturalLanguage extends React.Component {
                     startIndex: startIndex,
                     endIndex: endIndex,
                     isParam: true,
-                    paramName: "",
+                    //paramName: "",
+                    paramName: "<enter param name here>",
                     possibleValues: [selectedText],
                     hovered: true
                 });
