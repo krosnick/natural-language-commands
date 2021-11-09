@@ -117,7 +117,8 @@ export default class NaturalLanguage extends React.Component {
 
         this.state = {
             text: props.text,
-            textItems: initialTextItems
+            textItems: initialTextItems,
+            inEditMode: false
         }
     }
 
@@ -125,6 +126,7 @@ export default class NaturalLanguage extends React.Component {
         
         // Get currently selected text
         const selectionObj = window.getSelection();
+        console.log("selectionObj", selectionObj);
         const selectedText = selectionObj.toString();
     
         // Ignore if single cursor click (i.e., no text selected)
@@ -185,7 +187,32 @@ export default class NaturalLanguage extends React.Component {
                     textItems: updatedTextItems
                 });
             }
+
+            this.exitEditMode();
+        }else{
+            // Selection length is 0, so just a single cursor click
+            
+            // Check selectionObj and only set edit mode to true if this is the outer text (e.g., not part of the param form)
+            console.log("selectionObj.anchorNode.parentElement", selectionObj.anchorNode.parentElement);
+            console.log('selectionObj.anchorNode.parentElement.getAttribute("start-index")', selectionObj.anchorNode.parentElement.getAttribute("start-index"));
+            if(selectionObj.anchorNode.parentElement.getAttribute("start-index")){
+                // Assume this means the user is trying to edit text, so let's update inEditMode
+                this.setState({
+                    inEditMode: true
+                });
+
+                // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
+                setTimeout(function(obj){
+                    obj.mainText.focus();
+                }, 0, this);
+            }
         }
+    }
+
+    exitEditMode() {
+        this.setState({
+            inEditMode: false
+        });
     }
 
     handleOnMouseEnter(startIndex, endIndex, e){
@@ -237,6 +264,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
+        this.exitEditMode();
     }
 
     handleParamValueChange(e, i, startIndex, endIndex) {
@@ -252,6 +280,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
+        this.exitEditMode();
     }
 
     handleAddBlankParamValue(startIndex, endIndex){
@@ -265,6 +294,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
+        this.exitEditMode();
     }
 
     removeParam(startIndex, endIndex, e){
@@ -304,6 +334,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
+        this.exitEditMode();
     }
 
     removeValue(i, startIndex, endIndex, e){
@@ -323,6 +354,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
+        this.exitEditMode();
     }
 
     operateOnItem(startIndex, endIndex, callback){
@@ -335,6 +367,13 @@ export default class NaturalLanguage extends React.Component {
             }
         }
     }
+
+/*     componentDidUpdate(){
+        console.log("componentDidUpdate");
+        if(this.state.inEditMode){
+            this.mainText.focus();
+        }
+    } */
 
     render() {
         const textItems = this.state.textItems;
@@ -387,10 +426,17 @@ export default class NaturalLanguage extends React.Component {
         });
 
         return (
-            <div
-                className={styles.request}
-                onMouseUp={() => this.handleTextSelection()}>
-                {domTextItems}
+            <div>
+                <div
+                    contentEditable={this.state.inEditMode}
+                    className={styles.request}
+                    onMouseUp={() => this.handleTextSelection()}
+                    onBlur={() => this.exitEditMode()}
+                    ref={(input) => { this.mainText = input; }} 
+                >
+                    {domTextItems}
+                </div>
+                { this.state.inEditMode && <button>Save</button> }
             </div>
         );
     }
