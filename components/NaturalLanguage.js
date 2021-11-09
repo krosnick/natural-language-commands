@@ -29,10 +29,12 @@ class ParamTextItem extends React.Component {
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.startIndex, this.props.endIndex)}
+                    disabled={this.props.inEditMode}
                 >
                 </input>
                 <button
                     onClick={() => this.props.removeValue(i, this.props.startIndex, this.props.endIndex)}
+                    disabled={this.props.inEditMode}
                 >x</button>
             </li>
         );
@@ -47,6 +49,7 @@ class ParamTextItem extends React.Component {
                     <button
                         className={styles.removeButton}
                         onClick={() => this.props.removeParam(this.props.startIndex, this.props.endIndex)}
+                        disabled={this.props.inEditMode}
                     >x</button>
                 ) : (
                     <span></span>
@@ -59,6 +62,7 @@ class ParamTextItem extends React.Component {
                     type="text"
                     value={this.props.paramName}
                     onChange={(e) => this.props.handleParamNameChange(e, this.props.startIndex, this.props.endIndex)}
+                    disabled={this.props.inEditMode}
                 >
                 </input>
                 {/* <span
@@ -87,6 +91,7 @@ class ParamTextItem extends React.Component {
                         <ul>{possibleValues}</ul>
                         <button
                             onClick={() => this.props.handleAddBlankParamValue(this.props.startIndex, this.props.endIndex)}
+                            disabled={this.props.inEditMode}
                         >
                             Add another value
                         </button>
@@ -131,80 +136,82 @@ export default class NaturalLanguage extends React.Component {
         console.log("selectionObj", selectionObj);
         const selectedText = selectionObj.toString();
     
-        // Ignore if single cursor click (i.e., no text selected)
-        if(selectedText.length > 0){
-            console.log("selectionObj", selectionObj);
-            console.log("selectedText", selectedText);
-    
-            // Create a param from this text
-            
-            // Get start and end indices
-            const anchorElement= selectionObj.anchorNode.parentElement;
-            //console.log("anchorElement", anchorElement);
-            const firstIndex = parseInt(anchorElement.getAttribute("start-index"));
-            //console.log("startIndex", startIndex);
-            const focusElement = selectionObj.focusNode.parentElement;
-            //console.log("focusElement", focusElement);
-            const lastIndex = parseInt(focusElement.getAttribute("end-index"));
-            //console.log("endIndex", endIndex);
-
-            // Only makes sense to highlight text if it's a text span that got selected (so ensure both indices are not NaN)
-            if(!isNaN(firstIndex) && !isNaN(lastIndex)){
-                // Make sure startIndex is smaller than endIndex (regardless of whether user dragged from left-to-right or right-to-left)
-                let startIndex;
-                let endIndex;
-                if(firstIndex < lastIndex){
-                    startIndex = firstIndex;
-                    endIndex = lastIndex;
-                }else{
-                    startIndex = lastIndex-1; // -1 to fix offset since we had grabbed end-index instead of start-index
-                    endIndex = firstIndex+1; // +1 to fix offset since we had grabbed start-index instead of end-index
-                }
-
-                // Clear text selection
-                selectionObj.removeAllRanges();
-
-                // Find corresponding items in textItems and replace them with a single param item
-                // Filter to remove items
-                const updatedTextItems = this.state.textItems.filter(
-                    function(item){
-                        return item.startIndex < startIndex || item.endIndex > endIndex;
-                    }
-                );
+        // Ignore if in edit mode
+        if(!this.state.inEditMode){
+            if(selectedText.length > 0){
+                console.log("selectionObj", selectionObj);
+                console.log("selectedText", selectedText);
+        
+                // Create a param from this text
                 
-                // Append new combined param item
-                updatedTextItems.push({
-                    text: selectedText,
-                    startIndex: startIndex,
-                    endIndex: endIndex,
-                    isParam: true,
-                    //paramName: "",
-                    paramName: "<enter param name here>",
-                    possibleValues: [selectedText],
-                    hovered: true
-                });
-
-                // Update state (update textItems as appropriate)
-                this.setState({
-                    textItems: updatedTextItems
-                });
-            }
-
-            this.exitEditMode();
-        }else{
-            // Selection length is 0, so just a single cursor click
-            
-            // Check selectionObj and only set edit mode to true if this is the outer text (e.g., not part of the param form)
-            if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("start-index")){
-                // Assume this means the user is trying to edit text, so let's update inEditMode
-                this.setState({
-                    inEditMode: true
-                });
-
-                // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
-                setTimeout(function(obj){
-                    obj.mainText.focus();
-                }, 0, this);
+                // Get start and end indices
+                const anchorElement= selectionObj.anchorNode.parentElement;
+                //console.log("anchorElement", anchorElement);
+                const firstIndex = parseInt(anchorElement.getAttribute("start-index"));
+                //console.log("startIndex", startIndex);
+                const focusElement = selectionObj.focusNode.parentElement;
+                //console.log("focusElement", focusElement);
+                const lastIndex = parseInt(focusElement.getAttribute("end-index"));
+                //console.log("endIndex", endIndex);
+    
+                // Only makes sense to highlight text if it's a text span that got selected (so ensure both indices are not NaN)
+                if(!isNaN(firstIndex) && !isNaN(lastIndex)){
+                    // Make sure startIndex is smaller than endIndex (regardless of whether user dragged from left-to-right or right-to-left)
+                    let startIndex;
+                    let endIndex;
+                    if(firstIndex < lastIndex){
+                        startIndex = firstIndex;
+                        endIndex = lastIndex;
+                    }else{
+                        startIndex = lastIndex-1; // -1 to fix offset since we had grabbed end-index instead of start-index
+                        endIndex = firstIndex+1; // +1 to fix offset since we had grabbed start-index instead of end-index
+                    }
+    
+                    // Clear text selection
+                    selectionObj.removeAllRanges();
+    
+                    // Find corresponding items in textItems and replace them with a single param item
+                    // Filter to remove items
+                    const updatedTextItems = this.state.textItems.filter(
+                        function(item){
+                            return item.startIndex < startIndex || item.endIndex > endIndex;
+                        }
+                    );
+                    
+                    // Append new combined param item
+                    updatedTextItems.push({
+                        text: selectedText,
+                        startIndex: startIndex,
+                        endIndex: endIndex,
+                        isParam: true,
+                        //paramName: "",
+                        paramName: "<enter param name here>",
+                        possibleValues: [selectedText],
+                        hovered: true
+                    });
+    
+                    // Update state (update textItems as appropriate)
+                    this.setState({
+                        textItems: updatedTextItems
+                    });
+                }
+    
+                this.exitEditMode();
+            }else{
+                // Selection length is 0, so just a single cursor click
+                
+                // Check selectionObj and only set edit mode to true if this is the outer text (e.g., not part of the param form)
+                if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("start-index")){
+                    // Assume this means the user is trying to edit text, so let's update inEditMode
+                    this.setState({
+                        inEditMode: true
+                    });
+    
+                    // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
+                    setTimeout(function(obj){
+                        obj.mainText.focus();
+                    }, 0, this);
+                }
             }
         }
     }
@@ -476,6 +483,7 @@ export default class NaturalLanguage extends React.Component {
                             handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.startIndex, textItem.endIndex)}
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.startIndex, textItem.endIndex)}
                             hovered={textItem.hovered}
+                            inEditMode={this.state.inEditMode}
                         />
                     </span>
                 );
@@ -520,10 +528,6 @@ export default class NaturalLanguage extends React.Component {
                 >
                     {domTextItems}
                 </div>
-                {/* { this.state.inEditMode &&
-                <button
-                    onClick={() => this.handleSave()}
-                >Save</button> } */}
                 {saveButton}
             </div>
         );
