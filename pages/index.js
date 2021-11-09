@@ -1,6 +1,9 @@
-import Head from 'next/head';
-import Game from '../components/Game';
-import NaturalLanguage from '../components/NaturalLanguage';
+import dynamic from 'next/dynamic'
+const NaturalLanguage = dynamic(
+    () => import('../components/NaturalLanguage'),
+    { ssr: false }
+)
+//import NaturalLanguage from '../components/NaturalLanguage';
 
 export default function Home() {
   return (
