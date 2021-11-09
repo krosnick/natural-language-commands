@@ -26,7 +26,7 @@ function RegularTextItem(props){
                 uuid={props.uuid}
                 text-item-type="regular"
                 contentEditable={props.inEditMode === props.uuid}
-                onMouseUp={() => props.handleTextSelection(props.uuid)}
+                onMouseUp={() => props.handleTextSelection(textElement, props.uuid)}
                 ref={textElement}
             >
                 {props.text}
@@ -146,7 +146,7 @@ export default class NaturalLanguage extends React.Component {
         }
     }
 
-    handleTextSelection(uuid){
+    handleTextSelection(textElement, uuid){
         
         // Get currently selected text
         const selectionObj = window.getSelection();
@@ -221,21 +221,15 @@ export default class NaturalLanguage extends React.Component {
                 }else{
                     // Selection length is 0, so just a single cursor click
                     
-                    // Check selectionObj and only set edit mode to true if this a regular text item (e.g., not part of the param form, not param text)
-                    //if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("text-item-type") === "regular"){
                     // Assume this means the user is trying to edit text, so let's update inEditMode
                     this.setState({
                         inEditMode: uuid
                     });
     
                     // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
-                    /*setTimeout(function(obj){
-                        obj.mainText.focus();
-                    }, 0, this);*/
-                    setTimeout(function(){
-                        document.querySelector(`[uuid="${uuid}"]`).focus();
-                    }, 0);
-                    //}
+                    setTimeout(function(textElement){
+                        textElement.current.focus();
+                    }, 0, textElement);
                 }
             }
         }
@@ -471,7 +465,7 @@ export default class NaturalLanguage extends React.Component {
                             uuid={textItem.uuid}
                             inEditMode={this.state.inEditMode}
                             handleSave={(textElement) => this.handleSave(textElement)}
-                            handleTextSelection={() => this.handleTextSelection(textItem.uuid)}
+                            handleTextSelection={(textElement) => this.handleTextSelection(textElement, textItem.uuid)}
                         />
                     </span>
                 );
