@@ -1,17 +1,36 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styles from './NaturalLanguage.module.css';
 
 function RegularTextItem(props){
+    const textElement = useRef(null);
+
+    let saveButton;
+    if(props.inEditMode === props.uuid){
+        saveButton = <button
+                        onClick={() => props.handleSave(textElement)}
+                        className={styles.saveButton}
+                    >Save</button>;
+    }else{
+        saveButton = <button
+                        onClick={() => props.handleSave(textElement)}
+                        className={`${styles.saveButton} ${styles.displayNone}`}
+                    >Save</button>;
+    }
+
     return (
-        <span
-            className={`${styles.inputNaturalLanguage} ${(props.inEditMode === props.uuid ? styles.editBackground : '')}`}
-            uuid={props.uuid}
-            text-item-type="regular"
-            contentEditable={props.inEditMode === props.uuid}
-        >
-            {props.text}
+        <span>
+            <span
+                className={`${styles.inputNaturalLanguage} ${(props.inEditMode === props.uuid ? styles.editBackground : '')}`}
+                uuid={props.uuid}
+                text-item-type="regular"
+                contentEditable={props.inEditMode === props.uuid}
+                ref={textElement}
+            >
+                {props.text}
+            </span>
+            {saveButton}
         </span>
     );
 }
@@ -230,10 +249,11 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
-    handleSave(){
-        // uuid that was being edited - this.state.inEditMode
-        const editedElement = document.querySelector(`[uuid="${this.state.inEditMode}"]`);
-        const newText = editedElement.textContent;
+    handleSave(textElement){
+        /*// uuid that was being edited - this.state.inEditMode
+        const editedElement = document.querySelector(`[uuid="${this.state.inEditMode}"]`);*/
+        //const newText = editedElement.textContent;
+        const newText = textElement.current.textContent;
 
         // update it's text in state
         this.operateOnItem(this.state.inEditMode, function(item, index){
@@ -247,77 +267,6 @@ export default class NaturalLanguage extends React.Component {
             });
             this.exitEditMode();
         });
-
-        // then set inEditMode to null
-        // then call this.exitEditMode();
-
-        /*console.log("handleSave");
-        // Process all the text in the DOM and update textItems as appropriate
-        // Get all the text elements (both regular and param)
-        const textElements = document.querySelectorAll('[start-index]');
-
-        let newTextItems;
-        newTextItems = [];
-        // Loop through all of these and create new textItems (i.e., completely replacing what we have already, not just modifying the existing list)
-        for(let elIndex = 0; elIndex < textElements.length; elIndex++){
-            const el = textElements[elIndex];
-            
-            // Use last item to identify new start index
-            let newStartIndex;
-            if(newTextItems.length > 0){
-                newStartIndex = newTextItems[newTextItems.length-1].endIndex;
-            }else{
-                newStartIndex = 0;
-            }
-
-            if(el.getAttribute("text-item-type") === "regular"){
-                // If length > 1, split into individual letters
-                const elText = el.textContent;
-                for (let i = 0; i < elText.length; i++) {
-                    const char = elText[i];
-                    newTextItems.push(
-                        {
-                            text: char,
-                            startIndex: newStartIndex + i,
-                            endIndex: newStartIndex + i+1,
-                            isParam: false,
-                            paramName: "",
-                            possibleValues: [],
-                            hovered: false
-                        }
-                    );
-                }
-                
-                if(elText.length > 1){
-                    // Set text in DOM to the original value?
-                    const origStartIndex = parseInt(el.getAttribute("start-index"));
-                    const origEndIndex = parseInt(el.getAttribute("end-index"));
-                    this.operateOnItem(origStartIndex, origEndIndex, function(item, index){
-                        const origText = item.text;
-                        el.textContent = origText;
-                    });
-                }
-            }else{
-                // el.getAttribute("text-item-type") === "param"
-                const origStartIndex = parseInt(el.getAttribute("start-index"));
-                const origEndIndex = parseInt(el.getAttribute("end-index"));
-                // Clone the corresponding item in this.state.textItems
-                // Then change startIndex and endIndex as appropriate
-                this.operateOnItem(origStartIndex, origEndIndex, function(item, index){
-                    const newItem = _.cloneDeep(item);
-                    const newEndIndex = newStartIndex + (origEndIndex - origStartIndex);
-                    newItem.startIndex = newStartIndex;
-                    newItem.endIndex = newEndIndex;
-                    newTextItems.push(newItem);
-                });
-            }
-        }
-
-        this.setState({
-            textItems: newTextItems
-        });
-
-        this.exitEditMode();*/
     }
 
     handleOnMouseEnter(uuid, e){
@@ -526,24 +475,12 @@ export default class NaturalLanguage extends React.Component {
                             text={textItem.text}
                             uuid={textItem.uuid}
                             inEditMode={this.state.inEditMode}
+                            handleSave={(textElement) => this.handleSave(textElement)}
                         />
                     </span>
                 );
             }
         });
-
-        let saveButton;
-        if(this.state.inEditMode){
-            saveButton = <button
-                            onClick={() => this.handleSave()}
-                            className={styles.saveButton}
-                        >Save</button>;
-        }else{
-            saveButton = <button
-                            onClick={() => this.handleSave()}
-                            className={`${styles.saveButton} ${styles.displayNone}`}
-                        >Save</button>;
-        }
 
         return (
             <div
@@ -556,7 +493,6 @@ export default class NaturalLanguage extends React.Component {
                 >
                     {domTextItems}
                 </div>
-                {saveButton}
             </div>
         );
     }
