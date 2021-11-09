@@ -222,20 +222,20 @@ export default class NaturalLanguage extends React.Component {
                     // Selection length is 0, so just a single cursor click
                     
                     // Check selectionObj and only set edit mode to true if this a regular text item (e.g., not part of the param form, not param text)
-                    if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("text-item-type") === "regular"){
-                        // Assume this means the user is trying to edit text, so let's update inEditMode
-                        this.setState({
-                            inEditMode: uuid
-                        });
-        
-                        // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
-                        /*setTimeout(function(obj){
-                            obj.mainText.focus();
-                        }, 0, this);*/
-                        setTimeout(function(){
-                            document.querySelector(`[uuid="${uuid}"]`).focus();
-                        }, 0);
-                    }
+                    //if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("text-item-type") === "regular"){
+                    // Assume this means the user is trying to edit text, so let's update inEditMode
+                    this.setState({
+                        inEditMode: uuid
+                    });
+    
+                    // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
+                    /*setTimeout(function(obj){
+                        obj.mainText.focus();
+                    }, 0, this);*/
+                    setTimeout(function(){
+                        document.querySelector(`[uuid="${uuid}"]`).focus();
+                    }, 0);
+                    //}
                 }
             }
         }
@@ -248,9 +248,6 @@ export default class NaturalLanguage extends React.Component {
     }
 
     handleSave(textElement){
-        /*// uuid that was being edited - this.state.inEditMode
-        const editedElement = document.querySelector(`[uuid="${this.state.inEditMode}"]`);*/
-        //const newText = editedElement.textContent;
         const newText = textElement.current.textContent;
 
         // update it's text in state
