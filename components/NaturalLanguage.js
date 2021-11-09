@@ -507,11 +507,12 @@ export default class NaturalLanguage extends React.Component {
         if(this.state.inEditMode){
             saveButton = <button
                             onClick={() => this.handleSave()}
+                            className={styles.saveButton}
                         >Save</button>;
         }else{
             saveButton = <button
                             onClick={() => this.handleSave()}
-                            className={styles.displayNone}
+                            className={`${styles.saveButton} ${styles.displayNone}`}
                         >Save</button>;
         }
 
