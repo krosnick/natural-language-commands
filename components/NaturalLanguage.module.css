@@ -47,3 +47,7 @@
 .displayNone {
     display: none;
 }
+
+.editBackground {
+    background-color: lightyellow;
+}

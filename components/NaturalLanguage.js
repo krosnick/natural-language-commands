@@ -508,7 +508,9 @@ export default class NaturalLanguage extends React.Component {
         }
 
         return (
-            <div>
+            <div
+                className={(this.state.inEditMode ? styles.editBackground : '')}
+            >
                 <div
                     contentEditable={this.state.inEditMode}
                     className={styles.request}
