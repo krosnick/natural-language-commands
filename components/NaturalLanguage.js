@@ -196,7 +196,7 @@ export default class NaturalLanguage extends React.Component {
                     });
                 }
     
-                this.exitEditMode();
+                //this.exitEditMode();
             }else{
                 // Selection length is 0, so just a single cursor click
                 
@@ -411,7 +411,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
-        this.exitEditMode();
+        //this.exitEditMode();
     }
 
     removeValue(i, startIndex, endIndex, e){
@@ -524,7 +524,6 @@ export default class NaturalLanguage extends React.Component {
                     contentEditable={this.state.inEditMode}
                     className={styles.request}
                     onMouseUp={() => this.handleTextSelection()}
-                    //onBlur={() => this.exitEditMode()}
                     ref={(input) => { this.mainText = input; }} 
                 >
                     {domTextItems}
