@@ -43,3 +43,7 @@
 .request {
     margin: 40px;
 }
+
+.displayNone {
+    display: none;
+}

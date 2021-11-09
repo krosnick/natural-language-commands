@@ -8,6 +8,7 @@ function RegularTextItem(props){
             className={styles.inputNaturalLanguage}
             start-index={props.startIndex}
             end-index={props.endIndex}
+            text-item-type="regular"
         >
             {props.text}
         </span>
@@ -54,6 +55,7 @@ class ParamTextItem extends React.Component {
                     className={`${styles.paramText} ${styles.inputNaturalLanguage}`}
                     start-index={this.props.startIndex}
                     end-index={this.props.endIndex}
+                    text-item-type="param"
                     type="text"
                     value={this.props.paramName}
                     onChange={(e) => this.props.handleParamNameChange(e, this.props.startIndex, this.props.endIndex)}
@@ -193,9 +195,7 @@ export default class NaturalLanguage extends React.Component {
             // Selection length is 0, so just a single cursor click
             
             // Check selectionObj and only set edit mode to true if this is the outer text (e.g., not part of the param form)
-            console.log("selectionObj.anchorNode.parentElement", selectionObj.anchorNode.parentElement);
-            console.log('selectionObj.anchorNode.parentElement.getAttribute("start-index")', selectionObj.anchorNode.parentElement.getAttribute("start-index"));
-            if(selectionObj.anchorNode.parentElement.getAttribute("start-index")){
+            if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("start-index")){
                 // Assume this means the user is trying to edit text, so let's update inEditMode
                 this.setState({
                     inEditMode: true
@@ -213,6 +213,76 @@ export default class NaturalLanguage extends React.Component {
         this.setState({
             inEditMode: false
         });
+    }
+
+    handleSave(){
+        console.log("handleSave");
+        // Process all the text in the DOM and update textItems as appropriate
+        // Get all the text elements (both regular and param)
+        const textElements = document.querySelectorAll('[start-index]');
+
+        let newTextItems;
+        newTextItems = [];
+        // Loop through all of these and create new textItems (i.e., completely replacing what we have already, not just modifying the existing list)
+        for(let elIndex = 0; elIndex < textElements.length; elIndex++){
+            const el = textElements[elIndex];
+            
+            // Use last item to identify new start index
+            let newStartIndex;
+            if(newTextItems.length > 0){
+                newStartIndex = newTextItems[newTextItems.length-1].endIndex;
+            }else{
+                newStartIndex = 0;
+            }
+
+            if(el.getAttribute("text-item-type") === "regular"){
+                // If length > 1, split into individual letters
+                const elText = el.textContent;
+                for (let i = 0; i < elText.length; i++) {
+                    const char = elText[i];
+                    newTextItems.push(
+                        {
+                            text: char,
+                            startIndex: newStartIndex + i,
+                            endIndex: newStartIndex + i+1,
+                            isParam: false,
+                            paramName: "",
+                            possibleValues: [],
+                            hovered: false
+                        }
+                    );
+                }
+                
+                if(elText.length > 1){
+                    // Set text in DOM to the original value?
+                    const origStartIndex = parseInt(el.getAttribute("start-index"));
+                    const origEndIndex = parseInt(el.getAttribute("end-index"));
+                    this.operateOnItem(origStartIndex, origEndIndex, function(item, index){
+                        const origText = item.text;
+                        el.textContent = origText;
+                    });
+                }
+            }else{
+                // el.getAttribute("text-item-type") === "param"
+                const origStartIndex = parseInt(el.getAttribute("start-index"));
+                const origEndIndex = parseInt(el.getAttribute("end-index"));
+                // Clone the corresponding item in this.state.textItems
+                // Then change startIndex and endIndex as appropriate
+                this.operateOnItem(origStartIndex, origEndIndex, function(item, index){
+                    const newItem = _.cloneDeep(item);
+                    const newEndIndex = newStartIndex + (origEndIndex - origStartIndex);
+                    newItem.startIndex = newStartIndex;
+                    newItem.endIndex = newEndIndex;
+                    newTextItems.push(newItem);
+                });
+            }
+        }
+
+        this.setState({
+            textItems: newTextItems
+        });
+
+        this.exitEditMode();
     }
 
     handleOnMouseEnter(startIndex, endIndex, e){
@@ -264,7 +334,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
-        this.exitEditMode();
+        //this.exitEditMode();
     }
 
     handleParamValueChange(e, i, startIndex, endIndex) {
@@ -280,7 +350,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
-        this.exitEditMode();
+        //this.exitEditMode();
     }
 
     handleAddBlankParamValue(startIndex, endIndex){
@@ -294,7 +364,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
-        this.exitEditMode();
+        //this.exitEditMode();
     }
 
     removeParam(startIndex, endIndex, e){
@@ -354,7 +424,7 @@ export default class NaturalLanguage extends React.Component {
                 textItems: items
             });
         });
-        this.exitEditMode();
+        //this.exitEditMode();
     }
 
     operateOnItem(startIndex, endIndex, callback){
@@ -425,18 +495,34 @@ export default class NaturalLanguage extends React.Component {
             }
         });
 
+        let saveButton;
+        if(this.state.inEditMode){
+            saveButton = <button
+                            onClick={() => this.handleSave()}
+                        >Save</button>;
+        }else{
+            saveButton = <button
+                            onClick={() => this.handleSave()}
+                            className={styles.displayNone}
+                        >Save</button>;
+        }
+
         return (
             <div>
                 <div
                     contentEditable={this.state.inEditMode}
                     className={styles.request}
                     onMouseUp={() => this.handleTextSelection()}
-                    onBlur={() => this.exitEditMode()}
+                    //onBlur={() => this.exitEditMode()}
                     ref={(input) => { this.mainText = input; }} 
                 >
                     {domTextItems}
                 </div>
-                { this.state.inEditMode && <button>Save</button> }
+                {/* { this.state.inEditMode &&
+                <button
+                    onClick={() => this.handleSave()}
+                >Save</button> } */}
+                {saveButton}
             </div>
         );
     }
