@@ -6,9 +6,10 @@ import styles from './NaturalLanguage.module.css';
 function RegularTextItem(props){
     return (
         <span
-            className={styles.inputNaturalLanguage}
+            className={`${styles.inputNaturalLanguage} ${(props.inEditMode === props.uuid ? styles.editBackground : '')}`}
             uuid={props.uuid}
             text-item-type="regular"
+            contentEditable={props.inEditMode === props.uuid}
         >
             {props.text}
         </span>
@@ -120,7 +121,8 @@ export default class NaturalLanguage extends React.Component {
         this.state = {
             text: props.text,
             textItems: initialTextItems,
-            inEditMode: false
+            //inEditMode: false
+            inEditMode: null
         }
     }
 
@@ -200,17 +202,22 @@ export default class NaturalLanguage extends React.Component {
                 }else{
                     // Selection length is 0, so just a single cursor click
                     
-                    // Check selectionObj and only set edit mode to true if this is the outer text (e.g., not part of the param form)
-                    if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("start-index")){
+                    // Check selectionObj and only set edit mode to true if this a regular text item (e.g., not part of the param form, not param text)
+                    if(selectionObj.anchorNode && selectionObj.anchorNode.parentElement && selectionObj.anchorNode.parentElement.getAttribute("text-item-type") === "regular"){
+                        const thisUuid = selectionObj.anchorNode.parentElement.getAttribute("uuid");
+                        
                         // Assume this means the user is trying to edit text, so let's update inEditMode
                         this.setState({
-                            inEditMode: true
+                            inEditMode: thisUuid
                         });
         
                         // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
-                        setTimeout(function(obj){
+                        /*setTimeout(function(obj){
                             obj.mainText.focus();
-                        }, 0, this);
+                        }, 0, this);*/
+                        setTimeout(function(){
+                            document.querySelector(`[uuid="${thisUuid}"]`).focus();
+                        }, 0);
                     }
                 }
             }
@@ -219,11 +226,31 @@ export default class NaturalLanguage extends React.Component {
 
     exitEditMode() {
         this.setState({
-            inEditMode: false
+            inEditMode: null
         });
     }
 
     handleSave(){
+        // uuid that was being edited - this.state.inEditMode
+        const editedElement = document.querySelector(`[uuid="${this.state.inEditMode}"]`);
+        const newText = editedElement.textContent;
+
+        // update it's text in state
+        this.operateOnItem(this.state.inEditMode, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+            items[index].text = newText;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items,
+                inEditMode: null
+            });
+            this.exitEditMode();
+        });
+
+        // then set inEditMode to null
+        // then call this.exitEditMode();
+
         /*console.log("handleSave");
         // Process all the text in the DOM and update textItems as appropriate
         // Get all the text elements (both regular and param)
@@ -498,6 +525,7 @@ export default class NaturalLanguage extends React.Component {
                         <RegularTextItem
                             text={textItem.text}
                             uuid={textItem.uuid}
+                            inEditMode={this.state.inEditMode}
                         />
                     </span>
                 );
@@ -519,10 +547,9 @@ export default class NaturalLanguage extends React.Component {
 
         return (
             <div
-                className={(this.state.inEditMode ? styles.editBackground : '')}
+                // className={(this.state.inEditMode ? styles.editBackground : '')}
             >
                 <div
-                    contentEditable={this.state.inEditMode}
                     className={styles.request}
                     onMouseUp={() => this.handleTextSelection()}
                     ref={(input) => { this.mainText = input; }} 

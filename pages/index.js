@@ -8,10 +8,10 @@ const NaturalLanguage = dynamic(
 export default function Home() {
   return (
     <div>
-        {/* <NaturalLanguage text="Which MLB player had the most home runs in 2019?"/> */}
+        <NaturalLanguage text="Which MLB player had the most home runs this year?"/>
         {/* <NaturalLanguage text="Book a flight from Detroit to Boston on November 20"/> */}
         {/* <NaturalLanguage text="Order a chicken burrito bowl with black beans, white rice, cheese, and green salsa from Chipotle. Place the order now and for delivery."/> */}
-        <NaturalLanguage text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"/>
+        {/* <NaturalLanguage text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"/> */}
         
         
         
