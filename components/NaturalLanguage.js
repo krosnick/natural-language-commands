@@ -116,10 +116,34 @@ class ParamTextItem extends React.Component {
                         >
                             Parameter is optional:
                             <input
-                                name="paramOptional"
+                                name={`paramOptional_${this.props.uuid}`}
                                 type="checkbox"
                                 checked={this.props.paramIsOptional}
                                 onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)} />
+                        </div>
+                        <div
+                            className={styles.paramDataChunk}
+                        >
+                            How many values allowed at a time?
+                            <div>
+                                <input
+                                    type="radio"
+                                    name={`numValuesAllowed_${this.props.uuid}`}
+                                    value="one"
+                                    checked={!this.props.paramMultipleValuesAllowed}
+                                    onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
+                                <label htmlFor="one">1</label>
+                            </div>
+
+                            <div>
+                                <input
+                                    type="radio"
+                                    name={`numValuesAllowed_${this.props.uuid}`}
+                                    value="multiple"
+                                    checked={this.props.paramMultipleValuesAllowed}
+                                    onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
+                                <label htmlFor="multiple">Multiple</label>
+                            </div>
                         </div>
                         <div
                             className={styles.paramDataChunk}
@@ -154,7 +178,8 @@ export default class NaturalLanguage extends React.Component {
                 paramName: "",
                 possibleValues: [],
                 hovered: false,
-                paramIsOptional: false
+                paramIsOptional: false,
+                paramMultipleValuesAllowed: false
             }
         );
 
@@ -204,7 +229,8 @@ export default class NaturalLanguage extends React.Component {
                             paramName: "<enter param name here>",
                             possibleValues: [],
                             hovered: false,
-                            paramIsOptional: false
+                            paramIsOptional: false,
+                            paramMultipleValuesAllowed: false
                         };
                         const newParamItem = {
                             text: selectedText,
@@ -213,7 +239,8 @@ export default class NaturalLanguage extends React.Component {
                             paramName: "<enter param name here>",
                             possibleValues: [selectedText],
                             hovered: true,
-                            paramIsOptional: false
+                            paramIsOptional: false,
+                            paramMultipleValuesAllowed: false
                         };
                         const newItemOnRight = {
                             text: textOnRight,
@@ -222,7 +249,8 @@ export default class NaturalLanguage extends React.Component {
                             paramName: "<enter param name here>",
                             possibleValues: [],
                             hovered: false,
-                            paramIsOptional: false
+                            paramIsOptional: false,
+                            paramMultipleValuesAllowed: false
                         };
 
                         // Find corresponding item in textItems and replace with a regular text item on the left, a param item in the middle, and regular text item on the right
@@ -395,7 +423,8 @@ export default class NaturalLanguage extends React.Component {
                 paramName: "<enter param name here>",
                 possibleValues: [],
                 hovered: false,
-                paramIsOptional: false
+                paramIsOptional: false,
+                paramMultipleValuesAllowed: false
             };
 
             console.log("startingIndexToReplace", startingIndexToReplace);
@@ -443,17 +472,36 @@ export default class NaturalLanguage extends React.Component {
     }
 
     handleParamOptionalChange(e, uuid){
-        console.log("handleParamOptionalChange");
         const target = e.target;
         const value = target.type === 'checkbox' ? target.checked : target.value;
-        console.log("value", value);
-        console.log("uuid", uuid);
-
+        
         this.operateOnItem(uuid, function(item, index){
             const items = _.cloneDeep(this.state.textItems);
 
             // Update paramOptional checkbox value
             items[index].paramIsOptional = value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
+    }
+
+    handleParamNumValuesAllowedChange(e, uuid){
+        const target = e.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        console.log("value", value);
+
+        this.operateOnItem(uuid, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+
+            // Update paramOptional checkbox value
+            if(value === "one"){
+                items[index].paramMultipleValuesAllowed = false;
+            }else if(value === "multiple"){
+                items[index].paramMultipleValuesAllowed = true;
+            }
 
             // Update whole textItems to make sure we re-render
             this.setState({
@@ -496,7 +544,9 @@ export default class NaturalLanguage extends React.Component {
                             hovered={textItem.hovered}
                             inEditMode={this.state.inEditMode}
                             paramIsOptional={textItem.paramIsOptional}
+                            paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
                             handleParamOptionalChange={(e) => this.handleParamOptionalChange(e, textItem.uuid)}
+                            handleParamNumValuesAllowedChange={(e) => this.handleParamNumValuesAllowedChange(e, textItem.uuid)}
                         />
                     </span>
                 );
