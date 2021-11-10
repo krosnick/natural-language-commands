@@ -7,7 +7,7 @@ function RegularTextItem(props){
     const textElement = useRef(null);
 
     let saveButton;
-    if(props.inEditMode === props.uuid){
+    if(props.uuidInEditMode === props.uuid){
         saveButton = <button
                         onClick={() => props.handleSave(textElement)}
                         className={styles.saveButton}
@@ -24,10 +24,10 @@ function RegularTextItem(props){
             className={styles.relative}
         >
             <span
-                className={`${styles.inputNaturalLanguage} ${(props.inEditMode === props.uuid ? styles.editBackground : '')} ${(props.inEditMode && props.inEditMode !== props.uuid ? styles.grayedOut : '')}`}
+                className={`${styles.inputNaturalLanguage} ${(props.uuidInEditMode === props.uuid ? styles.editBackground : '')} ${(props.uuidInEditMode && props.uuidInEditMode !== props.uuid ? styles.grayedOut : '')}`}
                 uuid={props.uuid}
                 text-item-type="regular"
-                contentEditable={props.inEditMode === props.uuid}
+                contentEditable={props.uuidInEditMode === props.uuid}
                 onMouseUp={() => props.handleTextSelection(textElement, props.uuid)}
                 ref={textElement}
             >
@@ -49,24 +49,24 @@ class ParamTextItem extends React.Component {
                 //key={value}
             >
                 <input
-                    className={`${(this.props.inEditMode && this.props.inEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
+                    className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    disabled={this.props.inEditMode}
+                    disabled={this.props.uuidInEditMode}
                 >
                 </input>
                 <button
                     onClick={() => this.props.removeValue(i, this.props.uuid)}
                     className={styles.removeValueButton}
-                    disabled={this.props.inEditMode}
+                    disabled={this.props.uuidInEditMode}
                 >x</button>
             </li>
         );
 
         return (
             <span
-                className={`${styles.container} ${(this.props.inEditMode && this.props.inEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
+                className={`${styles.container} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                 onMouseEnter={() => this.props.onMouseEnter(this.props.uuid)}
                 onMouseLeave={() => this.props.onMouseLeave(this.props.uuid)}
             >
@@ -74,19 +74,19 @@ class ParamTextItem extends React.Component {
                     <button
                         className={styles.removeButton}
                         onClick={() => this.props.removeParam(this.props.uuid)}
-                        disabled={this.props.inEditMode}
+                        disabled={this.props.uuidInEditMode}
                     >x</button>
                 ) : (
                     <span></span>
                 )}
                 <input
-                    className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.inEditMode && this.props.inEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
+                    className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                     uuid={this.props.uuid}
                     text-item-type="param"
                     type="text"
                     value={this.props.paramName}
                     onChange={(e) => this.props.handleParamNameChange(e, this.props.uuid)}
-                    disabled={this.props.inEditMode}
+                    disabled={this.props.uuidInEditMode}
                 >
                 </input>
                 {/* <span
@@ -153,7 +153,7 @@ class ParamTextItem extends React.Component {
                             <button
                                 onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                 className={styles.addValuesButton}
-                                disabled={this.props.inEditMode}
+                                disabled={this.props.uuidInEditMode}
                             >
                                 Add another value
                             </button>
@@ -186,8 +186,8 @@ export default class NaturalLanguage extends React.Component {
         this.state = {
             text: props.text,
             textItems: initialTextItems,
-            //inEditMode: false
-            inEditMode: null
+            //uuidInEditMode: false
+            uuidInEditMode: null
         }
     }
 
@@ -206,7 +206,7 @@ export default class NaturalLanguage extends React.Component {
             console.log("selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement");
             
             // Ignore if in edit mode
-            if(!this.state.inEditMode){
+            if(!this.state.uuidInEditMode){
                 if(selectedText.length > 0){
                     
                     // Now need to split this 
@@ -272,9 +272,9 @@ export default class NaturalLanguage extends React.Component {
                 }else{
                     // Selection length is 0, so just a single cursor click
                     
-                    // Assume this means the user is trying to edit text, so let's update inEditMode
+                    // Assume this means the user is trying to edit text, so let's update uuidInEditMode
                     this.setState({
-                        inEditMode: uuid
+                        uuidInEditMode: uuid
                     });
     
                     // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
@@ -288,7 +288,7 @@ export default class NaturalLanguage extends React.Component {
 
     exitEditMode() {
         this.setState({
-            inEditMode: null
+            uuidInEditMode: null
         });
     }
 
@@ -296,14 +296,14 @@ export default class NaturalLanguage extends React.Component {
         const newText = textElement.current.textContent;
 
         // update it's text in state
-        this.operateOnItem(this.state.inEditMode, function(item, index){
+        this.operateOnItem(this.state.uuidInEditMode, function(item, index){
             const items = _.cloneDeep(this.state.textItems);
             items[index].text = newText;
 
             // Update whole textItems to make sure we re-render
             this.setState({
                 textItems: items,
-                inEditMode: null
+                uuidInEditMode: null
             });
             this.exitEditMode();
         });
@@ -512,7 +512,7 @@ export default class NaturalLanguage extends React.Component {
 
 /*     componentDidUpdate(){
         console.log("componentDidUpdate");
-        if(this.state.inEditMode){
+        if(this.state.uuidInEditMode){
             this.mainText.focus();
         }
     } */
@@ -542,7 +542,7 @@ export default class NaturalLanguage extends React.Component {
                             handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.uuid)}
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.uuid)}
                             hovered={textItem.hovered}
-                            inEditMode={this.state.inEditMode}
+                            uuidInEditMode={this.state.uuidInEditMode}
                             paramIsOptional={textItem.paramIsOptional}
                             paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
                             handleParamOptionalChange={(e) => this.handleParamOptionalChange(e, textItem.uuid)}
@@ -559,7 +559,7 @@ export default class NaturalLanguage extends React.Component {
                         <RegularTextItem
                             text={textItem.text}
                             uuid={textItem.uuid}
-                            inEditMode={this.state.inEditMode}
+                            uuidInEditMode={this.state.uuidInEditMode}
                             handleSave={(textElement) => this.handleSave(textElement)}
                             handleTextSelection={(textElement) => this.handleTextSelection(textElement, textItem.uuid)}
                         />
@@ -570,7 +570,7 @@ export default class NaturalLanguage extends React.Component {
 
         return (
             <div
-                // className={(this.state.inEditMode ? styles.editBackground : '')}
+                // className={(this.state.uuidInEditMode ? styles.editBackground : '')}
             >
                 <div
                     className={styles.request}
