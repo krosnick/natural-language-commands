@@ -111,15 +111,29 @@ class ParamTextItem extends React.Component {
                     <label
                         className={styles.possibleValuesArea}
                     >
-                        Possible values:
-                        <ul>{possibleValues}</ul>
-                        <button
-                            onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
-                            className={styles.addValuesButton}
-                            disabled={this.props.inEditMode}
+                        <div
+                            className={styles.paramDataChunk}
                         >
-                            Add another value
-                        </button>
+                            Parameter is optional:
+                            <input
+                                name="paramOptional"
+                                type="checkbox"
+                                checked={this.props.paramIsOptional}
+                                onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)} />
+                        </div>
+                        <div
+                            className={styles.paramDataChunk}
+                        >
+                            Possible values:
+                            <ul>{possibleValues}</ul>
+                            <button
+                                onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                                className={styles.addValuesButton}
+                                disabled={this.props.inEditMode}
+                            >
+                                Add another value
+                            </button>
+                        </div>
                     </label>
                 </div>
             </span>
@@ -139,7 +153,8 @@ export default class NaturalLanguage extends React.Component {
                 isParam: false,
                 paramName: "",
                 possibleValues: [],
-                hovered: false
+                hovered: false,
+                paramIsOptional: false
             }
         );
 
@@ -188,7 +203,8 @@ export default class NaturalLanguage extends React.Component {
                             isParam: false,
                             paramName: "<enter param name here>",
                             possibleValues: [],
-                            hovered: false
+                            hovered: false,
+                            paramIsOptional: false
                         };
                         const newParamItem = {
                             text: selectedText,
@@ -196,7 +212,8 @@ export default class NaturalLanguage extends React.Component {
                             isParam: true,
                             paramName: "<enter param name here>",
                             possibleValues: [selectedText],
-                            hovered: true
+                            hovered: true,
+                            paramIsOptional: false
                         };
                         const newItemOnRight = {
                             text: textOnRight,
@@ -204,7 +221,8 @@ export default class NaturalLanguage extends React.Component {
                             isParam: false,
                             paramName: "<enter param name here>",
                             possibleValues: [],
-                            hovered: false
+                            hovered: false,
+                            paramIsOptional: false
                         };
 
                         // Find corresponding item in textItems and replace with a regular text item on the left, a param item in the middle, and regular text item on the right
@@ -376,7 +394,8 @@ export default class NaturalLanguage extends React.Component {
                 isParam: false,
                 paramName: "<enter param name here>",
                 possibleValues: [],
-                hovered: false
+                hovered: false,
+                paramIsOptional: false
             };
 
             console.log("startingIndexToReplace", startingIndexToReplace);
@@ -423,6 +442,26 @@ export default class NaturalLanguage extends React.Component {
         }
     }
 
+    handleParamOptionalChange(e, uuid){
+        console.log("handleParamOptionalChange");
+        const target = e.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        console.log("value", value);
+        console.log("uuid", uuid);
+
+        this.operateOnItem(uuid, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+
+            // Update paramOptional checkbox value
+            items[index].paramIsOptional = value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
+    }
+
 /*     componentDidUpdate(){
         console.log("componentDidUpdate");
         if(this.state.inEditMode){
@@ -456,6 +495,8 @@ export default class NaturalLanguage extends React.Component {
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.uuid)}
                             hovered={textItem.hovered}
                             inEditMode={this.state.inEditMode}
+                            paramIsOptional={textItem.paramIsOptional}
+                            handleParamOptionalChange={(e) => this.handleParamOptionalChange(e, textItem.uuid)}
                         />
                     </span>
                 );
