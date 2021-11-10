@@ -24,7 +24,7 @@ function RegularTextItem(props){
             className={styles.relative}
         >
             <span
-                className={`${styles.inputNaturalLanguage} ${(props.inEditMode === props.uuid ? styles.editBackground : '')}`}
+                className={`${styles.inputNaturalLanguage} ${(props.inEditMode === props.uuid ? styles.editBackground : '')} ${(props.inEditMode && props.inEditMode !== props.uuid ? styles.grayedOut : '')}`}
                 uuid={props.uuid}
                 text-item-type="regular"
                 contentEditable={props.inEditMode === props.uuid}
@@ -49,6 +49,7 @@ class ParamTextItem extends React.Component {
                 //key={value}
             >
                 <input
+                    className={`${(this.props.inEditMode && this.props.inEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
@@ -64,7 +65,7 @@ class ParamTextItem extends React.Component {
 
         return (
             <span
-                className={styles.container}
+                className={`${styles.container} ${(this.props.inEditMode && this.props.inEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                 onMouseEnter={() => this.props.onMouseEnter(this.props.uuid)}
                 onMouseLeave={() => this.props.onMouseLeave(this.props.uuid)}
             >
@@ -78,7 +79,7 @@ class ParamTextItem extends React.Component {
                     <span></span>
                 )}
                 <input
-                    className={`${styles.paramText} ${styles.inputNaturalLanguage}`}
+                    className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.inEditMode && this.props.inEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                     uuid={this.props.uuid}
                     text-item-type="param"
                     type="text"
