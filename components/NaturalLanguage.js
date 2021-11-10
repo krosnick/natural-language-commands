@@ -187,7 +187,8 @@ export default class NaturalLanguage extends React.Component {
             text: props.text,
             textItems: initialTextItems,
             //uuidInEditMode: false
-            uuidInEditMode: null
+            uuidInEditMode: null,
+            websiteUrl: props.websiteUrl
         }
     }
 
@@ -577,6 +578,12 @@ export default class NaturalLanguage extends React.Component {
                 >
                     {domTextItems}
                 </div>
+                <iframe
+                    width="100%"
+                    height="700"
+                    src={this.state.websiteUrl}>
+                </iframe>
+
             </div>
         );
     }

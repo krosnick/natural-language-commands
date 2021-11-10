@@ -8,22 +8,42 @@ const NaturalLanguage = dynamic(
 export default function Home() {
   return (
     <div>
-        <NaturalLanguage text="Which MLB player had the most home runs this year?"/>
-        {/* <NaturalLanguage text="Book a flight from Detroit to Boston on November 20"/> */}
-        {/* <NaturalLanguage text="Order a chicken burrito bowl with black beans, white rice, cheese, and green salsa from Chipotle. Place the order now and for delivery."/> */}
-        {/* <NaturalLanguage text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"/> */}
+        <NaturalLanguage
+            text="Which MLB player had the most home runs this year?"
+            websiteUrl="https://www.mlb.com/stats/"
+        />
+        {/* <NaturalLanguage
+            text="Book a flight from Detroit to Boston on November 20"
+            websiteUrl="https://www.spirit.com/"
+        /> */}
+        {/* <NaturalLanguage
+            text="Order a chicken burrito bowl with black beans, white rice, cheese, and green salsa from Chipotle. Place the order now and for delivery."
+            websiteUrl="https://www.chipotle.com/order"
+        /> */}
+        {/* <NaturalLanguage
+            text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"
+            websiteUrl="https://www.georgetowncupcake.com/OrderType.aspx"
+        /> */}
         
         
         
         
-        {/*
-        <NaturalLanguage text="Which MLB player had the most home runs this year?"/>
-        <NaturalLanguage text="Order one scoop of coffee ice cream from Blank Slate"/>
-        <NaturalLanguage text="Order a little cheeseburger from Five Guys with mayo, lettuce, and grilled onions"/>
-        <NaturalLanguage text="What movie won Best Picture at the Oscars in 2011?"/> */}
+        
+        {/* <NaturalLanguage
+            text="Order one scoop of coffee ice cream from Blank Slate"
+            websiteUrl="https://blank-slate-creamery.square.site/"
+        /> */}
+        {/* <NaturalLanguage
+            text="Order a little cheeseburger from Five Guys with mayo, lettuce, and grilled onions"
+            websiteUrl="https://order.fiveguys.com/"
+        /> */}
+        {/* <NaturalLanguage
+            text="What movie won Best Picture at the Oscars in 2011?"
+            websiteUrl="https://www.oscars.org/oscars/ceremonies/2021"
+        /> */}
         <style jsx global>{`
             body {
-                margin: 100px;
+                margin: 30px;
             }
             
             ol, ul {
