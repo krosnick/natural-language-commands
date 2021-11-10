@@ -53,5 +53,14 @@
 }
 
 .saveButton {
+    --height: 30px;
+    height: var(--height);
     font-size: large;
+    position: absolute;
+    left: 0px;
+    top: calc(-1.5 * var(--height));
+}
+
+.relative {
+    position: relative;
 }

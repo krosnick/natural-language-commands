@@ -20,7 +20,9 @@ function RegularTextItem(props){
     }
 
     return (
-        <span>
+        <span
+            className={styles.relative}
+        >
             <span
                 className={`${styles.inputNaturalLanguage} ${(props.inEditMode === props.uuid ? styles.editBackground : '')}`}
                 uuid={props.uuid}
