@@ -63,8 +63,17 @@
     position: absolute;
     left: 0px;
     top: calc(-1.5 * var(--height));
+    cursor: pointer;
 }
 
 .relative {
     position: relative;
+}
+
+.addValuesButton {
+    cursor: pointer;
+}
+
+.removeValueButton {
+    cursor: pointer;
 }

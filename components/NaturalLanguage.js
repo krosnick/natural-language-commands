@@ -58,6 +58,7 @@ class ParamTextItem extends React.Component {
                 </input>
                 <button
                     onClick={() => this.props.removeValue(i, this.props.uuid)}
+                    className={styles.removeValueButton}
                     disabled={this.props.inEditMode}
                 >x</button>
             </li>
@@ -114,6 +115,7 @@ class ParamTextItem extends React.Component {
                         <ul>{possibleValues}</ul>
                         <button
                             onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                            className={styles.addValuesButton}
                             disabled={this.props.inEditMode}
                         >
                             Add another value
