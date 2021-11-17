@@ -114,7 +114,48 @@ class DateParam extends React.Component {
     render(){
         return (
             <div>
-                Date
+                <div>Date</div>
+                <div
+                    className={styles.paramDataChunk}
+                >
+                    Are there any restrictions on this date?
+                    <div>
+                        <input
+                            type="radio"
+                            name={`dateRestrictions_${this.props.uuid}`}
+                            value="past"
+                            checked={this.props.dateRestriction === "past"}
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                        <label htmlFor="past">Restricted to dates in the past</label>
+                    </div>
+                    <div>
+                        <input
+                            type="radio"
+                            name={`dateRestrictions_${this.props.uuid}`}
+                            value="future"
+                            checked={this.props.dateRestriction === "future"}
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                        <label htmlFor="future">Restricted to dates in the future</label>
+                    </div>
+                    <div>
+                        <input
+                            type="radio"
+                            name={`dateRestrictions_${this.props.uuid}`}
+                            value="none"
+                            checked={this.props.dateRestriction === "none"}
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                        <label htmlFor="none">No restrictions</label>
+                    </div>
+                    <div>
+                        <input
+                            type="radio"
+                            name={`dateRestrictions_${this.props.uuid}`}
+                            value="other"
+                            checked={this.props.dateRestriction === "other"}
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                        <label htmlFor="other">Other</label>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -155,6 +196,9 @@ class ParamTextItem extends React.Component {
                                         />;
             }else if(this.props.paramTypeData.type === "date"){
                 paramTypeSpecificForm = <DateParam
+                                            dateRestriction={this.props.paramTypeData.dateRestriction}
+                                            uuid={this.props.uuid}
+                                            handleParamDateRestrictionChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "number"){
                 paramTypeSpecificForm = <NumberParam
@@ -583,7 +627,20 @@ export default class NaturalLanguage extends React.Component {
             const items = _.cloneDeep(this.state.textItems);
 
             // Update paramOptional checkbox value
-            items[index].paramTypeData.type = value;
+            let paramTypeData = {
+                type: value,
+                possibleValues: items[index].paramTypeData.possibleValues
+            };
+            if(value === "freeform"){
+                // Nothing else to set
+            }else if(value === "enumeration"){
+                // Nothing else to set
+            }else if(value === "date"){
+                paramTypeData.dateRestriction = "";
+            }else if(value === "number"){
+                // TODO
+            }
+            items[index].paramTypeData = paramTypeData;
 
             // Update whole textItems to make sure we re-render
             this.setState({
@@ -631,6 +688,24 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    handleParamDateRestrictionChange(e, uuid){
+        const target = e.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        //console.log("value", value);
+
+        this.operateOnItem(uuid, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+
+            // Update radio button value
+            items[index].paramTypeData.dateRestriction = value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
+    }
+
 /*     componentDidUpdate(){
         console.log("componentDidUpdate");
         if(this.state.uuidInEditMode){
@@ -669,6 +744,7 @@ export default class NaturalLanguage extends React.Component {
                             handleParamOptionalChange={(e) => this.handleParamOptionalChange(e, textItem.uuid)}
                             handleParamTypeChange={(e) => this.handleParamTypeChange(e, textItem.uuid)}
                             handleParamNumValuesAllowedChange={(e) => this.handleParamNumValuesAllowedChange(e, textItem.uuid)}
+                            handleParamDateRestrictionChange={(e) => this.handleParamDateRestrictionChange(e, textItem.uuid)}
                         />
                     </span>
                 );
