@@ -38,11 +38,58 @@ function RegularTextItem(props){
     );
 }
 
+class UserProvidedExamples extends React.Component {
+    render(){
+        const possibleValues = this.props.possibleValues.map((value, i) =>
+            <li
+                // key={`${value}_${i}`}
+                //key={value}
+            >
+                <input
+                    className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
+                    type="text"
+                    value={value}
+                    onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                    disabled={this.props.uuidInEditMode}
+                >
+                </input>
+                <button
+                    onClick={() => this.props.removeValue(i, this.props.uuid)}
+                    className={styles.removeValueButton}
+                    disabled={this.props.uuidInEditMode}
+                >x</button>
+            </li>
+        );
+        return (
+            <div
+                className={styles.paramDataChunk}
+            >
+                Give some examples:
+                <ul>{possibleValues}</ul>
+                <button
+                    onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                    className={styles.addValuesButton}
+                    disabled={this.props.uuidInEditMode}
+                >
+                    Add another value
+                </button>
+            </div>
+        )
+    }
+}
+
 class FreeformParam extends React.Component {
     render(){
         return (
             <div>
-                Freeform
+                <div>Freeform</div>
+                <UserProvidedExamples
+                    possibleValues={this.props.possibleValues}
+                    handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                    handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                    uuidInEditMode={this.props.uuidInEditMode}
+                    removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                />
             </div>
         );
     }
@@ -51,7 +98,14 @@ class EnumerationParam extends React.Component {
     render(){
         return (
             <div>
-                Enumeration
+                <div>Enumeration</div>
+                <UserProvidedExamples
+                    possibleValues={this.props.possibleValues}
+                    handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                    handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                    uuidInEditMode={this.props.uuidInEditMode}
+                    removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                />
             </div>
         );
     }
@@ -80,42 +134,31 @@ class ParamTextItem extends React.Component {
         const hovered = this.props.hovered;
         console.log("hovered", hovered);
 
-        const possibleValues = this.props.possibleValues.map((value, i) =>
-            <li
-                // key={`${value}_${i}`}
-                //key={value}
-            >
-                <input
-                    className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
-                    type="text"
-                    value={value}
-                    onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    disabled={this.props.uuidInEditMode}
-                >
-                </input>
-                <button
-                    onClick={() => this.props.removeValue(i, this.props.uuid)}
-                    className={styles.removeValueButton}
-                    disabled={this.props.uuidInEditMode}
-                >x</button>
-            </li>
-        );
-
         // Based on what this.props.paramTypeData.type is, render appropriate type
         let paramTypeSpecificForm = ""; // empty unless there is a param type we should render
         if(this.props.paramTypeData.type.length > 0){
             if(this.props.paramTypeData.type === "freeform"){
                 paramTypeSpecificForm = <FreeformParam
-                />;
+                                            possibleValues={this.props.paramTypeData.possibleValues}
+                                            handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                                            handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                                        />;
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTypeSpecificForm = <EnumerationParam
-                />;
+                                            possibleValues={this.props.paramTypeData.possibleValues}
+                                            handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                                            handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                                        />;
             }else if(this.props.paramTypeData.type === "date"){
                 paramTypeSpecificForm = <DateParam
-                />;
+                                        />;
             }else if(this.props.paramTypeData.type === "number"){
                 paramTypeSpecificForm = <NumberParam
-                />;
+                                        />;
             }
         }
 
@@ -214,19 +257,6 @@ class ParamTextItem extends React.Component {
                                 <label htmlFor="multiple">Multiple</label>
                             </div>
                         </div>
-                        <div
-                            className={styles.paramDataChunk}
-                        >
-                            Possible values:
-                            <ul>{possibleValues}</ul>
-                            <button
-                                onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
-                                className={styles.addValuesButton}
-                                disabled={this.props.uuidInEditMode}
-                            >
-                                Add another value
-                            </button>
-                        </div>
                     </label>
                 </div>
             </span>
@@ -245,7 +275,6 @@ export default class NaturalLanguage extends React.Component {
                 uuid: uuidv4(),
                 isParam: false,
                 paramName: "",
-                possibleValues: [],
                 hovered: false,
                 paramIsOptional: false,
                 paramMultipleValuesAllowed: false,
@@ -298,7 +327,6 @@ export default class NaturalLanguage extends React.Component {
                             uuid: uuidv4(),
                             isParam: false,
                             paramName: "<param name>",
-                            possibleValues: [],
                             hovered: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -309,12 +337,12 @@ export default class NaturalLanguage extends React.Component {
                             uuid: uuidv4(),
                             isParam: true,
                             paramName: "<param name>",
-                            possibleValues: [selectedText],
                             hovered: true,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
                             paramTypeData: {
-                                "type": ""
+                                type: "",
+                                possibleValues: [selectedText],
                             }
                         };
                         const newItemOnRight = {
@@ -322,7 +350,6 @@ export default class NaturalLanguage extends React.Component {
                             uuid: uuidv4(),
                             isParam: false,
                             paramName: "<param name>",
-                            possibleValues: [],
                             hovered: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -441,7 +468,7 @@ export default class NaturalLanguage extends React.Component {
         this.operateOnItem(uuid, function(item, index){
             console.log("e.target.value", e.target.value);
             const items = _.cloneDeep(this.state.textItems);
-            items[index].possibleValues[i] = e.target.value;
+            items[index].paramTypeData.possibleValues[i] = e.target.value;
 
             // Update whole textItems to make sure we re-render
             this.setState({
@@ -455,7 +482,7 @@ export default class NaturalLanguage extends React.Component {
         console.log("handleAddBlankParamValue");
         this.operateOnItem(uuid, function(item, index){
             const items = _.cloneDeep(this.state.textItems);
-            items[index].possibleValues.push("");
+            items[index].paramTypeData.possibleValues.push("");
 
             // Update whole textItems to make sure we re-render
             this.setState({
@@ -497,7 +524,6 @@ export default class NaturalLanguage extends React.Component {
                 uuid: uuidv4(),
                 isParam: false,
                 paramName: "<param name>",
-                possibleValues: [],
                 hovered: false,
                 paramIsOptional: false,
                 paramMultipleValuesAllowed: false,
@@ -527,7 +553,7 @@ export default class NaturalLanguage extends React.Component {
             const items = _.cloneDeep(this.state.textItems);
 
             // Remove this particular param value
-            items[index].possibleValues.splice(i, 1);
+            items[index].paramTypeData.possibleValues.splice(i, 1);
 
             // Update whole textItems to make sure we re-render
             this.setState({
@@ -629,7 +655,6 @@ export default class NaturalLanguage extends React.Component {
                             uuid={textItem.uuid}
                             paramName={textItem.paramName}
                             paramTypeData={textItem.paramTypeData}
-                            possibleValues={textItem.possibleValues}
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
                             removeParam={() => this.removeParam(textItem.uuid)}
