@@ -38,6 +38,43 @@ function RegularTextItem(props){
     );
 }
 
+class FreeformParam extends React.Component {
+    render(){
+        return (
+            <div>
+                Freeform
+            </div>
+        );
+    }
+}
+class EnumerationParam extends React.Component {
+    render(){
+        return (
+            <div>
+                Enumeration
+            </div>
+        );
+    }
+}
+class DateParam extends React.Component {
+    render(){
+        return (
+            <div>
+                Date
+            </div>
+        );
+    }
+}
+class NumberParam extends React.Component {
+    render(){
+        return (
+            <div>
+                Number
+            </div>
+        );
+    }
+}
+
 class ParamTextItem extends React.Component {
     render() {
         const hovered = this.props.hovered;
@@ -63,6 +100,24 @@ class ParamTextItem extends React.Component {
                 >x</button>
             </li>
         );
+
+        // Based on what this.props.paramTypeData.type is, render appropriate type
+        let paramTypeSpecificForm = ""; // empty unless there is a param type we should render
+        if(this.props.paramTypeData.type.length > 0){
+            if(this.props.paramTypeData.type === "freeform"){
+                paramTypeSpecificForm = <FreeformParam
+                />;
+            }else if(this.props.paramTypeData.type === "enumeration"){
+                paramTypeSpecificForm = <EnumerationParam
+                />;
+            }else if(this.props.paramTypeData.type === "date"){
+                paramTypeSpecificForm = <DateParam
+                />;
+            }else if(this.props.paramTypeData.type === "number"){
+                paramTypeSpecificForm = <NumberParam
+                />;
+            }
+        }
 
         return (
             <span
@@ -108,6 +163,20 @@ class ParamTextItem extends React.Component {
                             className={styles.paramDataChunk}
                         />
                     </label> */}
+                    <select
+                        name={`paramType_${this.props.uuid}`}
+                        value={this.props.paramTypeData.type}
+                        onChange={(e) => this.props.handleParamTypeChange(e, this.props.uuid)}
+                    >
+                        <option value="">--Select parameter type--</option>
+                        <option value="freeform">Something the user types in</option>
+                        <option value="enumeration">Something user selects from a list</option>
+                        <option value="date">A date</option>
+                        <option value="number">A number</option>
+                    </select>
+
+                    {paramTypeSpecificForm}
+
                     <label
                         className={styles.possibleValuesArea}
                     >
@@ -179,7 +248,8 @@ export default class NaturalLanguage extends React.Component {
                 possibleValues: [],
                 hovered: false,
                 paramIsOptional: false,
-                paramMultipleValuesAllowed: false
+                paramMultipleValuesAllowed: false,
+                paramTypeData: null
             }
         );
 
@@ -231,7 +301,8 @@ export default class NaturalLanguage extends React.Component {
                             possibleValues: [],
                             hovered: false,
                             paramIsOptional: false,
-                            paramMultipleValuesAllowed: false
+                            paramMultipleValuesAllowed: false,
+                            paramTypeData: null
                         };
                         const newParamItem = {
                             text: selectedText,
@@ -241,7 +312,10 @@ export default class NaturalLanguage extends React.Component {
                             possibleValues: [selectedText],
                             hovered: true,
                             paramIsOptional: false,
-                            paramMultipleValuesAllowed: false
+                            paramMultipleValuesAllowed: false,
+                            paramTypeData: {
+                                "type": ""
+                            }
                         };
                         const newItemOnRight = {
                             text: textOnRight,
@@ -251,7 +325,8 @@ export default class NaturalLanguage extends React.Component {
                             possibleValues: [],
                             hovered: false,
                             paramIsOptional: false,
-                            paramMultipleValuesAllowed: false
+                            paramMultipleValuesAllowed: false,
+                            paramTypeData: null
                         };
 
                         // Find corresponding item in textItems and replace with a regular text item on the left, a param item in the middle, and regular text item on the right
@@ -425,7 +500,8 @@ export default class NaturalLanguage extends React.Component {
                 possibleValues: [],
                 hovered: false,
                 paramIsOptional: false,
-                paramMultipleValuesAllowed: false
+                paramMultipleValuesAllowed: false,
+                paramTypeData: null
             };
 
             console.log("startingIndexToReplace", startingIndexToReplace);
@@ -470,6 +546,24 @@ export default class NaturalLanguage extends React.Component {
                 return;
             }
         }
+    }
+
+    handleParamTypeChange(e, uuid){
+        const target = e.target;
+        console.log("handleParamTypeChange target", target);
+        const value = target.value;
+        
+        this.operateOnItem(uuid, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+
+            // Update paramOptional checkbox value
+            items[index].paramTypeData.type = value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
     }
 
     handleParamOptionalChange(e, uuid){
@@ -534,6 +628,7 @@ export default class NaturalLanguage extends React.Component {
                             text={textItem.text}
                             uuid={textItem.uuid}
                             paramName={textItem.paramName}
+                            paramTypeData={textItem.paramTypeData}
                             possibleValues={textItem.possibleValues}
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
@@ -547,6 +642,7 @@ export default class NaturalLanguage extends React.Component {
                             paramIsOptional={textItem.paramIsOptional}
                             paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
                             handleParamOptionalChange={(e) => this.handleParamOptionalChange(e, textItem.uuid)}
+                            handleParamTypeChange={(e) => this.handleParamTypeChange(e, textItem.uuid)}
                             handleParamNumValuesAllowedChange={(e) => this.handleParamNumValuesAllowedChange(e, textItem.uuid)}
                         />
                     </span>
