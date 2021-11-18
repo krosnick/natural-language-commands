@@ -164,7 +164,30 @@ class NumberParam extends React.Component {
     render(){
         return (
             <div>
-                Number
+                <div>Number</div>
+                <div
+                    className={styles.paramDataChunk}
+                >
+                    Are there any restrictions on this number?
+                    <div>
+                        <input
+                            type="checkbox"
+                            name={`numberRestrictions_${this.props.uuid}`}
+                            value="integers"
+                            checked={this.props.restrictedToIntegers}
+                            onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)} />
+                        <label htmlFor="integers">Restricted to integers</label>
+                    </div>
+                    <div>
+                        <input
+                            type="checkbox"
+                            name={`numberRestrictions_${this.props.uuid}`}
+                            value="range"
+                            checked={this.props.restrictedToRange}
+                            onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToRange", this.props.uuid)} />
+                        <label htmlFor="range">Restricted to range</label>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -202,6 +225,10 @@ class ParamTextItem extends React.Component {
                                         />;
             }else if(this.props.paramTypeData.type === "number"){
                 paramTypeSpecificForm = <NumberParam
+                                            restrictedToIntegers={this.props.paramTypeData.restrictedToIntegers}
+                                            restrictedToRange={this.props.paramTypeData.restrictedToRange}
+                                            uuid={this.props.uuid}
+                                            handleParamNumberRestrictionChange={(e, restrictionToChange) => this.props.handleParamNumberRestrictionChange(e, restrictionToChange, this.props.uuid)}
                                         />;
             }
         }
@@ -638,7 +665,8 @@ export default class NaturalLanguage extends React.Component {
             }else if(value === "date"){
                 paramTypeData.dateRestriction = "";
             }else if(value === "number"){
-                // TODO
+                paramTypeData.restrictedToIntegers = false;
+                paramTypeData.restrictedToRange = false;
             }
             items[index].paramTypeData = paramTypeData;
 
@@ -706,6 +734,23 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    handleParamNumberRestrictionChange(e, restrictionToChange, uuid){
+        const target = e.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        // So restrictionToChange tells us which restriction to update in the state. And the new value for it will be e.target.checked
+        this.operateOnItem(uuid, function(item, index){
+            const items = _.cloneDeep(this.state.textItems);
+
+            // Update checkbox button value
+            items[index].paramTypeData[restrictionToChange] = value;
+
+            // Update whole textItems to make sure we re-render
+            this.setState({
+                textItems: items
+            });
+        });
+    }
+
 /*     componentDidUpdate(){
         console.log("componentDidUpdate");
         if(this.state.uuidInEditMode){
@@ -745,6 +790,7 @@ export default class NaturalLanguage extends React.Component {
                             handleParamTypeChange={(e) => this.handleParamTypeChange(e, textItem.uuid)}
                             handleParamNumValuesAllowedChange={(e) => this.handleParamNumValuesAllowedChange(e, textItem.uuid)}
                             handleParamDateRestrictionChange={(e) => this.handleParamDateRestrictionChange(e, textItem.uuid)}
+                            handleParamNumberRestrictionChange={(e, restrictionToChange) => this.handleParamNumberRestrictionChange(e, restrictionToChange, textItem.uuid)}
                         />
                     </span>
                 );
