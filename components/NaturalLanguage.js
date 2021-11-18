@@ -104,6 +104,30 @@ class EnumerationParam extends React.Component {
                     uuidInEditMode={this.props.uuidInEditMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                 />
+                <div
+                    className={styles.paramDataChunk}
+                >
+                    How many values allowed at a time?
+                    <div>
+                        <input
+                            type="radio"
+                            name={`numValuesAllowed_${this.props.uuid}`}
+                            value="one"
+                            checked={!this.props.paramMultipleValuesAllowed}
+                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
+                        <label htmlFor="one">1</label>
+                    </div>
+
+                    <div>
+                        <input
+                            type="radio"
+                            name={`numValuesAllowed_${this.props.uuid}`}
+                            value="multiple"
+                            checked={this.props.paramMultipleValuesAllowed}
+                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
+                        <label htmlFor="multiple">Multiple</label>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -236,8 +260,10 @@ class ParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTypeSpecificForm = <EnumerationParam
                                             possibleValues={this.props.paramTypeData.possibleValues}
+                                            paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                                            handleParamNumValuesAllowedChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                                         />;
@@ -329,30 +355,6 @@ class ParamTextItem extends React.Component {
                                 type="checkbox"
                                 checked={this.props.paramIsOptional}
                                 onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)} />
-                        </div>
-                        <div
-                            className={styles.paramDataChunk}
-                        >
-                            How many values allowed at a time?
-                            <div>
-                                <input
-                                    type="radio"
-                                    name={`numValuesAllowed_${this.props.uuid}`}
-                                    value="one"
-                                    checked={!this.props.paramMultipleValuesAllowed}
-                                    onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
-                                <label htmlFor="one">1</label>
-                            </div>
-
-                            <div>
-                                <input
-                                    type="radio"
-                                    name={`numValuesAllowed_${this.props.uuid}`}
-                                    value="multiple"
-                                    checked={this.props.paramMultipleValuesAllowed}
-                                    onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
-                                <label htmlFor="multiple">Multiple</label>
-                            </div>
                         </div>
                     </label>
                 </div>
