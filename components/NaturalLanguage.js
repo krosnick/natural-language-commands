@@ -82,7 +82,6 @@ class FreeformParam extends React.Component {
     render(){
         return (
             <div>
-                <div>Freeform</div>
                 <UserProvidedExamples
                     possibleValues={this.props.possibleValues}
                     handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
@@ -98,7 +97,6 @@ class EnumerationParam extends React.Component {
     render(){
         return (
             <div>
-                <div>Enumeration</div>
                 <UserProvidedExamples
                     possibleValues={this.props.possibleValues}
                     handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
@@ -114,7 +112,6 @@ class DateParam extends React.Component {
     render(){
         return (
             <div>
-                <div>Date</div>
                 <div
                     className={styles.paramDataChunk}
                 >
@@ -164,7 +161,6 @@ class NumberParam extends React.Component {
     render(){
         return (
             <div>
-                <div>Number</div>
                 <div
                     className={styles.paramDataChunk}
                 >
