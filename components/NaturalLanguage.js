@@ -187,7 +187,7 @@ class NumberParam extends React.Component {
                             onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToRange", this.props.uuid)} />
                         <label htmlFor={`range_${this.props.uuid}`}>Restricted to range</label>
                     </div>
-                    
+
                     {/* Range-specific form */}
                     <div
                         className={styles.indented}
@@ -775,6 +775,11 @@ export default class NaturalLanguage extends React.Component {
 
             // Update checkbox button value
             items[index].paramTypeData[restrictionToChange] = value;
+
+            // If restrictionToChange is "rangeStart" or "rangeEnd" and the value is a number (e.g., isn't an empty string), ensure that "restrictedToRange" attribute is true
+            if(!isNaN(parseInt(value))){
+                items[index].paramTypeData["restrictedToRange"] = true;
+            }
 
             // Update whole textItems to make sure we re-render
             this.setState({
