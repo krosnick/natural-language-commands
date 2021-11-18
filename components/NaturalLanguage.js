@@ -172,20 +172,48 @@ class NumberParam extends React.Component {
                     <div>
                         <input
                             type="checkbox"
-                            name={`numberRestrictions_${this.props.uuid}`}
+                            name={`integers_${this.props.uuid}`}
                             value="integers"
                             checked={this.props.restrictedToIntegers}
                             onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)} />
-                        <label htmlFor="integers">Restricted to integers</label>
+                        <label htmlFor={`integers_${this.props.uuid}`}>Restricted to integers</label>
                     </div>
                     <div>
                         <input
                             type="checkbox"
-                            name={`numberRestrictions_${this.props.uuid}`}
+                            name={`range_${this.props.uuid}`}
                             value="range"
                             checked={this.props.restrictedToRange}
                             onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToRange", this.props.uuid)} />
-                        <label htmlFor="range">Restricted to range</label>
+                        <label htmlFor={`range_${this.props.uuid}`}>Restricted to range</label>
+                    </div>
+                    
+                    {/* Range-specific form */}
+                    <div
+                        className={styles.indented}
+                    >
+                        <div>
+                            <label htmlFor={`rangeStart_${this.props.uuid}`}>Range start: </label>
+                            <input
+                                type="text"
+                                name={`rangeStart_${this.props.uuid}`}
+                                value={this.props.rangeStart}
+                                onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeStart", this.props.uuid)}
+                                disabled={this.props.uuidInEditMode}
+                            >
+                            </input>
+                        </div>
+                        <div>
+                            <label htmlFor={`rangeEnd_${this.props.uuid}`}>Range end: </label>
+                            <input
+                                type="text"
+                                name={`rangeEnd_${this.props.uuid}`}
+                                value={this.props.rangeEnd}
+                                onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeEnd", this.props.uuid)}
+                                disabled={this.props.uuidInEditMode}
+                            >
+                            </input>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -227,6 +255,8 @@ class ParamTextItem extends React.Component {
                 paramTypeSpecificForm = <NumberParam
                                             restrictedToIntegers={this.props.paramTypeData.restrictedToIntegers}
                                             restrictedToRange={this.props.paramTypeData.restrictedToRange}
+                                            rangeStart={this.props.paramTypeData.rangeStart}
+                                            rangeEnd={this.props.paramTypeData.rangeEnd}
                                             uuid={this.props.uuid}
                                             handleParamNumberRestrictionChange={(e, restrictionToChange) => this.props.handleParamNumberRestrictionChange(e, restrictionToChange, this.props.uuid)}
                                         />;
@@ -667,6 +697,8 @@ export default class NaturalLanguage extends React.Component {
             }else if(value === "number"){
                 paramTypeData.restrictedToIntegers = false;
                 paramTypeData.restrictedToRange = false;
+                paramTypeData.rangeStart = "";
+                paramTypeData.rangeEnd = "";
             }
             items[index].paramTypeData = paramTypeData;
 
