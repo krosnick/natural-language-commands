@@ -603,14 +603,23 @@ export default class NaturalLanguage extends React.Component {
         console.log("removeParam");
         console.log("uuid", uuid);
 
+        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+
         // Need to merge this item with REGULAR text items on its immediate left and right (if they exist)
 
-        const parentID = this.state.idToItem[uuid].parentID;
+        const parentID = idToItemClone[uuid].parentID;
 
-        // TODO - will have to fix this to work with groups
+        let itemIDsList;
+        if(parentID === "root"){
+            itemIDsList = rootItemIDsClone;
+        }else{
+            itemIDsList = idToItemClone[parentID].itemIDs;
+        }
+
         let index;
-        for(let i = 0; i < this.state.rootItemIDs.length; i++){
-            const itemID = this.state.rootItemIDs[i];
+        for(let i = 0; i < itemIDsList.length; i++){
+            const itemID = itemIDsList[i];
             if(itemID === uuid){
                 index = i;
             }
@@ -620,17 +629,17 @@ export default class NaturalLanguage extends React.Component {
         let mergedText = "";
         if(index > 0){
             // See if left neighbor is regular (i.e., not param); if so, merge
-            const leftNeighbor = this.state.idToItem[this.state.rootItemIDs[index-1]];
+            const leftNeighbor = idToItemClone[itemIDsList[index-1]];
             if(leftNeighbor.type !== "param"){
                 mergedText += leftNeighbor.text;
                 startingIndexToReplace -= 1;
                 numItemsToRemove += 1;
             }
         }
-        mergedText += this.state.idToItem[this.state.rootItemIDs[index]].text;
-        if(index < this.state.rootItemIDs.length-1){
+        mergedText += idToItemClone[itemIDsList[index]].text;
+        if(index < itemIDsList.length-1){
             // See if right neighbor is regular (i.e., not param); if so, merge
-            const rightNeighbor = this.state.idToItem[this.state.rootItemIDs[index+1]];
+            const rightNeighbor = idToItemClone[itemIDsList[index+1]];
             if(rightNeighbor.type !== "param"){
                 mergedText += rightNeighbor.text;
                 numItemsToRemove += 1;
@@ -655,11 +664,9 @@ export default class NaturalLanguage extends React.Component {
         console.log("numItemsToRemove", numItemsToRemove);
 
         // Remove appropriate item IDs and replace with new ID
-        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
-        const removedIDs = rootItemIDsClone.splice(startingIndexToReplace, numItemsToRemove, mergedItem.uuid);
+        const removedIDs = itemIDsList.splice(startingIndexToReplace, numItemsToRemove, mergedItem.uuid);
 
         // Remove items from map and insert new item
-        const idToItemClone = _.cloneDeep(this.state.idToItem);
         idToItemClone[mergedItem.uuid] = mergedItem;
         removedIDs.forEach(function(id){
             delete idToItemClone[id];
