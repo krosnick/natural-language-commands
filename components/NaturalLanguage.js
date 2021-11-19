@@ -375,6 +375,7 @@ export default class NaturalLanguage extends React.Component {
             uuid: firstUuid,
             type: "text",
             itemIDs: [],
+            parentID: "root",
             paramName: "",
             hovered: false,
             paramIsOptional: false,
@@ -424,11 +425,14 @@ export default class NaturalLanguage extends React.Component {
                         const textOnLeft = selectionObj.anchorNode.textContent.substring(0, startIndex);
                         const textOnRight = selectionObj.anchorNode.textContent.substring(endIndex);
 
+                        const parentID = this.state.idToItem[uuid].parentID;
+
                         const newItemOnLeft = {
                             text: textOnLeft,
                             uuid: uuidv4(),
                             type: "text",
                             itemIDs: [],
+                            parentID: parentID,
                             paramName: null,
                             hovered: false,
                             paramIsOptional: false,
@@ -440,6 +444,7 @@ export default class NaturalLanguage extends React.Component {
                             uuid: uuidv4(),
                             type: "param",
                             itemIDs: [],
+                            parentID: parentID,
                             paramName: `<set param name for *${selectedText}*>`,
                             hovered: true,
                             paramIsOptional: false,
@@ -454,6 +459,7 @@ export default class NaturalLanguage extends React.Component {
                             uuid: uuidv4(),
                             type: "text",
                             itemIDs: [],
+                            parentID: parentID,
                             paramName: null,
                             hovered: false,
                             paramIsOptional: false,
@@ -470,12 +476,21 @@ export default class NaturalLanguage extends React.Component {
                         // Remove old item
                         delete idToItemClone[uuid];
 
-                        // TODO - will need to update this to work for groups
+                        // If parent isn't root, then instead of using this.state.rootItemIDs, use parent's itemIDs attribute
                         // Update ID list
                         const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
-                        for(let i = 0; i < rootItemIDsClone.length; i++){
-                            if(rootItemIDsClone[i] === uuid){
-                                rootItemIDsClone.splice(i, 1, newItemOnLeft.uuid, newParamItem.uuid, newItemOnRight.uuid);
+
+                        let itemIDsList;
+                        console.log("parentID", parentID);
+                        if(parentID === "root"){
+                            itemIDsList = rootItemIDsClone;
+                        }else{
+                            itemIDsList = idToItemClone[parentID].itemIDs;
+                        }
+
+                        for(let i = 0; i < itemIDsList.length; i++){
+                            if(itemIDsList[i] === uuid){
+                                itemIDsList.splice(i, 1, newItemOnLeft.uuid, newParamItem.uuid, newItemOnRight.uuid);
                             }
                         }
 
@@ -590,6 +605,8 @@ export default class NaturalLanguage extends React.Component {
 
         // Need to merge this item with REGULAR text items on its immediate left and right (if they exist)
 
+        const parentID = this.state.idToItem[uuid].parentID;
+
         // TODO - will have to fix this to work with groups
         let index;
         for(let i = 0; i < this.state.rootItemIDs.length; i++){
@@ -624,8 +641,9 @@ export default class NaturalLanguage extends React.Component {
         const mergedItem = {
             text: mergedText,
             uuid: uuidv4(),
-            //isParam: false,
             type: "text",
+            itemIDs: [],
+            parentID: parentID,
             paramName: null,
             hovered: false,
             paramIsOptional: false,
