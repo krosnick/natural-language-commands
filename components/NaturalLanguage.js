@@ -9,12 +9,12 @@ function RegularTextItem(props){
     let saveButton;
     if(props.uuidInEditMode === props.uuid){
         saveButton = <button
-                        onClick={() => props.handleSave(textElement)}
+                        onClick={() => props.handleSave(textElement, props.uuid)}
                         className={styles.saveButton}
                     >Save</button>;
     }else{
         saveButton = <button
-                        onClick={() => props.handleSave(textElement)}
+                        onClick={() => props.handleSave(textElement, props.uuid)}
                         className={`${styles.saveButton} ${styles.displayNone}`}
                     >Save</button>;
     }
@@ -368,23 +368,25 @@ export default class NaturalLanguage extends React.Component {
     constructor(props){
         super(props);
 
-        const initialTextItems = [];
-        initialTextItems.push(
-            {
-                text: props.text,
-                uuid: uuidv4(),
-                isParam: false,
-                paramName: "",
-                hovered: false,
-                paramIsOptional: false,
-                paramMultipleValuesAllowed: false,
-                paramTypeData: null
-            }
-        );
+        const initialTextItems = {};
+        const firstUuid = uuidv4();
+        initialTextItems[firstUuid] = {
+            text: props.text,
+            uuid: firstUuid,
+            type: "text",
+            itemIDs: [],
+            paramName: "",
+            hovered: false,
+            paramIsOptional: false,
+            paramMultipleValuesAllowed: false,
+            paramTypeData: null
+        };
 
         this.state = {
             text: props.text,
-            textItems: initialTextItems,
+            //textItems: initialTextItems,
+            rootItemIDs: [firstUuid],
+            idToItem: initialTextItems,
             //uuidInEditMode: false
             uuidInEditMode: null,
             websiteUrl: props.websiteUrl
@@ -425,7 +427,8 @@ export default class NaturalLanguage extends React.Component {
                         const newItemOnLeft = {
                             text: textOnLeft,
                             uuid: uuidv4(),
-                            isParam: false,
+                            type: "text",
+                            itemIDs: [],
                             paramName: null,
                             hovered: false,
                             paramIsOptional: false,
@@ -435,7 +438,8 @@ export default class NaturalLanguage extends React.Component {
                         const newParamItem = {
                             text: selectedText,
                             uuid: uuidv4(),
-                            isParam: true,
+                            type: "param",
+                            itemIDs: [],
                             paramName: `<set param name for *${selectedText}*>`,
                             hovered: true,
                             paramIsOptional: false,
@@ -448,7 +452,8 @@ export default class NaturalLanguage extends React.Component {
                         const newItemOnRight = {
                             text: textOnRight,
                             uuid: uuidv4(),
-                            isParam: false,
+                            type: "text",
+                            itemIDs: [],
                             paramName: null,
                             hovered: false,
                             paramIsOptional: false,
@@ -456,18 +461,31 @@ export default class NaturalLanguage extends React.Component {
                             paramTypeData: null
                         };
 
-                        // Find corresponding item in textItems and replace with a regular text item on the left, a param item in the middle, and regular text item on the right
-                        this.operateOnItem(uuid, function(item, index){
-                            const items = _.cloneDeep(this.state.textItems);
-                            items.splice(index, 1, newItemOnLeft, newParamItem, newItemOnRight);
+                        // Add replacement items
+                        const idToItemClone = _.cloneDeep(this.state.idToItem);
+                        idToItemClone[newItemOnLeft.uuid] = newItemOnLeft;
+                        idToItemClone[newParamItem.uuid] = newParamItem;
+                        idToItemClone[newItemOnRight.uuid] = newItemOnRight;
 
-                            // Clear text selection
-                            selectionObj.removeAllRanges();
+                        // Remove old item
+                        delete idToItemClone[uuid];
 
-                            // Update whole textItems to make sure we re-render
-                            this.setState({
-                                textItems: items
-                            });
+                        // TODO - will need to update this to work for groups
+                        // Update ID list
+                        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
+                        for(let i = 0; i < rootItemIDsClone.length; i++){
+                            if(rootItemIDsClone[i] === uuid){
+                                rootItemIDsClone.splice(i, 1, newItemOnLeft.uuid, newParamItem.uuid, newItemOnRight.uuid);
+                            }
+                        }
+
+                        // Clear text selection
+                        selectionObj.removeAllRanges();
+
+                        // Update whole textItems to make sure we re-render
+                        this.setState({
+                            idToItem: idToItemClone,
+                            rootItemIDs: rootItemIDsClone
                         });
                     }
 
@@ -495,21 +513,17 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
-    handleSave(textElement){
+    handleSave(textElement, uuid){
         const newText = textElement.current.textContent;
 
         // update it's text in state
-        this.operateOnItem(this.state.uuidInEditMode, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
-            items[index].text = newText;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items,
-                uuidInEditMode: null
-            });
-            this.exitEditMode();
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].text = newText;
+        this.setState({
+            idToItem: idToItemClone,
+            uuidInEditMode: null
         });
+        this.exitEditMode();
     }
 
     handleOnMouseEnter(uuid, e){
@@ -518,14 +532,10 @@ export default class NaturalLanguage extends React.Component {
     
         // Change 'hovered' attribute for the item in textItems that has uuid
         // Need to loop through this.state.textItems to find correct item
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
-            items[index].hovered = true;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].hovered = true;
+        this.setState({
+            idToItem: idToItemClone
         });
     }
     
@@ -535,29 +545,20 @@ export default class NaturalLanguage extends React.Component {
     
         // Change 'hovered' attribute for the item in textItems that has uuid
         // Need to loop through this.state.textItems to find correct item
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
-            items[index].hovered = false;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].hovered = false;
+        this.setState({
+            idToItem: idToItemClone
         });
     }
 
     handleParamNameChange(e, uuid) {
         console.log("handleParamNameChange");
         console.log("e", e);
-        this.operateOnItem(uuid, function(item, index){
-            console.log("e.target.value", e.target.value);
-            const items = _.cloneDeep(this.state.textItems);
-            items[index].paramName = e.target.value;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].paramName = e.target.value;
+        this.setState({
+            idToItem: idToItemClone
         });
         //this.exitEditMode();
     }
@@ -565,29 +566,20 @@ export default class NaturalLanguage extends React.Component {
     handleParamValueChange(e, i, uuid) {
         console.log("handleParamValueChange");
         console.log("e", e);
-        this.operateOnItem(uuid, function(item, index){
-            console.log("e.target.value", e.target.value);
-            const items = _.cloneDeep(this.state.textItems);
-            items[index].paramTypeData.possibleValues[i] = e.target.value;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].paramTypeData.possibleValues[i] = e.target.value;
+        this.setState({
+            idToItem: idToItemClone
         });
         //this.exitEditMode();
     }
 
     handleAddBlankParamValue(uuid){
         console.log("handleAddBlankParamValue");
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
-            items[index].paramTypeData.possibleValues.push("");
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].paramTypeData.possibleValues.push("");
+        this.setState({
+            idToItem: idToItemClone
         });
         //this.exitEditMode();
     }
@@ -597,49 +589,68 @@ export default class NaturalLanguage extends React.Component {
         console.log("uuid", uuid);
 
         // Need to merge this item with REGULAR text items on its immediate left and right (if they exist)
-        this.operateOnItem(uuid, function(item, index){
-            let startingIndexToReplace = index; // default to this item's index (in case left neighbor doesn't need to be replaced)
-            let numItemsToRemove = 1; // default to 1, because will definitely at least replace this item
-            let mergedText = "";
-            if(index > 0){
-                // See if left neighbor is regular (i.e., not param); if so, merge
-                if(!this.state.textItems[index-1].isParam){
-                    mergedText += this.state.textItems[index-1].text;
-                    startingIndexToReplace -= 1;
-                    numItemsToRemove += 1;
-                }
+
+        // TODO - will have to fix this to work with groups
+        let index;
+        for(let i = 0; i < this.state.rootItemIDs.length; i++){
+            const itemID = this.state.rootItemIDs[i];
+            if(itemID === uuid){
+                index = i;
             }
-            mergedText += item.text;
-            if(index < this.state.textItems.length-1){
-                // See if right neighbor is regular (i.e., not param); if so, merge
-                if(!this.state.textItems[index+1].isParam){
-                    mergedText += this.state.textItems[index+1].text;
-                    numItemsToRemove += 1;
-                }
+        }
+        let startingIndexToReplace = index;
+        let numItemsToRemove = 1; // default to 1, because will definitely at least replace this item
+        let mergedText = "";
+        if(index > 0){
+            // See if left neighbor is regular (i.e., not param); if so, merge
+            const leftNeighbor = this.state.idToItem[this.state.rootItemIDs[index-1]];
+            if(leftNeighbor.type !== "param"){
+                mergedText += leftNeighbor.text;
+                startingIndexToReplace -= 1;
+                numItemsToRemove += 1;
             }
-            console.log("mergedText", mergedText);
-            
-            const mergedItem = {
-                text: mergedText,
-                uuid: uuidv4(),
-                isParam: false,
-                paramName: null,
-                hovered: false,
-                paramIsOptional: false,
-                paramMultipleValuesAllowed: false,
-                paramTypeData: null
-            };
+        }
+        mergedText += this.state.idToItem[this.state.rootItemIDs[index]].text;
+        if(index < this.state.rootItemIDs.length-1){
+            // See if right neighbor is regular (i.e., not param); if so, merge
+            const rightNeighbor = this.state.idToItem[this.state.rootItemIDs[index+1]];
+            if(rightNeighbor.type !== "param"){
+                mergedText += rightNeighbor.text;
+                numItemsToRemove += 1;
+            }
+        }
+        console.log("mergedText", mergedText);
+        
+        const mergedItem = {
+            text: mergedText,
+            uuid: uuidv4(),
+            //isParam: false,
+            type: "text",
+            paramName: null,
+            hovered: false,
+            paramIsOptional: false,
+            paramMultipleValuesAllowed: false,
+            paramTypeData: null
+        };
 
-            console.log("startingIndexToReplace", startingIndexToReplace);
-            console.log("numItemsToRemove", numItemsToRemove);
+        console.log("startingIndexToReplace", startingIndexToReplace);
+        console.log("numItemsToRemove", numItemsToRemove);
 
-            const items = _.cloneDeep(this.state.textItems);
-            items.splice(startingIndexToReplace, numItemsToRemove, mergedItem);
+        // Remove appropriate item IDs and replace with new ID
+        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
+        const removedIDs = rootItemIDsClone.splice(startingIndexToReplace, numItemsToRemove, mergedItem.uuid);
 
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        // Remove items from map and insert new item
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[mergedItem.uuid] = mergedItem;
+        removedIDs.forEach(function(id){
+            delete idToItemClone[id];
+        });
+
+        // Update to make sure we re-render
+        this.setState({
+            rootItemIDs: rootItemIDsClone,
+            idToItem: idToItemClone
         });
         //this.exitEditMode();
     }
@@ -649,29 +660,12 @@ export default class NaturalLanguage extends React.Component {
         console.log("i", i);
         console.log("uuid", uuid);
 
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
-
-            // Remove this particular param value
-            items[index].paramTypeData.possibleValues.splice(i, 1);
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].paramTypeData.possibleValues.splice(i, 1);
+        this.setState({
+            idToItem: idToItemClone
         });
         //this.exitEditMode();
-    }
-
-    operateOnItem(uuid, callback){
-        for(let i = 0; i < this.state.textItems.length; i++){
-            const textItem = this.state.textItems[i];
-            if(textItem.uuid === uuid){
-                callback.call(this, textItem, i);
-                //callback(textItem);
-                return;
-            }
-        }
     }
 
     handleParamTypeChange(e, uuid){
@@ -679,32 +673,29 @@ export default class NaturalLanguage extends React.Component {
         console.log("handleParamTypeChange target", target);
         const value = target.value;
         
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        
+        // Update paramOptional checkbox value
+        let paramTypeData = {
+            type: value,
+            possibleValues: idToItemClone[uuid].paramTypeData.possibleValues
+        };
+        if(value === "freeform"){
+            // Nothing else to set
+        }else if(value === "enumeration"){
+            // Nothing else to set
+        }else if(value === "date"){
+            paramTypeData.dateRestriction = "";
+        }else if(value === "number"){
+            paramTypeData.restrictedToIntegers = false;
+            paramTypeData.restrictedToRange = false;
+            paramTypeData.rangeStart = "";
+            paramTypeData.rangeEnd = "";
+        }
+        idToItemClone[uuid].paramTypeData = paramTypeData;
 
-            // Update paramOptional checkbox value
-            let paramTypeData = {
-                type: value,
-                possibleValues: items[index].paramTypeData.possibleValues
-            };
-            if(value === "freeform"){
-                // Nothing else to set
-            }else if(value === "enumeration"){
-                // Nothing else to set
-            }else if(value === "date"){
-                paramTypeData.dateRestriction = "";
-            }else if(value === "number"){
-                paramTypeData.restrictedToIntegers = false;
-                paramTypeData.restrictedToRange = false;
-                paramTypeData.rangeStart = "";
-                paramTypeData.rangeEnd = "";
-            }
-            items[index].paramTypeData = paramTypeData;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        this.setState({
+            idToItem: idToItemClone
         });
     }
 
@@ -712,16 +703,10 @@ export default class NaturalLanguage extends React.Component {
         const target = e.target;
         const value = target.type === 'checkbox' ? target.checked : target.value;
         
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
-
-            // Update paramOptional checkbox value
-            items[index].paramIsOptional = value;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].paramIsOptional = value;
+        this.setState({
+            idToItem: idToItemClone
         });
     }
 
@@ -730,20 +715,17 @@ export default class NaturalLanguage extends React.Component {
         const value = target.type === 'checkbox' ? target.checked : target.value;
         console.log("value", value);
 
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        
+        // Update paramOptional checkbox value
+        if(value === "one"){
+            idToItemClone[uuid].paramMultipleValuesAllowed = false;
+        }else if(value === "multiple"){
+            idToItemClone[uuid].paramMultipleValuesAllowed = true;
+        }
 
-            // Update paramOptional checkbox value
-            if(value === "one"){
-                items[index].paramMultipleValuesAllowed = false;
-            }else if(value === "multiple"){
-                items[index].paramMultipleValuesAllowed = true;
-            }
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        this.setState({
+            idToItem: idToItemClone
         });
     }
 
@@ -752,16 +734,10 @@ export default class NaturalLanguage extends React.Component {
         const value = target.type === 'checkbox' ? target.checked : target.value;
         //console.log("value", value);
 
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
-
-            // Update radio button value
-            items[index].paramTypeData.dateRestriction = value;
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].paramTypeData.dateRestriction = value;
+        this.setState({
+            idToItem: idToItemClone
         });
     }
 
@@ -769,21 +745,17 @@ export default class NaturalLanguage extends React.Component {
         const target = e.target;
         const value = target.type === 'checkbox' ? target.checked : target.value;
         // So restrictionToChange tells us which restriction to update in the state. And the new value for it will be e.target.checked
-        this.operateOnItem(uuid, function(item, index){
-            const items = _.cloneDeep(this.state.textItems);
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        
+        idToItemClone[uuid].paramTypeData[restrictionToChange] = value;
 
-            // Update checkbox button value
-            items[index].paramTypeData[restrictionToChange] = value;
+        // If restrictionToChange is "rangeStart" or "rangeEnd" and the value is a number (e.g., isn't an empty string), ensure that "restrictedToRange" attribute is true
+        if(!isNaN(parseInt(value))){
+            idToItemClone[uuid].paramTypeData["restrictedToRange"] = true;
+        }
 
-            // If restrictionToChange is "rangeStart" or "rangeEnd" and the value is a number (e.g., isn't an empty string), ensure that "restrictedToRange" attribute is true
-            if(!isNaN(parseInt(value))){
-                items[index].paramTypeData["restrictedToRange"] = true;
-            }
-
-            // Update whole textItems to make sure we re-render
-            this.setState({
-                textItems: items
-            });
+        this.setState({
+            idToItem: idToItemClone
         });
     }
 
@@ -795,12 +767,18 @@ export default class NaturalLanguage extends React.Component {
     } */
 
     render() {
-        const textItems = this.state.textItems;
+        //const textItems = this.state.textItems;
+        const rootItemIDs = this.state.rootItemIDs;
+        console.log("rootItemIDs", rootItemIDs);
 
+        console.log("this.state.idToItem", this.state.idToItem);
         // Render each item as appropriate (using TextItem component)
-        const domTextItems = textItems.map((textItem, i) => {
+        const domTextItems = rootItemIDs.map((itemID, i) => {
+            console.log("itemID", itemID);
+            const textItem = this.state.idToItem[itemID];
             const key = i + "_" + textItem.text;
-            if(textItem.isParam){
+            console.log("textItem.type", textItem.type);
+            if(textItem.type === "param"){
                 return(
                     <span
                         key={key}
@@ -840,7 +818,7 @@ export default class NaturalLanguage extends React.Component {
                             text={textItem.text}
                             uuid={textItem.uuid}
                             uuidInEditMode={this.state.uuidInEditMode}
-                            handleSave={(textElement) => this.handleSave(textElement)}
+                            handleSave={(textElement) => this.handleSave(textElement, textItem.uuid)}
                             handleTextSelection={(textElement) => this.handleTextSelection(textElement, textItem.uuid)}
                         />
                     </span>
