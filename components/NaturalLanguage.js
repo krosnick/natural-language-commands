@@ -305,6 +305,7 @@ class ParamTextItem extends React.Component {
                     uuid={this.props.uuid}
                     text-item-type="param"
                     type="text"
+                    size={this.props.paramName.length}
                     value={this.props.paramName}
                     onChange={(e) => this.props.handleParamNameChange(e, this.props.uuid)}
                     disabled={this.props.uuidInEditMode}
@@ -425,7 +426,7 @@ export default class NaturalLanguage extends React.Component {
                             text: textOnLeft,
                             uuid: uuidv4(),
                             isParam: false,
-                            paramName: "<param name>",
+                            paramName: null,
                             hovered: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -435,7 +436,7 @@ export default class NaturalLanguage extends React.Component {
                             text: selectedText,
                             uuid: uuidv4(),
                             isParam: true,
-                            paramName: "<param name>",
+                            paramName: `<set param name for *${selectedText}*>`,
                             hovered: true,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -448,7 +449,7 @@ export default class NaturalLanguage extends React.Component {
                             text: textOnRight,
                             uuid: uuidv4(),
                             isParam: false,
-                            paramName: "<param name>",
+                            paramName: null,
                             hovered: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -622,7 +623,7 @@ export default class NaturalLanguage extends React.Component {
                 text: mergedText,
                 uuid: uuidv4(),
                 isParam: false,
-                paramName: "<param name>",
+                paramName: null,
                 hovered: false,
                 paramIsOptional: false,
                 paramMultipleValuesAllowed: false,

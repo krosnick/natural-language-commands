@@ -8,18 +8,18 @@ const NaturalLanguage = dynamic(
 export default function Home() {
   return (
     <div>
-        <NaturalLanguage
+        {/* <NaturalLanguage
             text="Which MLB player had the most home runs this year?"
             websiteUrl="https://www.mlb.com/stats/"
-        />
+        /> */}
         {/* <NaturalLanguage
             text="Book a flight from Detroit to Boston on November 20"
             websiteUrl="https://www.spirit.com/"
         /> */}
-        {/* <NaturalLanguage
-            text="Order a chicken burrito bowl with black beans, white rice, cheese, and green salsa from Chipotle. Place the order now and for delivery."
+        <NaturalLanguage
+            text="Order a chicken burrito bowl with black beans, white rice, sour cream, green salsa, and red salsa from Chipotle. Place the order now and for delivery."
             websiteUrl="https://www.chipotle.com/order"
-        /> */}
+        />
         {/* <NaturalLanguage
             text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"
             websiteUrl="https://www.georgetowncupcake.com/OrderType.aspx"
