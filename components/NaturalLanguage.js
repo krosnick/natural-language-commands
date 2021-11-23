@@ -291,21 +291,41 @@ class ParamTextItem extends React.Component {
                 onMouseEnter={() => this.props.onMouseEnter(this.props.uuid)}
                 onMouseLeave={() => this.props.onMouseLeave(this.props.uuid)}
             >
-                {hovered ? (
-                    <button
-                        className={styles.removeButton}
-                        onClick={() => this.props.removeParam(this.props.uuid)}
-                        disabled={this.props.uuidInEditMode}
-                    >x</button>
+                {
+                // Group selection mode has highest priority; if not in group selection mode, see if currently hovered
+                this.props.groupSelectionMode ? (
+                    <input
+                        className={styles.groupSelectionCheckbox}
+                        type="checkbox"
+                        name={`groupSelection_${this.props.uuid}`}
+                        value="groupSelected"
+                        checked={this.props.currentlySelected}
+                        onChange={(e) => this.props.handleGroupSelectionChange(e, this.props.uuid)}
+                    />
                 ) : (
-                    <span></span>
+                    hovered ? (
+                        <span>
+                            <button
+                                className={styles.removeButton}
+                                onClick={() => this.props.removeParam(this.props.uuid)}
+                                disabled={this.props.uuidInEditMode}
+                            >x</button>
+                            <button
+                                className={styles.groupButton}
+                                onClick={() => this.props.enterGroupSelection(this.props.uuid)}
+                                disabled={this.props.uuidInEditMode}
+                            >Group</button>
+                        </span>
+                    ) : (
+                        <span></span>
+                    )
                 )}
                 <input
                     className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                     uuid={this.props.uuid}
                     text-item-type="param"
                     type="text"
-                    size={this.props.paramName.length}
+                    size={Math.max(this.props.paramName.length, 20)}
                     value={this.props.paramName}
                     onChange={(e) => this.props.handleParamNameChange(e, this.props.uuid)}
                     disabled={this.props.uuidInEditMode}
@@ -378,6 +398,7 @@ export default class NaturalLanguage extends React.Component {
             parentID: "root",
             paramName: "",
             hovered: false,
+            currentlySelected: false,
             paramIsOptional: false,
             paramMultipleValuesAllowed: false,
             paramTypeData: null
@@ -388,6 +409,7 @@ export default class NaturalLanguage extends React.Component {
             //textItems: initialTextItems,
             rootItemIDs: [firstUuid],
             idToItem: initialTextItems,
+            groupSelectionMode: false,
             //uuidInEditMode: false
             uuidInEditMode: null,
             websiteUrl: props.websiteUrl
@@ -435,6 +457,7 @@ export default class NaturalLanguage extends React.Component {
                             parentID: parentID,
                             paramName: null,
                             hovered: false,
+                            currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
                             paramTypeData: null
@@ -447,6 +470,7 @@ export default class NaturalLanguage extends React.Component {
                             parentID: parentID,
                             paramName: `<set param name for *${selectedText}*>`,
                             hovered: true,
+                            currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
                             paramTypeData: {
@@ -462,6 +486,7 @@ export default class NaturalLanguage extends React.Component {
                             parentID: parentID,
                             paramName: null,
                             hovered: false,
+                            currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
                             paramTypeData: null
@@ -599,6 +624,26 @@ export default class NaturalLanguage extends React.Component {
         //this.exitEditMode();
     }
 
+    handleGroupSelectionChange(e, uuid){
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].currentlySelected = e.target.checked;
+        this.setState({
+            idToItem: idToItemClone
+        });
+    }
+
+    enterGroupSelection(uuid, e){
+        console.log("enterGroupSelection");
+        // Add checkbox in top-right corner of each parameter
+
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].currentlySelected = true;
+        this.setState({
+            groupSelectionMode: true,
+            idToItem: idToItemClone
+        });
+    }
+
     removeParam(uuid, e){
         console.log("removeParam");
         console.log("uuid", uuid);
@@ -655,6 +700,7 @@ export default class NaturalLanguage extends React.Component {
             parentID: parentID,
             paramName: null,
             hovered: false,
+            currentlySelected: false,                
             paramIsOptional: false,
             paramMultipleValuesAllowed: false,
             paramTypeData: null
@@ -817,11 +863,14 @@ export default class NaturalLanguage extends React.Component {
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
                             removeParam={() => this.removeParam(textItem.uuid)}
+                            enterGroupSelection={() => this.enterGroupSelection(textItem.uuid)}
                             removeValue={(i) => this.removeValue(i, textItem.uuid)}
                             handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.uuid)}
                             handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.uuid)}
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.uuid)}
                             hovered={textItem.hovered}
+                            groupSelectionMode={this.state.groupSelectionMode}
+                            currentlySelected={textItem.currentlySelected}
                             uuidInEditMode={this.state.uuidInEditMode}
                             paramIsOptional={textItem.paramIsOptional}
                             paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
@@ -830,6 +879,7 @@ export default class NaturalLanguage extends React.Component {
                             handleParamNumValuesAllowedChange={(e) => this.handleParamNumValuesAllowedChange(e, textItem.uuid)}
                             handleParamDateRestrictionChange={(e) => this.handleParamDateRestrictionChange(e, textItem.uuid)}
                             handleParamNumberRestrictionChange={(e, restrictionToChange) => this.handleParamNumberRestrictionChange(e, restrictionToChange, textItem.uuid)}
+                            handleGroupSelectionChange={(e) => this.handleGroupSelectionChange(e, textItem.uuid)}
                         />
                     </span>
                 );
