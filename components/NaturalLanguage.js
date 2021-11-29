@@ -243,9 +243,6 @@ class NumberParam extends React.Component {
 
 class ParamTextItem extends React.Component {
     render() {
-        const hovered = this.props.hovered;
-        console.log("hovered", hovered);
-
         // Based on what this.props.paramTypeData.type is, render appropriate type
         let paramTypeSpecificForm = ""; // empty unless there is a param type we should render
         if(this.props.paramTypeData.type.length > 0){
@@ -304,7 +301,7 @@ class ParamTextItem extends React.Component {
                         onChange={(e) => this.props.handleGroupSelectionChange(e, this.props.uuid)}
                     />
                 ) : (
-                    hovered ? (
+                    this.props.hoveredID === this.props.uuid ? (
                         <span>
                             <button
                                 className={styles.removeButton}
@@ -398,7 +395,6 @@ export default class NaturalLanguage extends React.Component {
             itemIDs: [],
             parentID: "root",
             paramName: "",
-            hovered: false,
             currentlySelected: false,
             paramIsOptional: false,
             paramMultipleValuesAllowed: false,
@@ -413,6 +409,7 @@ export default class NaturalLanguage extends React.Component {
             groupSelectionMode: false,
             //uuidInEditMode: false
             uuidInEditMode: null,
+            hoveredID: null,
             websiteUrl: props.websiteUrl
         }
     }
@@ -457,7 +454,6 @@ export default class NaturalLanguage extends React.Component {
                             itemIDs: [],
                             parentID: parentID,
                             paramName: null,
-                            hovered: false,
                             currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -470,7 +466,6 @@ export default class NaturalLanguage extends React.Component {
                             itemIDs: [],
                             parentID: parentID,
                             paramName: `<set param name for *${selectedText}*>`,
-                            hovered: true,
                             currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -486,7 +481,6 @@ export default class NaturalLanguage extends React.Component {
                             itemIDs: [],
                             parentID: parentID,
                             paramName: null,
-                            hovered: false,
                             currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -526,7 +520,8 @@ export default class NaturalLanguage extends React.Component {
                         // Update whole textItems to make sure we re-render
                         this.setState({
                             idToItem: idToItemClone,
-                            rootItemIDs: rootItemIDsClone
+                            rootItemIDs: rootItemIDsClone,
+                            hoveredID: newParamItem.uuid
                         });
                     }
 
@@ -571,12 +566,8 @@ export default class NaturalLanguage extends React.Component {
         console.log("handleOnMouseEnter");
         console.log("uuid", uuid);
     
-        // Change 'hovered' attribute for the item in textItems that has uuid
-        // Need to loop through this.state.textItems to find correct item
-        const idToItemClone = _.cloneDeep(this.state.idToItem);
-        idToItemClone[uuid].hovered = true;
         this.setState({
-            idToItem: idToItemClone
+            hoveredID: uuid
         });
     }
     
@@ -584,12 +575,8 @@ export default class NaturalLanguage extends React.Component {
         console.log("handleOnMouseLeave");
         console.log("uuid", uuid);
     
-        // Change 'hovered' attribute for the item in textItems that has uuid
-        // Need to loop through this.state.textItems to find correct item
-        const idToItemClone = _.cloneDeep(this.state.idToItem);
-        idToItemClone[uuid].hovered = false;
         this.setState({
-            idToItem: idToItemClone
+            hoveredID: null
         });
     }
 
@@ -710,7 +697,6 @@ export default class NaturalLanguage extends React.Component {
                     itemIDs: childIDs.slice(firstSelectedIDIndex, lastSelectedIDIndex + 1),
                     parentID: parentID,
                     paramName: null,
-                    hovered: true,
                     currentlySelected: false,
                     paramIsOptional: false,
                     paramMultipleValuesAllowed: false,
@@ -747,7 +733,8 @@ export default class NaturalLanguage extends React.Component {
                 this.setState({
                     idToItem: idToItemClone,
                     rootItemIDs: rootItemIDsClone,
-                    groupSelectionMode: false
+                    groupSelectionMode: false,
+                    hoveredID: newGroupItem.uuid
                 });
             }
         }else{
@@ -810,7 +797,6 @@ export default class NaturalLanguage extends React.Component {
             itemIDs: [],
             parentID: parentID,
             paramName: null,
-            hovered: false,
             currentlySelected: false,                
             paramIsOptional: false,
             paramMultipleValuesAllowed: false,
@@ -832,7 +818,8 @@ export default class NaturalLanguage extends React.Component {
         // Update to make sure we re-render
         this.setState({
             rootItemIDs: rootItemIDsClone,
-            idToItem: idToItemClone
+            idToItem: idToItemClone,
+            hoveredID: null
         });
         //this.exitEditMode();
     }
@@ -974,7 +961,7 @@ export default class NaturalLanguage extends React.Component {
                             handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.uuid)}
                             handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.uuid)}
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.uuid)}
-                            hovered={textItem.hovered}
+                            hoveredID={this.state.hoveredID}
                             groupSelectionMode={this.state.groupSelectionMode}
                             currentlySelected={textItem.currentlySelected}
                             uuidInEditMode={this.state.uuidInEditMode}
