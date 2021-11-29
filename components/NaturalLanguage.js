@@ -678,7 +678,7 @@ export default class NaturalLanguage extends React.Component {
                 idToItemClone[newGroupItem.uuid] = newGroupItem;
 
                 // For each item that's in the group, update its id to be newGroupItem.uuid
-                for(let i = firstSelectedID; i <= lastSelectedIDIndex; i++){
+                for(let i = firstSelectedIDIndex; i <= lastSelectedIDIndex; i++){
                     idToItemClone[childIDs[i]].parentID = newGroupItem.uuid;
                 }
 
@@ -712,7 +712,7 @@ export default class NaturalLanguage extends React.Component {
         console.log("removeItem");
         console.log("uuid", uuid);
 
-        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
+        let rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
         const idToItemClone = _.cloneDeep(this.state.idToItem);
 
         // Need to merge this item with REGULAR text items on its immediate left and right (if they exist)
@@ -787,7 +787,22 @@ export default class NaturalLanguage extends React.Component {
 
         // Changes for when removing group
         function mergeIntoParent(){
+            const idsToMergeIn = idToItemClone[uuid].itemIDs;
 
+            const beginningOfItemIDsList = itemIDsList.slice(0, index);
+            const endOfItemIDsList = itemIDsList.slice(index+1);
+
+            const newItemIDsList = beginningOfItemIDsList.concat(idsToMergeIn, endOfItemIDsList);
+
+            // Update IDs list
+            if(parentID === "root"){
+                rootItemIDsClone = newItemIDsList;
+            }else{
+                idToItemClone[parentID].itemIDs = newItemIDsList;
+            }
+
+            // Remove old group from map
+            delete idToItemClone[uuid];
         }
 
         if(idToItemClone[uuid].type === "param"){
@@ -918,7 +933,7 @@ export default class NaturalLanguage extends React.Component {
 
     renderItemsList(itemIDs){
         
-        function createParamOrGroup(key, textItem){
+        function renderParamOrGroup(key, textItem){
             let itemContents = null;
             if(textItem.type === "param"){
                 // Fill in itemContents
@@ -1015,7 +1030,7 @@ export default class NaturalLanguage extends React.Component {
             //console.log("textItem.type", textItem.type);
             
             if(textItem.type === "param" || textItem.type === "group"){
-                return createParamOrGroup.call(this, key, textItem);
+                return renderParamOrGroup.call(this, key, textItem);
             }else{
                 return(
                     <span
