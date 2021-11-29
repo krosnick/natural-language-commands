@@ -645,6 +645,19 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    cancelGroupCreation(e){
+        // Make sure all items currently not selected
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        for (const item of Object.values(idToItemClone)) {
+            item.currentlySelected = false;
+        }
+        // Set to not be in group selection mode
+        this.setState({
+            groupSelectionMode: false,
+            idToItem: idToItemClone
+        });
+    }
+
     createGroup(e){
         // Identify all the items that are selected
         // Either do this from which checkboxes in the UI are selected, or use the currentlySelected attribute value
@@ -1021,12 +1034,22 @@ export default class NaturalLanguage extends React.Component {
                 // className={(this.state.uuidInEditMode ? styles.editBackground : '')}
             >
                 {this.state.groupSelectionMode ? (
-                    <button
-                        className={styles.createGroupButton}
-                        onClick={() => this.createGroup()}
+                    <span
+                    className={styles.topButtonRow}
                     >
-                        Create group
-                    </button>
+                        <button
+                            className={styles.topButton}
+                            onClick={() => this.createGroup()}
+                        >
+                            Create group
+                        </button>
+                        <button
+                            className={styles.topButton}
+                            onClick={() => this.cancelGroupCreation()}
+                        >
+                            Cancel
+                        </button>
+                    </span>
                 ) : (
                     <span></span>
                 )}

@@ -82,12 +82,15 @@
     cursor: pointer;
 }
 
-.createGroupButton {
+.topButtonRow {
+    display: flex;
+    justify-content: center;
+}
+
+.topButton {
     font-size: large;
     cursor: pointer;
-    width: 33%;
-    position: relative;
-    left: 33%;
+    margin: 10px;
 }
 
 .relative {
