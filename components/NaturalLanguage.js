@@ -283,41 +283,7 @@ class ParamTextItem extends React.Component {
         }
 
         return (
-            <span
-                className={`${styles.container} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
-                onMouseEnter={() => this.props.onMouseEnter(this.props.uuid)}
-                onMouseLeave={() => this.props.onMouseLeave(this.props.uuid)}
-            >
-                {
-                // Group selection mode has highest priority; if not in group selection mode, see if currently hovered
-                this.props.groupSelectionMode ? (
-                    <input
-                        className={styles.groupSelectionCheckbox}
-                        type="checkbox"
-                        name={`groupSelection_${this.props.uuid}`}
-                        value="groupSelected"
-                        uuid={this.props.uuid}
-                        checked={this.props.currentlySelected}
-                        onChange={(e) => this.props.handleGroupSelectionChange(e, this.props.uuid)}
-                    />
-                ) : (
-                    this.props.hoveredID === this.props.uuid ? (
-                        <span>
-                            <button
-                                className={styles.removeButton}
-                                onClick={() => this.props.removeParam(this.props.uuid)}
-                                disabled={this.props.uuidInEditMode}
-                            >x</button>
-                            <button
-                                className={styles.groupButton}
-                                onClick={() => this.props.enterGroupSelection(this.props.uuid)}
-                                disabled={this.props.uuidInEditMode}
-                            >Group</button>
-                        </span>
-                    ) : (
-                        <span></span>
-                    )
-                )}
+            <span>
                 <input
                     className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
                     uuid={this.props.uuid}
@@ -936,14 +902,12 @@ export default class NaturalLanguage extends React.Component {
     } */
 
     renderItemsList(itemIDs){
-        const domTextItems = itemIDs.map((itemID, i) => {
-            //console.log("itemID", itemID);
-            const textItem = this.state.idToItem[itemID];
-            //const key = i + "_" + textItem.text;
-            const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
-            //console.log("textItem.type", textItem.type);
+        
+        function createParamOrGroup(key, textItem){
+            let itemContents = null;
             if(textItem.type === "param"){
-                return(
+                // Fill in itemContents
+                itemContents = (
                     <span
                         key={key}
                         className={styles.itemContainer}
@@ -977,14 +941,66 @@ export default class NaturalLanguage extends React.Component {
                     </span>
                 );
             }else if(textItem.type === "group"){
-                // Recursively call
-                return (
+                // Fill in itemContents
+                itemContents = (
                     <span
                         className={styles.group}
                     >
                         {this.renderItemsList(textItem.itemIDs)}
                     </span>
                 );
+            }
+
+            return (
+                <span
+                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid ? styles.grayedOut : '')}`}
+                    onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
+                    onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
+                >
+                    {
+                    // Group selection mode has highest priority; if not in group selection mode, see if currently hovered
+                    this.state.groupSelectionMode ? (
+                        <input
+                            className={styles.groupSelectionCheckbox}
+                            type="checkbox"
+                            name={`groupSelection_${textItem.uuid}`}
+                            value="groupSelected"
+                            uuid={textItem.uuid}
+                            checked={textItem.currentlySelected}
+                            onChange={(e) => this.handleGroupSelectionChange(e, textItem.uuid)}
+                        />
+                    ) : (
+                        this.state.hoveredID === textItem.uuid ? (
+                            <span>
+                                <button
+                                    className={styles.removeButton}
+                                    onClick={() => this.removeParam(textItem.uuid)}
+                                    disabled={this.state.uuidInEditMode}
+                                >x</button>
+                                <button
+                                    className={styles.groupButton}
+                                    onClick={() => this.enterGroupSelection(textItem.uuid)}
+                                    disabled={this.state.uuidInEditMode}
+                                >Group</button>
+                            </span>
+                        ) : (
+                            <span></span>
+                        )
+                    )}
+                    { itemContents }
+                </span>
+            );
+        }
+        
+        const domTextItems = itemIDs.map((itemID, i) => {
+            //console.log("itemID", itemID);
+            const textItem = this.state.idToItem[itemID];
+            //const key = i + "_" + textItem.text;
+            const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
+            //console.log("textItem.type", textItem.type);
+            
+            if(textItem.type === "param" || textItem.type === "group"){
+                return createParamOrGroup.call(this, key, textItem);
             }else{
                 return(
                     <span
