@@ -645,7 +645,7 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
-    cancelGroupCreation(e){
+    exitGroupCreationMode(e){
         // Make sure all items currently not selected
         const idToItemClone = _.cloneDeep(this.state.idToItem);
         for (const item of Object.values(idToItemClone)) {
@@ -750,6 +750,8 @@ export default class NaturalLanguage extends React.Component {
                     groupSelectionMode: false
                 });
             }
+        }else{
+            this.exitGroupCreationMode();
         }
     }
 
@@ -1045,7 +1047,7 @@ export default class NaturalLanguage extends React.Component {
                         </button>
                         <button
                             className={styles.topButton}
-                            onClick={() => this.cancelGroupCreation()}
+                            onClick={() => this.exitGroupCreationMode()}
                         >
                             Cancel
                         </button>
