@@ -107,7 +107,9 @@
 }
 
 .group {
-    border: 1px dotted gray;
-    height: 60px;
-    background-color: orange;
+    border: 3px dotted darkgray;
+    display: inline-table;
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
