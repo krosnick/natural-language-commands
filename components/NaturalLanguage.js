@@ -708,8 +708,8 @@ export default class NaturalLanguage extends React.Component {
         }
     }
 
-    removeParam(uuid, e){
-        console.log("removeParam");
+    removeItem(uuid, e){
+        console.log("removeItem");
         console.log("uuid", uuid);
 
         const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
@@ -733,53 +733,68 @@ export default class NaturalLanguage extends React.Component {
                 index = i;
             }
         }
-        let startingIndexToReplace = index;
-        let numItemsToRemove = 1; // default to 1, because will definitely at least replace this item
-        let mergedText = "";
-        if(index > 0){
-            // See if left neighbor is regular (i.e., not param); if so, merge
-            const leftNeighbor = idToItemClone[itemIDsList[index-1]];
-            if(leftNeighbor.type !== "param"){
-                mergedText += leftNeighbor.text;
-                startingIndexToReplace -= 1;
-                numItemsToRemove += 1;
+
+        // Changes for when removing param
+        function mergeWithAdjacentText(){
+            let startingIndexToReplace = index;
+            let numItemsToRemove = 1; // default to 1, because will definitely at least replace this item
+            let mergedText = "";
+            if(index > 0){
+                // See if left neighbor is regular (i.e., not param); if so, merge
+                const leftNeighbor = idToItemClone[itemIDsList[index-1]];
+                if(leftNeighbor.type !== "param"){
+                    mergedText += leftNeighbor.text;
+                    startingIndexToReplace -= 1;
+                    numItemsToRemove += 1;
+                }
             }
-        }
-        mergedText += idToItemClone[itemIDsList[index]].text;
-        if(index < itemIDsList.length-1){
-            // See if right neighbor is regular (i.e., not param); if so, merge
-            const rightNeighbor = idToItemClone[itemIDsList[index+1]];
-            if(rightNeighbor.type !== "param"){
-                mergedText += rightNeighbor.text;
-                numItemsToRemove += 1;
+            mergedText += idToItemClone[itemIDsList[index]].text;
+            if(index < itemIDsList.length-1){
+                // See if right neighbor is regular (i.e., not param); if so, merge
+                const rightNeighbor = idToItemClone[itemIDsList[index+1]];
+                if(rightNeighbor.type !== "param"){
+                    mergedText += rightNeighbor.text;
+                    numItemsToRemove += 1;
+                }
             }
+            console.log("mergedText", mergedText);
+            
+            const mergedItem = {
+                text: mergedText,
+                uuid: uuidv4(),
+                type: "text",
+                itemIDs: [],
+                parentID: parentID,
+                paramName: null,
+                currentlySelected: false,                
+                paramIsOptional: false,
+                paramMultipleValuesAllowed: false,
+                paramTypeData: null
+            };
+
+            console.log("startingIndexToReplace", startingIndexToReplace);
+            console.log("numItemsToRemove", numItemsToRemove);
+
+            // Remove appropriate item IDs and replace with new ID
+            const removedIDs = itemIDsList.splice(startingIndexToReplace, numItemsToRemove, mergedItem.uuid);
+
+            // Remove items from map and insert new item
+            idToItemClone[mergedItem.uuid] = mergedItem;
+            removedIDs.forEach(function(id){
+                delete idToItemClone[id];
+            });
         }
-        console.log("mergedText", mergedText);
-        
-        const mergedItem = {
-            text: mergedText,
-            uuid: uuidv4(),
-            type: "text",
-            itemIDs: [],
-            parentID: parentID,
-            paramName: null,
-            currentlySelected: false,                
-            paramIsOptional: false,
-            paramMultipleValuesAllowed: false,
-            paramTypeData: null
-        };
 
-        console.log("startingIndexToReplace", startingIndexToReplace);
-        console.log("numItemsToRemove", numItemsToRemove);
+        // Changes for when removing group
+        function mergeIntoParent(){
 
-        // Remove appropriate item IDs and replace with new ID
-        const removedIDs = itemIDsList.splice(startingIndexToReplace, numItemsToRemove, mergedItem.uuid);
+        }
 
-        // Remove items from map and insert new item
-        idToItemClone[mergedItem.uuid] = mergedItem;
-        removedIDs.forEach(function(id){
-            delete idToItemClone[id];
-        });
+        if(idToItemClone[uuid].type === "param"){
+            mergeWithAdjacentText();
+        }else if(idToItemClone[uuid].type === "group"){
+            mergeIntoParent();
+        }
 
         // Update to make sure we re-render
         this.setState({
@@ -919,7 +934,7 @@ export default class NaturalLanguage extends React.Component {
                             paramTypeData={textItem.paramTypeData}
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
-                            removeParam={() => this.removeParam(textItem.uuid)}
+                            removeItem={() => this.removeItem(textItem.uuid)}
                             enterGroupSelection={() => this.enterGroupSelection(textItem.uuid)}
                             removeValue={(i) => this.removeValue(i, textItem.uuid)}
                             handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.uuid)}
@@ -974,7 +989,7 @@ export default class NaturalLanguage extends React.Component {
                             <span>
                                 <button
                                     className={styles.removeButton}
-                                    onClick={() => this.removeParam(textItem.uuid)}
+                                    onClick={() => this.removeItem(textItem.uuid)}
                                     disabled={this.state.uuidInEditMode}
                                 >x</button>
                                 <button
