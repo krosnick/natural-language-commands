@@ -299,6 +299,7 @@ class ParamTextItem extends React.Component {
                         type="checkbox"
                         name={`groupSelection_${this.props.uuid}`}
                         value="groupSelected"
+                        uuid={this.props.uuid}
                         checked={this.props.currentlySelected}
                         onChange={(e) => this.props.handleGroupSelectionChange(e, this.props.uuid)}
                     />
@@ -644,6 +645,101 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    createGroup(e){
+        // Identify all the items that are selected
+        // Either do this from which checkboxes in the UI are selected, or use the currentlySelected attribute value
+        // Then identify the first selected item and last selected item, then group everything inbetween
+        
+        let selectedIDs = [];
+        // Might not be best practice to use querySelectorAll, but for now easier than trying to store and keep track of a state variable
+        document.querySelectorAll("input[type=checkbox]:checked").forEach(function(el){
+            selectedIDs.push(el.getAttribute("uuid"));
+        });
+
+        console.log("selectedIDs", selectedIDs);
+
+        // Doesn't make sense to group if only 1
+        if(selectedIDs.length > 1){
+            // For now, verify that all in selectedIDs have same parent; if they don't, show user an error
+                // Easiest for us right now, so that we don't have to worry about finding https://en.wikipedia.org/wiki/Lowest_common_ancestor
+            let sameParentID = true;
+            let parentID = this.state.idToItem[selectedIDs[0]].parentID;
+            //console.log("parentID", parentID);
+            for(let i = 1; i < selectedIDs.length; i++){
+                if(this.state.idToItem[selectedIDs[i]].parentID !== this.state.idToItem[selectedIDs[i-1]].parentID){
+                    sameParentID = false;
+                }
+            }
+
+            if(!sameParentID){
+                // TODO - for now, show an error; but in future, maybe find common ancestor to join over
+            }else{
+                // Group from selectedIDs[0] to selectedIDs[selectedIDs.length-1] within parent's itemIDs (so this should include parameters and regular text in between)
+                let childIDs;
+                if(parentID !== "root"){
+                    childIDs = this.state.idToItem[parentID].itemIDs;
+                }else{
+                    // parentID is null because it's root
+                    childIDs = this.state.rootItemIDs;
+                }
+                const firstSelectedID = selectedIDs[0];
+                const lastSelectedID = selectedIDs[selectedIDs.length-1];
+                const firstSelectedIDIndex = childIDs.indexOf(firstSelectedID);
+                //console.log("firstSelectedIDIndex", firstSelectedIDIndex);
+                const lastSelectedIDIndex = childIDs.indexOf(lastSelectedID);
+                //console.log("lastSelectedIDIndex", lastSelectedIDIndex);
+
+                // Merge everything between firstSelectedIDIndex and lastSelectedIDIndex
+                const newGroupItem = {
+                    text: null,
+                    uuid: uuidv4(),
+                    type: "group",
+                    itemIDs: childIDs.slice(firstSelectedIDIndex, lastSelectedIDIndex + 1),
+                    parentID: parentID,
+                    paramName: null,
+                    hovered: true,
+                    currentlySelected: false,
+                    paramIsOptional: false,
+                    paramMultipleValuesAllowed: false,
+                    paramTypeData: null
+                };
+
+                // Replace childIDs from firstSelectedIDIndex to lastSelectedIDIndex with newGroupItem.uuid
+                // Also remove each of these items from idToItem, and then add newGroupItem
+
+
+                // Add replacement items
+                const idToItemClone = _.cloneDeep(this.state.idToItem);
+                idToItemClone[newGroupItem.uuid] = newGroupItem;
+
+                // For each item that's in the group, update its id to be newGroupItem.uuid
+                for(let i = firstSelectedID; i <= lastSelectedIDIndex; i++){
+                    idToItemClone[childIDs[i]].parentID = newGroupItem.uuid;
+                }
+
+                // If parent isn't root, then instead of using this.state.rootItemIDs, use parent's itemIDs attribute
+                // Update ID list
+                const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
+
+                let itemIDsList;
+                if(parentID === "root"){
+                    itemIDsList = rootItemIDsClone;
+                }else{
+                    itemIDsList = idToItemClone[parentID].itemIDs;
+                }
+
+                itemIDsList.splice(firstSelectedIDIndex, (lastSelectedIDIndex - firstSelectedIDIndex + 1), newGroupItem.uuid);
+
+                // Update whole textItems to make sure we re-render
+                this.setState({
+                    idToItem: idToItemClone,
+                    rootItemIDs: rootItemIDsClone,
+                    groupSelectionMode: false
+                });
+            }
+        }
+    }
+
     removeParam(uuid, e){
         console.log("removeParam");
         console.log("uuid", uuid);
@@ -837,18 +933,13 @@ export default class NaturalLanguage extends React.Component {
         }
     } */
 
-    render() {
-        //const textItems = this.state.textItems;
-        const rootItemIDs = this.state.rootItemIDs;
-        console.log("rootItemIDs", rootItemIDs);
-
-        console.log("this.state.idToItem", this.state.idToItem);
-        // Render each item as appropriate (using TextItem component)
-        const domTextItems = rootItemIDs.map((itemID, i) => {
-            console.log("itemID", itemID);
+    renderItemsList(itemIDs){
+        const domTextItems = itemIDs.map((itemID, i) => {
+            //console.log("itemID", itemID);
             const textItem = this.state.idToItem[itemID];
-            const key = i + "_" + textItem.text;
-            console.log("textItem.type", textItem.type);
+            //const key = i + "_" + textItem.text;
+            const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
+            //console.log("textItem.type", textItem.type);
             if(textItem.type === "param"){
                 return(
                     <span
@@ -883,6 +974,15 @@ export default class NaturalLanguage extends React.Component {
                         />
                     </span>
                 );
+            }else if(textItem.type === "group"){
+                // Recursively call
+                return (
+                    <span
+                        className={styles.group}
+                    >
+                        {this.renderItemsList(textItem.itemIDs)}
+                    </span>
+                );
             }else{
                 return(
                     <span
@@ -900,11 +1000,36 @@ export default class NaturalLanguage extends React.Component {
                 );
             }
         });
+    
+        return domTextItems;
+    }
+
+    render() {
+
+        //return this.renderItemsList(this.state.rootItemIDs);
+
+        //const textItems = this.state.textItems;
+        const rootItemIDs = this.state.rootItemIDs;
+        console.log("rootItemIDs", rootItemIDs);
+
+        console.log("this.state.idToItem", this.state.idToItem);
+        // Render each item as appropriate (using TextItem component)
+        const domTextItems = this.renderItemsList(this.state.rootItemIDs);
 
         return (
             <div
                 // className={(this.state.uuidInEditMode ? styles.editBackground : '')}
             >
+                {this.state.groupSelectionMode ? (
+                    <button
+                        className={styles.createGroupButton}
+                        onClick={() => this.createGroup()}
+                    >
+                        Create group
+                    </button>
+                ) : (
+                    <span></span>
+                )}
                 <div
                     className={styles.request}
                 >

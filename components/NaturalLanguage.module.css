@@ -23,7 +23,9 @@
 
 .groupSelectionCheckbox {
     position: absolute;
-    top: -20px;
+    width: 30px;
+    height: 30px;
+    top: -35px;
     right: 0px;
     cursor: pointer;
 }
@@ -80,6 +82,14 @@
     cursor: pointer;
 }
 
+.createGroupButton {
+    font-size: large;
+    cursor: pointer;
+    width: 33%;
+    position: relative;
+    left: 33%;
+}
+
 .relative {
     position: relative;
 }
@@ -94,4 +104,10 @@
 
 .indented {
     padding-left: 30px;
+}
+
+.group {
+    border: 1px dotted gray;
+    height: 60px;
+    background-color: orange;
 }
