@@ -50,13 +50,13 @@ class UserProvidedExamples extends React.Component {
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    disabled={this.props.uuidInEditMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                 >
                 </input>
                 <button
                     onClick={() => this.props.removeValue(i, this.props.uuid)}
                     className={styles.removeValueButton}
-                    disabled={this.props.uuidInEditMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                 >x</button>
             </li>
         );
@@ -69,7 +69,7 @@ class UserProvidedExamples extends React.Component {
                 <button
                     onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                     className={styles.addValuesButton}
-                    disabled={this.props.uuidInEditMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                 >
                     Add another value
                 </button>
@@ -87,6 +87,7 @@ class FreeformParam extends React.Component {
                     handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                     handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                     uuidInEditMode={this.props.uuidInEditMode}
+                    groupSelectionMode={this.props.groupSelectionMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                 />
             </div>
@@ -102,6 +103,7 @@ class EnumerationParam extends React.Component {
                     handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                     handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                     uuidInEditMode={this.props.uuidInEditMode}
+                    groupSelectionMode={this.props.groupSelectionMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                 />
                 <div
@@ -114,7 +116,9 @@ class EnumerationParam extends React.Component {
                             name={`numValuesAllowed_${this.props.uuid}`}
                             value="one"
                             checked={!this.props.paramMultipleValuesAllowed}
-                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor="one">1</label>
                     </div>
 
@@ -124,7 +128,9 @@ class EnumerationParam extends React.Component {
                             name={`numValuesAllowed_${this.props.uuid}`}
                             value="multiple"
                             checked={this.props.paramMultipleValuesAllowed}
-                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor="multiple">Multiple</label>
                     </div>
                 </div>
@@ -146,7 +152,9 @@ class DateParam extends React.Component {
                             name={`dateRestrictions_${this.props.uuid}`}
                             value="past"
                             checked={this.props.dateRestriction === "past"}
-                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor="past">Restricted to dates in the past</label>
                     </div>
                     <div>
@@ -155,7 +163,9 @@ class DateParam extends React.Component {
                             name={`dateRestrictions_${this.props.uuid}`}
                             value="future"
                             checked={this.props.dateRestriction === "future"}
-                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor="future">Restricted to dates in the future</label>
                     </div>
                     <div>
@@ -164,7 +174,9 @@ class DateParam extends React.Component {
                             name={`dateRestrictions_${this.props.uuid}`}
                             value="none"
                             checked={this.props.dateRestriction === "none"}
-                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor="none">No restrictions</label>
                     </div>
                     <div>
@@ -173,7 +185,9 @@ class DateParam extends React.Component {
                             name={`dateRestrictions_${this.props.uuid}`}
                             value="other"
                             checked={this.props.dateRestriction === "other"}
-                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor="other">Other</label>
                     </div>
                 </div>
@@ -195,7 +209,9 @@ class NumberParam extends React.Component {
                             name={`integers_${this.props.uuid}`}
                             value="integers"
                             checked={this.props.restrictedToIntegers}
-                            onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor={`integers_${this.props.uuid}`}>Restricted to integers</label>
                     </div>
                     <div>
@@ -204,7 +220,9 @@ class NumberParam extends React.Component {
                             name={`range_${this.props.uuid}`}
                             value="range"
                             checked={this.props.restrictedToRange}
-                            onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToRange", this.props.uuid)} />
+                            onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToRange", this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        />
                         <label htmlFor={`range_${this.props.uuid}`}>Restricted to range</label>
                     </div>
 
@@ -219,7 +237,7 @@ class NumberParam extends React.Component {
                                 name={`rangeStart_${this.props.uuid}`}
                                 value={this.props.rangeStart}
                                 onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeStart", this.props.uuid)}
-                                disabled={this.props.uuidInEditMode}
+                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                             >
                             </input>
                         </div>
@@ -230,7 +248,7 @@ class NumberParam extends React.Component {
                                 name={`rangeEnd_${this.props.uuid}`}
                                 value={this.props.rangeEnd}
                                 onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeEnd", this.props.uuid)}
-                                disabled={this.props.uuidInEditMode}
+                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                             >
                             </input>
                         </div>
@@ -252,6 +270,7 @@ class ParamTextItem extends React.Component {
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "enumeration"){
@@ -262,12 +281,15 @@ class ParamTextItem extends React.Component {
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                                             handleParamNumValuesAllowedChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "date"){
                 paramTypeSpecificForm = <DateParam
                                             dateRestriction={this.props.paramTypeData.dateRestriction}
                                             uuid={this.props.uuid}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
                                             handleParamDateRestrictionChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "number"){
@@ -277,6 +299,8 @@ class ParamTextItem extends React.Component {
                                             rangeStart={this.props.paramTypeData.rangeStart}
                                             rangeEnd={this.props.paramTypeData.rangeEnd}
                                             uuid={this.props.uuid}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
                                             handleParamNumberRestrictionChange={(e, restrictionToChange) => this.props.handleParamNumberRestrictionChange(e, restrictionToChange, this.props.uuid)}
                                         />;
             }
@@ -292,7 +316,7 @@ class ParamTextItem extends React.Component {
                     size={Math.max(this.props.paramName.length, 20)}
                     value={this.props.paramName}
                     onChange={(e) => this.props.handleParamNameChange(e, this.props.uuid)}
-                    disabled={this.props.uuidInEditMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                 >
                 </input>
                 {/* <span
@@ -318,6 +342,7 @@ class ParamTextItem extends React.Component {
                         name={`paramType_${this.props.uuid}`}
                         value={this.props.paramTypeData.type}
                         onChange={(e) => this.props.handleParamTypeChange(e, this.props.uuid)}
+                        disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                     >
                         <option value="">--Select parameter type--</option>
                         <option value="freeform">Something the user types in</option>
@@ -339,7 +364,9 @@ class ParamTextItem extends React.Component {
                                 name={`paramOptional_${this.props.uuid}`}
                                 type="checkbox"
                                 checked={this.props.paramIsOptional}
-                                onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)} />
+                                onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
+                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            />
                         </div>
                     </label>
                 </div>
@@ -395,8 +422,8 @@ export default class NaturalLanguage extends React.Component {
         if(selectionObj.anchorNode && selectionObj.focusNode && selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement){
             console.log("selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement");
             
-            // Ignore if in edit mode
-            if(!this.state.uuidInEditMode){
+            // Ignore if in edit mode or group selection mode
+            if(!this.state.uuidInEditMode && !this.props.groupSelectionMode){
                 if(selectedText.length > 0){
                     
                     // Now need to split this 
@@ -985,6 +1012,7 @@ export default class NaturalLanguage extends React.Component {
                             groupSelectionMode={this.state.groupSelectionMode}
                             currentlySelected={textItem.currentlySelected}
                             uuidInEditMode={this.state.uuidInEditMode}
+                            groupSelectionMode={this.state.groupSelectionMode}
                             paramIsOptional={textItem.paramIsOptional}
                             paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
                             handleParamOptionalChange={(e) => this.handleParamOptionalChange(e, textItem.uuid)}
@@ -1031,12 +1059,12 @@ export default class NaturalLanguage extends React.Component {
                                 <button
                                     className={styles.removeButton}
                                     onClick={() => this.removeItem(textItem.uuid)}
-                                    disabled={this.state.uuidInEditMode}
+                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
                                 >x</button>
                                 <button
                                     className={styles.groupButton}
                                     onClick={() => this.enterGroupSelection(textItem.uuid)}
-                                    disabled={this.state.uuidInEditMode}
+                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
                                 >Group</button>
                             </span>
                         ) : (
