@@ -1000,7 +1000,7 @@ export default class NaturalLanguage extends React.Component {
 
             return (
                 <span
-                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid ? styles.grayedOut : '')}`}
+                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)}`}
                     onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                     onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
                 >

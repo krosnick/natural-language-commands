@@ -49,6 +49,10 @@ export default function Home() {
             ol, ul {
                 padding-left: 30px;
             }
+            
+            :root {
+                --item-padding: 20px;
+            }
         `}</style>
     </div>
   )

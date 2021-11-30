@@ -12,12 +12,16 @@
     position: absolute;
     cursor: pointer;
     border-radius: 50%;
+    left: 0px;
+    top: 0px;
 }
 
 .groupButton {
     position: absolute;
     right: 0px;
     cursor: pointer;
+    right: 0px;
+    top: 0px;
 }
 
 .groupSelectionCheckbox {
@@ -32,6 +36,7 @@
 .container {
     position: relative;
     display: inline-block;
+    padding: var(--item-padding);
 }
 
 .paramData {
@@ -111,9 +116,9 @@
 .group {
     border: 3px dotted darkgray;
     display: inline-table;
-    padding: 20px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    padding: var(--item-padding);
+    margin-top: var(--item-padding);
+    margin-bottom: var(--item-padding);
 }
 
 .errorMessage {
@@ -121,4 +126,13 @@
     font-size: large;
     font-weight: bold;
     text-align: center;
+}
+
+.hovered {
+    background-color: lightyellow;
+    border: 1px dotted darkgray;
+}
+
+.notHovered {
+    border: 1px dotted transparent;
 }
