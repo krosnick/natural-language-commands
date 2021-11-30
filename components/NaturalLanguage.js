@@ -541,9 +541,18 @@ export default class NaturalLanguage extends React.Component {
     handleOnMouseLeave(uuid, e){
         console.log("handleOnMouseLeave");
         console.log("uuid", uuid);
+
+        // If item with uuid has a non-root parent (i.e., it is within a group),
+            // change the hoveredID to the parent, because at this point the parent is being hovered still
+            // but we just aren't hearing any explicit mouseenter event for it
+        let newHoveredID = null;
+        const parentID = this.state.idToItem[uuid].parentID;
+        if(parentID !== "root"){
+            newHoveredID = parentID;
+        }
     
         this.setState({
-            hoveredID: null
+            hoveredID: newHoveredID
         });
     }
 
