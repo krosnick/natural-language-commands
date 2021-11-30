@@ -639,6 +639,7 @@ export default class NaturalLanguage extends React.Component {
 
             if(!sameParentID){
                 // TODO - for now, show an error; but in future, maybe find common ancestor to join over
+                console.log("!sameParentID");
             }else{
                 // Group from selectedIDs[0] to selectedIDs[selectedIDs.length-1] within parent's itemIDs (so this should include parameters and regular text in between)
                 let childIDs;
@@ -793,6 +794,11 @@ export default class NaturalLanguage extends React.Component {
             const endOfItemIDsList = itemIDsList.slice(index+1);
 
             const newItemIDsList = beginningOfItemIDsList.concat(idsToMergeIn, endOfItemIDsList);
+
+            // Update each child item to have correct parentID
+            newItemIDsList.forEach(function(id){
+                idToItemClone[id].parentID = parentID;
+            })
 
             // Update IDs list
             if(parentID === "root"){
