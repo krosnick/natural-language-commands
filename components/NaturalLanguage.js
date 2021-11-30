@@ -24,7 +24,7 @@ function RegularTextItem(props){
             className={styles.relative}
         >
             <span
-                className={`${styles.inputNaturalLanguage} ${(props.uuidInEditMode === props.uuid ? styles.editBackground : '')} ${(props.uuidInEditMode && props.uuidInEditMode !== props.uuid ? styles.grayedOut : '')}`}
+                className={`${styles.inputNaturalLanguage} ${(props.uuidInEditMode === props.uuid ? styles.editBackground : '')} ${(props.uuidInEditMode && props.uuidInEditMode !== props.uuid || props.groupSelectionMode ? styles.grayedOut : '')}`}
                 uuid={props.uuid}
                 text-item-type="regular"
                 contentEditable={props.uuidInEditMode === props.uuid}
@@ -46,7 +46,7 @@ class UserProvidedExamples extends React.Component {
                 //key={value}
             >
                 <input
-                    className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
+                    className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
@@ -309,7 +309,7 @@ class ParamTextItem extends React.Component {
         return (
             <span>
                 <input
-                    className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid ? styles.grayedOut : '')}`}
+                    className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
                     uuid={this.props.uuid}
                     text-item-type="param"
                     type="text"
@@ -1037,7 +1037,7 @@ export default class NaturalLanguage extends React.Component {
 
             return (
                 <span
-                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)}`}
+                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)}`}
                     onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                     onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
                 >
@@ -1095,6 +1095,7 @@ export default class NaturalLanguage extends React.Component {
                             text={textItem.text}
                             uuid={textItem.uuid}
                             uuidInEditMode={this.state.uuidInEditMode}
+                            groupSelectionMode={this.state.groupSelectionMode}
                             handleSave={(textElement) => this.handleSave(textElement, textItem.uuid)}
                             handleTextSelection={(textElement) => this.handleTextSelection(textElement, textItem.uuid)}
                         />
