@@ -376,6 +376,7 @@ export default class NaturalLanguage extends React.Component {
             //uuidInEditMode: false
             uuidInEditMode: null,
             hoveredID: null,
+            errorMessage: null,
             websiteUrl: props.websiteUrl
         }
     }
@@ -604,10 +605,11 @@ export default class NaturalLanguage extends React.Component {
         for (const item of Object.values(idToItemClone)) {
             item.currentlySelected = false;
         }
-        // Set to not be in group selection mode
+        // Set to not be in group selection mode, and set error to null
         this.setState({
             groupSelectionMode: false,
-            idToItem: idToItemClone
+            idToItem: idToItemClone,
+            errorMessage: null
         });
     }
 
@@ -640,6 +642,9 @@ export default class NaturalLanguage extends React.Component {
             if(!sameParentID){
                 // TODO - for now, show an error; but in future, maybe find common ancestor to join over
                 console.log("!sameParentID");
+                this.setState({
+                    errorMessage: "You can only group items that have the same parent. Please change your item selections."
+                })
             }else{
                 // Group from selectedIDs[0] to selectedIDs[selectedIDs.length-1] within parent's itemIDs (so this should include parameters and regular text in between)
                 let childIDs;
@@ -706,7 +711,8 @@ export default class NaturalLanguage extends React.Component {
                     idToItem: idToItemClone,
                     rootItemIDs: rootItemIDsClone,
                     groupSelectionMode: false,
-                    hoveredID: newGroupItem.uuid
+                    hoveredID: newGroupItem.uuid,
+                    errorMessage: null
                 });
             }
         }else{
@@ -1099,6 +1105,13 @@ export default class NaturalLanguage extends React.Component {
                 ) : (
                     <span></span>
                 )}
+                <div>
+                    <p
+                        className={styles.errorMessage}
+                    >
+                        {this.state.errorMessage}
+                    </p>
+                </div>
                 <div
                     className={styles.request}
                 >

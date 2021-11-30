@@ -115,3 +115,10 @@
     margin-top: 20px;
     margin-bottom: 20px;
 }
+
+.errorMessage {
+    color: red;
+    font-size: large;
+    font-weight: bold;
+    text-align: center;
+}
