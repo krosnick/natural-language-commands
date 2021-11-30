@@ -404,7 +404,8 @@ export default class NaturalLanguage extends React.Component {
             uuidInEditMode: null,
             hoveredID: null,
             errorMessage: null,
-            websiteUrl: props.websiteUrl
+            websiteUrl: props.websiteUrl,
+            textEditable: props.textEditable
         }
     }
 
@@ -520,7 +521,9 @@ export default class NaturalLanguage extends React.Component {
                     }
 
                     //this.exitEditMode();
-                }else{
+                }else if(this.state.textEditable){
+                    // Enter edit mode, only if allowed (i.e., this.state.textEditable is true)
+
                     // Selection length is 0, so just a single cursor click
                     
                     // Assume this means the user is trying to edit text, so let's update uuidInEditMode

@@ -11,18 +11,22 @@ export default function Home() {
         {/* <NaturalLanguage
             text="Which MLB player had the most home runs this year?"
             websiteUrl="https://www.mlb.com/stats/"
+            textEditable={false}
         /> */}
         {/* <NaturalLanguage
             text="Book a flight from Detroit to Boston on November 20"
             websiteUrl="https://www.spirit.com/"
+            textEditable={false}
         /> */}
         <NaturalLanguage
             text="Order a chicken burrito bowl with black beans, white rice, sour cream, green salsa, and red salsa from Chipotle. Place the order now and for delivery."
             websiteUrl="https://www.chipotle.com/order"
+            textEditable={false}
         />
         {/* <NaturalLanguage
             text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"
             websiteUrl="https://www.georgetowncupcake.com/OrderType.aspx"
+            textEditable={false}
         /> */}
         
         
@@ -32,14 +36,17 @@ export default function Home() {
         {/* <NaturalLanguage
             text="Order one scoop of coffee ice cream from Blank Slate"
             websiteUrl="https://blank-slate-creamery.square.site/"
+            textEditable={false}
         /> */}
         {/* <NaturalLanguage
             text="Order a little cheeseburger from Five Guys with mayo, lettuce, and grilled onions"
             websiteUrl="https://order.fiveguys.com/"
+            textEditable={false}
         /> */}
         {/* <NaturalLanguage
             text="What movie won Best Picture at the Oscars in 2011?"
             websiteUrl="https://www.oscars.org/oscars/ceremonies/2021"
+            textEditable={false}
         /> */}
         <style jsx global>{`
             body {
