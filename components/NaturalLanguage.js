@@ -696,6 +696,11 @@ export default class NaturalLanguage extends React.Component {
 
                 itemIDsList.splice(firstSelectedIDIndex, (lastSelectedIDIndex - firstSelectedIDIndex + 1), newGroupItem.uuid);
 
+                // Make sure all items currently not selected
+                for (const item of Object.values(idToItemClone)) {
+                    item.currentlySelected = false;
+                }
+
                 // Update whole textItems to make sure we re-render
                 this.setState({
                     idToItem: idToItemClone,
