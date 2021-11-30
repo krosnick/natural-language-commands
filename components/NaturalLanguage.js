@@ -996,7 +996,6 @@ export default class NaturalLanguage extends React.Component {
                 itemContents = (
                     <span
                         key={key}
-                        className={styles.itemContainer}
                     >
                         <ParamTextItem
                             text={textItem.text}
@@ -1092,7 +1091,6 @@ export default class NaturalLanguage extends React.Component {
                 return(
                     <span
                         key={key}
-                        className={styles.itemContainer}
                     >
                         <RegularTextItem
                             text={textItem.text}

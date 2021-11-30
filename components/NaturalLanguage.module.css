@@ -37,6 +37,7 @@
     position: relative;
     display: inline-block;
     padding: var(--item-padding);
+    vertical-align: top;
 }
 
 .paramData {
@@ -50,10 +51,6 @@
 
 .paramDataChunk {
     margin-bottom: 10px;
-}
-
-.itemContainer {
-    vertical-align: top;
 }
 
 .possibleValuesArea {
