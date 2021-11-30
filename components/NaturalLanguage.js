@@ -423,7 +423,7 @@ export default class NaturalLanguage extends React.Component {
             console.log("selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement");
             
             // Ignore if in edit mode or group selection mode
-            if(!this.state.uuidInEditMode && !this.props.groupSelectionMode){
+            if(!this.state.uuidInEditMode && !this.state.groupSelectionMode){
                 if(selectedText.length > 0){
                     
                     // Now need to split this 
