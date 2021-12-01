@@ -65,7 +65,7 @@ class UserProvidedExamples extends React.Component {
             <div
                 className={styles.paramDataChunk}
             >
-                Give some examples:
+                {this.props.examplesText}
                 <ul>{possibleValues}</ul>
                 <button
                     onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
@@ -90,6 +90,7 @@ class FreeformParam extends React.Component {
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                    examplesText="What are some things the user can type in?"
                 />
             </div>
         );
@@ -106,11 +107,12 @@ class EnumerationParam extends React.Component {
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                    examplesText="What are some things the user can choose?"
                 />
                 <div
                     className={styles.paramDataChunk}
                 >
-                    How many values allowed at a time?
+                    How many of these can the user choose?
                     <div>
                         <input
                             type="radio"
@@ -132,7 +134,7 @@ class EnumerationParam extends React.Component {
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="multiple">Multiple</label>
+                        <label htmlFor="multiple">1 or more</label>
                     </div>
                 </div>
             </div>
@@ -354,9 +356,9 @@ class ParamTextItem extends React.Component {
 
                     {paramTypeSpecificForm}
 
-                    <label
-                        className={styles.possibleValuesArea}
-                    >
+                    {/* Only show these questions after the user has selected a parameter type
+                    (because we want the user to focus on that first) */}
+                    {this.props.paramTypeData.type !== "" ? (
                         <div
                             className={styles.paramDataChunk}
                         >
@@ -369,7 +371,9 @@ class ParamTextItem extends React.Component {
                                 disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                             />
                         </div>
-                    </label>
+                    ) : (
+                        ""
+                    ) }
                 </div>
             </span>
         );
@@ -1072,7 +1076,7 @@ export default class NaturalLanguage extends React.Component {
                                 >Group</button>
                             </span>
                         ) : (
-                            <span></span>
+                            ""
                         )
                     )}
                     { itemContents }
@@ -1144,7 +1148,7 @@ export default class NaturalLanguage extends React.Component {
                         </button>
                     </span>
                 ) : (
-                    <span></span>
+                    ""
                 )}
                 <div>
                     <p
