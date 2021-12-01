@@ -18,9 +18,17 @@
 }
 
 .groupButton {
-    position: absolute;
-    right: 0px;
     cursor: pointer;
+    margin-left: var(--button-padding);
+}
+
+.addParameterButton {
+    cursor: pointer;
+    margin-left: var(--button-padding);
+}
+
+.operationsButtonGroup {
+    position: absolute;
     right: 0px;
     top: 0px;
     margin: var(--button-padding);
@@ -134,6 +142,10 @@
 
 .hovered {
     background-color: lightyellow;
+    border: 1px dotted darkgray;
+}
+
+.hoveredOuterContainer {
     border: 1px dotted darkgray;
 }
 

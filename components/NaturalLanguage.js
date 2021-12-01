@@ -415,10 +415,24 @@ export default class NaturalLanguage extends React.Component {
             paramTypeData: null
         };
 
+        // Creating a root element to represent top-level
+        initialTextItems["root"] = {
+            text: null,
+            uuid: "root",
+            type: null,
+            itemIDs: [firstUuid],
+            parentID: "root",
+            paramName: "",
+            currentlySelected: false,
+            paramIsOptional: false,
+            paramMultipleValuesAllowed: false,
+            paramTypeData: null
+        };
+
         this.state = {
             text: props.text,
             //textItems: initialTextItems,
-            rootItemIDs: [firstUuid],
+            rootItemIDs: initialTextItems["root"].itemIDs,
             idToItem: initialTextItems,
             groupSelectionMode: false,
             //uuidInEditMode: false
@@ -598,9 +612,7 @@ export default class NaturalLanguage extends React.Component {
             // but we just aren't hearing any explicit mouseenter event for it
         let newHoveredID = null;
         const parentID = this.state.idToItem[uuid].parentID;
-        if(parentID !== "root"){
-            newHoveredID = parentID;
-        }
+        newHoveredID = parentID;
     
         this.setState({
             hoveredID: newHoveredID
@@ -1001,6 +1013,50 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    addParameter(uuid){
+        // Get uuid's item, create a new empty param obj to add to the end of it
+
+        const newParamItem = {
+            text: "",
+            uuid: uuidv4(),
+            type: "param",
+            itemIDs: [],
+            parentID: uuid,
+            paramName: `<set param name>`,
+            currentlySelected: false,
+            paramIsOptional: false,
+            paramMultipleValuesAllowed: false,
+            paramTypeData: {
+                type: "",
+                possibleValues: [],
+            }
+        };
+        
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[newParamItem.uuid] = newParamItem;
+        
+        // If parent isn't root, then instead of using this.state.rootItemIDs, use parent's itemIDs attribute
+        // Update ID list
+        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
+
+        let itemIDsList;
+        if(uuid === "root"){
+            itemIDsList = rootItemIDsClone;
+        }else{
+            itemIDsList = idToItemClone[uuid].itemIDs;
+        }
+        
+        // Add to end of list
+        itemIDsList.push(newParamItem.uuid);
+        
+        // Update whole textItems to make sure we re-render
+        this.setState({
+            idToItem: idToItemClone,
+            rootItemIDs: rootItemIDsClone,
+            hoveredID: newParamItem.uuid
+        });
+    }
+
 /*     componentDidUpdate(){
         console.log("componentDidUpdate");
         if(this.state.uuidInEditMode){
@@ -1085,11 +1141,24 @@ export default class NaturalLanguage extends React.Component {
                                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
                                     title={textItem.type === "param" ? "Delete parameter" : "Delete group"}
                                 >x</button>
-                                <button
-                                    className={styles.groupButton}
-                                    onClick={() => this.enterGroupSelection(textItem.uuid)}
-                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                                >Group</button>
+                                <span
+                                    className={styles.operationsButtonGroup}
+                                >
+                                    <button
+                                        className={styles.groupButton}
+                                        onClick={() => this.enterGroupSelection(textItem.uuid)}
+                                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                    >Group</button>
+                                    { textItem.type === "group" ? (
+                                        <button
+                                            className={styles.addParameterButton}
+                                            onClick={() => this.addParameter(textItem.uuid)}
+                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                        >Add parameter</button>
+                                    ):(
+                                        ""
+                                    ) }
+                                </span>
                             </span>
                         ) : (
                             ""
@@ -1100,6 +1169,7 @@ export default class NaturalLanguage extends React.Component {
             );
         }
         
+        console.log("itemIDs", itemIDs);
         const domTextItems = itemIDs.map((itemID, i) => {
             //console.log("itemID", itemID);
             const textItem = this.state.idToItem[itemID];
@@ -1176,7 +1246,26 @@ export default class NaturalLanguage extends React.Component {
                 <div
                     className={styles.request}
                 >
-                    {domTextItems}
+                    <span
+                        className={`${styles.container} ${(this.state.hoveredID === "root" ? styles.hoveredOuterContainer : styles.notHovered)}`}
+                        onMouseEnter={() => this.handleOnMouseEnter("root")}
+                        onMouseLeave={() => this.handleOnMouseLeave("root")}
+                    >
+                        {this.state.hoveredID === "root" ? (
+                            <span
+                                className={styles.operationsButtonGroup}
+                            >
+                                <button
+                                    className={styles.addParameterButton}
+                                    onClick={() => this.addParameter("root")}
+                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                >Add parameter</button>
+                            </span>
+                        ) : (
+                            ""
+                        ) }
+                        {domTextItems}
+                    </span>
                 </div>
                 <iframe
                     width="100%"
