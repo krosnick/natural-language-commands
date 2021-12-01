@@ -14,6 +14,7 @@
     border-radius: 50%;
     left: 0px;
     top: 0px;
+    margin: var(--button-padding);
 }
 
 .groupButton {
@@ -22,6 +23,7 @@
     cursor: pointer;
     right: 0px;
     top: 0px;
+    margin: var(--button-padding);
 }
 
 .groupSelectionCheckbox {
@@ -37,7 +39,7 @@
 .container {
     position: relative;
     display: inline-block;
-    padding: var(--item-padding);
+    padding: calc(var(--item-padding) + 2 * var(--button-padding));
     vertical-align: top;
     margin-bottom: 20px;
 }
@@ -53,7 +55,6 @@
 .paramDataChunk {
     padding: 10px;
     margin-top: 10px;
-    margin-bottom: 10px;
     border: 1px solid lightgray;
 }
 

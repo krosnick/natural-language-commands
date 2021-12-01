@@ -59,6 +59,7 @@ export default function Home() {
             
             :root {
                 --item-padding: 20px;
+                --button-padding: 5px;
             }
         `}</style>
     </div>
