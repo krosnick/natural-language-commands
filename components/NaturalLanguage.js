@@ -57,6 +57,7 @@ class UserProvidedExamples extends React.Component {
                     onClick={() => this.props.removeValue(i, this.props.uuid)}
                     className={styles.removeValueButton}
                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                    title="Delete"
                 >x</button>
             </li>
         );
@@ -1062,6 +1063,7 @@ export default class NaturalLanguage extends React.Component {
                                     className={styles.removeButton}
                                     onClick={() => this.removeItem(textItem.uuid)}
                                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                    title={textItem.type === "param" ? "Delete parameter" : "Delete group"}
                                 >x</button>
                                 <button
                                     className={styles.groupButton}
