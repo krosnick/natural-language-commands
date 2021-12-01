@@ -421,7 +421,7 @@ export default class NaturalLanguage extends React.Component {
             uuid: "root",
             type: null,
             itemIDs: [firstUuid],
-            parentID: "root",
+            parentID: null,
             paramName: "",
             currentlySelected: false,
             paramIsOptional: false,
@@ -432,7 +432,6 @@ export default class NaturalLanguage extends React.Component {
         this.state = {
             text: props.text,
             //textItems: initialTextItems,
-            rootItemIDs: initialTextItems["root"].itemIDs,
             idToItem: initialTextItems,
             groupSelectionMode: false,
             //uuidInEditMode: false
@@ -526,17 +525,8 @@ export default class NaturalLanguage extends React.Component {
                         // Remove old item
                         delete idToItemClone[uuid];
 
-                        // If parent isn't root, then instead of using this.state.rootItemIDs, use parent's itemIDs attribute
                         // Update ID list
-                        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
-
-                        let itemIDsList;
-                        console.log("parentID", parentID);
-                        if(parentID === "root"){
-                            itemIDsList = rootItemIDsClone;
-                        }else{
-                            itemIDsList = idToItemClone[parentID].itemIDs;
-                        }
+                        const itemIDsList = idToItemClone[parentID].itemIDs;
 
                         for(let i = 0; i < itemIDsList.length; i++){
                             if(itemIDsList[i] === uuid){
@@ -550,7 +540,6 @@ export default class NaturalLanguage extends React.Component {
                         // Update whole textItems to make sure we re-render
                         this.setState({
                             idToItem: idToItemClone,
-                            rootItemIDs: rootItemIDsClone,
                             hoveredID: newParamItem.uuid
                         });
                     }
@@ -607,12 +596,10 @@ export default class NaturalLanguage extends React.Component {
         console.log("handleOnMouseLeave");
         console.log("uuid", uuid);
 
-        // If item with uuid has a non-root parent (i.e., it is within a group),
-            // change the hoveredID to the parent, because at this point the parent is being hovered still
+        // Change the hoveredID to the parent, because at this point the parent is being hovered still
             // but we just aren't hearing any explicit mouseenter event for it
-        let newHoveredID = null;
-        const parentID = this.state.idToItem[uuid].parentID;
-        newHoveredID = parentID;
+            // It's ok if parentID is null (i.e., for root's parent), just nothing will get hover effect
+        const newHoveredID = this.state.idToItem[uuid].parentID;
     
         this.setState({
             hoveredID: newHoveredID
@@ -719,13 +706,7 @@ export default class NaturalLanguage extends React.Component {
                 })
             }else{
                 // Group from selectedIDs[0] to selectedIDs[selectedIDs.length-1] within parent's itemIDs (so this should include parameters and regular text in between)
-                let childIDs;
-                if(parentID !== "root"){
-                    childIDs = this.state.idToItem[parentID].itemIDs;
-                }else{
-                    // parentID is null because it's root
-                    childIDs = this.state.rootItemIDs;
-                }
+                const childIDs = this.state.idToItem[parentID].itemIDs;
                 const firstSelectedID = selectedIDs[0];
                 const lastSelectedID = selectedIDs[selectedIDs.length-1];
                 const firstSelectedIDIndex = childIDs.indexOf(firstSelectedID);
@@ -760,16 +741,8 @@ export default class NaturalLanguage extends React.Component {
                     idToItemClone[childIDs[i]].parentID = newGroupItem.uuid;
                 }
 
-                // If parent isn't root, then instead of using this.state.rootItemIDs, use parent's itemIDs attribute
                 // Update ID list
-                const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
-
-                let itemIDsList;
-                if(parentID === "root"){
-                    itemIDsList = rootItemIDsClone;
-                }else{
-                    itemIDsList = idToItemClone[parentID].itemIDs;
-                }
+                const itemIDsList = idToItemClone[parentID].itemIDs;
 
                 itemIDsList.splice(firstSelectedIDIndex, (lastSelectedIDIndex - firstSelectedIDIndex + 1), newGroupItem.uuid);
 
@@ -781,7 +754,6 @@ export default class NaturalLanguage extends React.Component {
                 // Update whole textItems to make sure we re-render
                 this.setState({
                     idToItem: idToItemClone,
-                    rootItemIDs: rootItemIDsClone,
                     groupSelectionMode: false,
                     hoveredID: newGroupItem.uuid,
                     errorMessage: null
@@ -796,19 +768,13 @@ export default class NaturalLanguage extends React.Component {
         console.log("removeItem");
         console.log("uuid", uuid);
 
-        let rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
         const idToItemClone = _.cloneDeep(this.state.idToItem);
 
         // Need to merge this item with REGULAR text items on its immediate left and right (if they exist)
 
         const parentID = idToItemClone[uuid].parentID;
 
-        let itemIDsList;
-        if(parentID === "root"){
-            itemIDsList = rootItemIDsClone;
-        }else{
-            itemIDsList = idToItemClone[parentID].itemIDs;
-        }
+        const itemIDsList = idToItemClone[parentID].itemIDs;
 
         let index;
         for(let i = 0; i < itemIDsList.length; i++){
@@ -884,11 +850,7 @@ export default class NaturalLanguage extends React.Component {
             })
 
             // Update IDs list
-            if(parentID === "root"){
-                rootItemIDsClone = newItemIDsList;
-            }else{
-                idToItemClone[parentID].itemIDs = newItemIDsList;
-            }
+            idToItemClone[parentID].itemIDs = newItemIDsList;
 
             // Remove old group from map
             delete idToItemClone[uuid];
@@ -902,7 +864,6 @@ export default class NaturalLanguage extends React.Component {
 
         // Update to make sure we re-render
         this.setState({
-            rootItemIDs: rootItemIDsClone,
             idToItem: idToItemClone,
             hoveredID: null
         });
@@ -1035,16 +996,7 @@ export default class NaturalLanguage extends React.Component {
         const idToItemClone = _.cloneDeep(this.state.idToItem);
         idToItemClone[newParamItem.uuid] = newParamItem;
         
-        // If parent isn't root, then instead of using this.state.rootItemIDs, use parent's itemIDs attribute
-        // Update ID list
-        const rootItemIDsClone = _.cloneDeep(this.state.rootItemIDs);
-
-        let itemIDsList;
-        if(uuid === "root"){
-            itemIDsList = rootItemIDsClone;
-        }else{
-            itemIDsList = idToItemClone[uuid].itemIDs;
-        }
+        const itemIDsList = idToItemClone[uuid].itemIDs;
         
         // Add to end of list
         itemIDsList.push(newParamItem.uuid);
@@ -1052,7 +1004,6 @@ export default class NaturalLanguage extends React.Component {
         // Update whole textItems to make sure we re-render
         this.setState({
             idToItem: idToItemClone,
-            rootItemIDs: rootItemIDsClone,
             hoveredID: newParamItem.uuid
         });
     }
@@ -1201,16 +1152,9 @@ export default class NaturalLanguage extends React.Component {
     }
 
     render() {
-
-        //return this.renderItemsList(this.state.rootItemIDs);
-
-        //const textItems = this.state.textItems;
-        const rootItemIDs = this.state.rootItemIDs;
-        console.log("rootItemIDs", rootItemIDs);
-
         console.log("this.state.idToItem", this.state.idToItem);
         // Render each item as appropriate (using TextItem component)
-        const domTextItems = this.renderItemsList(this.state.rootItemIDs);
+        const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
 
         return (
             <div
