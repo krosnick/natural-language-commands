@@ -50,7 +50,7 @@ export default function Home() {
         /> */}
         <style jsx global>{`
             body {
-                margin: 30px;
+                margin: 0px;
             }
             
             ol, ul {
