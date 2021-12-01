@@ -1200,7 +1200,7 @@ export default class NaturalLanguage extends React.Component {
                         onMouseEnter={() => this.handleOnMouseEnter("root")}
                         onMouseLeave={() => this.handleOnMouseLeave("root")}
                     >
-                        {this.state.hoveredID === "root" ? (
+                        {this.state.hoveredID === "root" && !this.state.groupSelectionMode ? (
                             <span
                                 className={styles.operationsButtonGroup}
                             >
