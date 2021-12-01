@@ -90,7 +90,7 @@ class FreeformParam extends React.Component {
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
-                    examplesText="What are some things the user can type in?"
+                    examplesText="What are some values the user can type in?"
                 />
             </div>
         );
@@ -107,12 +107,12 @@ class EnumerationParam extends React.Component {
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
-                    examplesText="What are some things the user can choose?"
+                    examplesText="What are some values the user can choose?"
                 />
                 <div
                     className={styles.paramDataChunk}
                 >
-                    How many of these can the user choose?
+                    How many of these values can the user choose?
                     <div>
                         <input
                             type="radio"
@@ -122,7 +122,7 @@ class EnumerationParam extends React.Component {
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="one">1</label>
+                        <label htmlFor="one">Just 1</label>
                     </div>
 
                     <div>
@@ -362,14 +362,30 @@ class ParamTextItem extends React.Component {
                         <div
                             className={styles.paramDataChunk}
                         >
-                            Parameter is optional:
-                            <input
-                                name={`paramOptional_${this.props.uuid}`}
-                                type="checkbox"
-                                checked={this.props.paramIsOptional}
-                                onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
-                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
-                            />
+                            Can the user leave this parameter blank?
+                            <div>
+                                <input
+                                    type="radio"
+                                    name={`paramOptional_${this.props.uuid}`}
+                                    value="optional"
+                                    checked={this.props.paramIsOptional}
+                                    onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
+                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                                />
+                                <label htmlFor="one">Yes, this parameter is optional</label>
+                            </div>
+
+                            <div>
+                                <input
+                                    type="radio"
+                                    name={`paramOptional_${this.props.uuid}`}
+                                    value="notOptional"
+                                    checked={!this.props.paramIsOptional}
+                                    onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
+                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                                />
+                                <label htmlFor="multiple">No, the user has to choose a value</label>
+                            </div>
                         </div>
                     ) : (
                         ""
@@ -927,7 +943,7 @@ export default class NaturalLanguage extends React.Component {
 
     handleParamOptionalChange(e, uuid){
         const target = e.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const value = target.value === "optional";
         
         const idToItemClone = _.cloneDeep(this.state.idToItem);
         idToItemClone[uuid].paramIsOptional = value;
