@@ -1039,7 +1039,7 @@ export default class NaturalLanguage extends React.Component {
 
             return (
                 <span
-                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)}`}
+                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)} ${(textItem.currentlySelected ? styles.itemSelected : '')}`}
                     onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                     onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
                 >

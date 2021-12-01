@@ -26,10 +26,11 @@
 
 .groupSelectionCheckbox {
     position: absolute;
-    width: 30px;
-    height: 30px;
-    top: -14px;
+    width: 20px;
+    height: 20px;
+    top: 0px;
     right: 0px;
+    margin: 0px;
     cursor: pointer;
 }
 
@@ -132,4 +133,8 @@
 
 .notHovered {
     border: 1px dotted transparent;
+}
+
+.itemSelected {
+    border: 1px solid rgb(26 115 232);
 }
