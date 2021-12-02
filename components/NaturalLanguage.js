@@ -343,7 +343,11 @@ class ParamTextItem extends React.Component {
                             Annotator-created
                         </div>
                     ) : (
-                        ""
+                        <div
+                            className={styles.paramTextOriginalTextLabel}
+                        >
+                            Original text: {this.props.text}
+                        </div>
                     )
                 }
                 {/* <span

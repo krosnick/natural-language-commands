@@ -18,6 +18,11 @@
     font-style: italic;
 }
 
+.paramTextOriginalTextLabel {
+    color: #00a8de;
+    font-style: italic;
+}
+
 .removeButton {
     position: absolute;
     cursor: pointer;
