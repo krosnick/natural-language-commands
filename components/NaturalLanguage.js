@@ -116,25 +116,25 @@ class EnumerationParam extends React.Component {
                     <div>
                         <input
                             type="radio"
-                            name={`numValuesAllowed_${this.props.uuid}`}
+                            name={`one_numValuesAllowed_${this.props.uuid}`}
                             value="one"
                             checked={!this.props.paramMultipleValuesAllowed}
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="one">Just 1</label>
+                        <label htmlFor={`one_numValuesAllowed_${this.props.uuid}`}>Just 1</label>
                     </div>
 
                     <div>
                         <input
                             type="radio"
-                            name={`numValuesAllowed_${this.props.uuid}`}
+                            name={`multiple_numValuesAllowed_${this.props.uuid}`}
                             value="multiple"
                             checked={this.props.paramMultipleValuesAllowed}
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="multiple">1 or more</label>
+                        <label htmlFor={`multiple_numValuesAllowed_${this.props.uuid}`}>1 or more</label>
                     </div>
                 </div>
             </div>
@@ -152,46 +152,46 @@ class DateParam extends React.Component {
                     <div>
                         <input
                             type="radio"
-                            name={`dateRestrictions_${this.props.uuid}`}
+                            name={`past_dateRestrictions_${this.props.uuid}`}
                             value="past"
                             checked={this.props.dateRestriction === "past"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="past">Restricted to dates in the past</label>
+                        <label htmlFor={`past_dateRestrictions_${this.props.uuid}`}>Restricted to dates in the past</label>
                     </div>
                     <div>
                         <input
                             type="radio"
-                            name={`dateRestrictions_${this.props.uuid}`}
+                            name={`future_dateRestrictions_${this.props.uuid}`}
                             value="future"
                             checked={this.props.dateRestriction === "future"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="future">Restricted to dates in the future</label>
+                        <label htmlFor={`future_dateRestrictions_${this.props.uuid}`}>Restricted to dates in the future</label>
                     </div>
                     <div>
                         <input
                             type="radio"
-                            name={`dateRestrictions_${this.props.uuid}`}
+                            name={`none_dateRestrictions_${this.props.uuid}`}
                             value="none"
                             checked={this.props.dateRestriction === "none"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="none">No restrictions</label>
+                        <label htmlFor={`none_dateRestrictions_${this.props.uuid}`}>No restrictions</label>
                     </div>
                     <div>
                         <input
                             type="radio"
-                            name={`dateRestrictions_${this.props.uuid}`}
+                            name={`other_dateRestrictions_${this.props.uuid}`}
                             value="other"
                             checked={this.props.dateRestriction === "other"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor="other">Other</label>
+                        <label htmlFor={`other_dateRestrictions_${this.props.uuid}`}>Other</label>
                     </div>
                 </div>
             </div>
@@ -269,6 +269,7 @@ class ParamTextItem extends React.Component {
         if(this.props.paramTypeData.type.length > 0){
             if(this.props.paramTypeData.type === "freeform"){
                 paramTypeSpecificForm = <FreeformParam
+                                            uuid={this.props.uuid}                            
                                             possibleValues={this.props.paramTypeData.possibleValues}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
@@ -278,6 +279,7 @@ class ParamTextItem extends React.Component {
                                         />;
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTypeSpecificForm = <EnumerationParam
+                                            uuid={this.props.uuid}
                                             possibleValues={this.props.paramTypeData.possibleValues}
                                             paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
@@ -377,25 +379,25 @@ class ParamTextItem extends React.Component {
                             <div>
                                 <input
                                     type="radio"
-                                    name={`paramOptional_${this.props.uuid}`}
+                                    name={`optional_paramOptional_${this.props.uuid}`}
                                     value="optional"
                                     checked={this.props.paramIsOptional}
                                     onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
                                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                                 />
-                                <label htmlFor="one">Yes, this parameter is optional</label>
+                                <label htmlFor={`optional_paramOptional_${this.props.uuid}`}>Yes, this parameter is optional</label>
                             </div>
 
                             <div>
                                 <input
                                     type="radio"
-                                    name={`paramOptional_${this.props.uuid}`}
+                                    name={`notOptional_paramOptional_${this.props.uuid}`}
                                     value="notOptional"
                                     checked={!this.props.paramIsOptional}
                                     onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
                                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                                 />
-                                <label htmlFor="multiple">No, the user has to choose a value</label>
+                                <label htmlFor={`notOptional_paramOptional_${this.props.uuid}`}>No, the user has to choose a value</label>
                             </div>
                         </div>
                     ) : (
