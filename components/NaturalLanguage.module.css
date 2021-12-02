@@ -138,11 +138,19 @@
 }
 
 .group {
+    position: relative;
     border: 3px dotted darkgray;
     display: inline-table;
-    padding: var(--item-padding);
+    padding: calc(var(--item-padding) + 5px);
     margin-top: var(--item-padding);
     margin-bottom: var(--item-padding);
+}
+
+.groupName {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 2px;
 }
 
 .errorMessage {

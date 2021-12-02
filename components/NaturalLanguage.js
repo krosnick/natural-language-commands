@@ -636,6 +636,16 @@ export default class NaturalLanguage extends React.Component {
         });
     }
 
+    handleGroupNameChange(e, uuid) {
+        console.log("handleGroupNameChange");
+        console.log("e", e);
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        idToItemClone[uuid].groupName = e.target.value;
+        this.setState({
+            idToItem: idToItemClone
+        });
+    }
+
     handleParamNameChange(e, uuid) {
         console.log("handleParamNameChange");
         console.log("e", e);
@@ -756,7 +766,8 @@ export default class NaturalLanguage extends React.Component {
                     paramIsOptional: false,
                     paramMultipleValuesAllowed: false,
                     paramTypeData: null,
-                    paramAnnotatorCreated: false
+                    paramAnnotatorCreated: false,
+                    groupName: "<Name group>"
                 };
 
                 // Replace childIDs from firstSelectedIDIndex to lastSelectedIDIndex with newGroupItem.uuid
@@ -1101,6 +1112,17 @@ export default class NaturalLanguage extends React.Component {
                     <span
                         className={styles.group}
                     >
+                        <span
+                            className={styles.groupName}
+                        >
+                            <input
+                                className={`${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')}`}
+                                type="text"
+                                value={textItem.groupName}
+                                onChange={(e) => this.handleGroupNameChange(e, textItem.uuid)}
+                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                            ></input>
+                        </span>
                         {this.renderItemsList(textItem.itemIDs)}
                     </span>
                 );
