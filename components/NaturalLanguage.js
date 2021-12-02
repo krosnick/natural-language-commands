@@ -729,8 +729,8 @@ export default class NaturalLanguage extends React.Component {
 
         console.log("selectedIDs", selectedIDs);
 
-        // Doesn't make sense to group if only 1
-        if(selectedIDs.length > 1){
+        // Don't create a group if 0 items selected. For now we'll let users create a group of size 1 (could be use cases for that)
+        if(selectedIDs.length > 0){
             // For now, verify that all in selectedIDs have same parent; if they don't, show user an error
                 // Easiest for us right now, so that we don't have to worry about finding https://en.wikipedia.org/wiki/Lowest_common_ancestor
             let sameParentID = true;
