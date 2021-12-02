@@ -576,6 +576,11 @@ export default class NaturalLanguage extends React.Component {
                             idToItem: idToItemClone,
                             hoveredID: newParamItem.uuid
                         });
+
+                        // This is a bit hacky, but want to wait long enough for the state to update to include this new param, then we'll scroll to it
+                        setTimeout(function(){
+                            document.querySelector(`[uuid="${newParamItem.uuid}"]`).scrollIntoView({block: "end", inline: "nearest"});
+                        }, 0);
                     }
 
                     //this.exitEditMode();

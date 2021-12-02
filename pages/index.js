@@ -18,8 +18,13 @@ export default function Home() {
             websiteUrl="https://www.spirit.com/"
             textEditable={false}
         /> */}
-        <NaturalLanguage
+        {/* <NaturalLanguage
             text="Order a chicken burrito bowl with black beans, white rice, sour cream, green salsa, and red salsa from Chipotle. Place the order now and for delivery."
+            websiteUrl="https://www.chipotle.com/order"
+            textEditable={false}
+        /> */}
+        <NaturalLanguage
+            text="Order a chicken burrito bowl with black beans, white rice, sour cream, green salsa, and red salsa from Chipotle. Place the order now and for pickup."
             websiteUrl="https://www.chipotle.com/order"
             textEditable={false}
         />
