@@ -8,6 +8,16 @@
     text-align: center;
 }
 
+.paramTextAnnotatorCreated {
+    background-color: lavender;
+    text-align: center;
+}
+
+.paramTextAnnotatorCreatedLabel {
+    color: #5d0080;
+    font-style: italic;
+}
+
 .removeButton {
     position: absolute;
     cursor: pointer;
@@ -47,7 +57,10 @@
 .container {
     position: relative;
     display: inline-block;
-    padding: calc(var(--item-padding) + 2 * var(--button-padding));
+    padding-top: calc(var(--item-padding) + 2 * var(--button-padding));
+    padding-left: calc(var(--item-padding) + 2 * var(--button-padding));
+    padding-right: calc(var(--item-padding) + 2 * var(--button-padding));
+    padding-bottom: var(--button-padding);
     vertical-align: top;
     margin-bottom: 20px;
 }
@@ -55,7 +68,6 @@
 .paramData {
     /*position: absolute;*/
     position: relative;
-    top: 20px;
     left: 0px;
     padding: 10px;
 }

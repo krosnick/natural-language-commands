@@ -312,7 +312,7 @@ class ParamTextItem extends React.Component {
         return (
             <span>
                 <input
-                    className={`${styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
+                    className={`${this.props.paramAnnotatorCreated ? styles.paramTextAnnotatorCreated : styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
                     uuid={this.props.uuid}
                     text-item-type="param"
                     type="text"
@@ -322,6 +322,17 @@ class ParamTextItem extends React.Component {
                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                 >
                 </input>
+                {
+                    this.props.paramAnnotatorCreated ? (
+                        <div
+                            className={styles.paramTextAnnotatorCreatedLabel}
+                        >
+                            Annotator-created
+                        </div>
+                    ) : (
+                        ""
+                    )
+                }
                 {/* <span
                     className={`${styles.paramText} ${styles.inputNaturalLanguage}`}
                     start-index={this.props.startIndex}
@@ -412,7 +423,8 @@ export default class NaturalLanguage extends React.Component {
             currentlySelected: false,
             paramIsOptional: false,
             paramMultipleValuesAllowed: false,
-            paramTypeData: null
+            paramTypeData: null,
+            paramAnnotatorCreated: false
         };
 
         // Creating a root element to represent top-level
@@ -426,7 +438,8 @@ export default class NaturalLanguage extends React.Component {
             currentlySelected: false,
             paramIsOptional: false,
             paramMultipleValuesAllowed: false,
-            paramTypeData: null
+            paramTypeData: null,
+            paramAnnotatorCreated: false
         };
 
         this.state = {
@@ -486,7 +499,8 @@ export default class NaturalLanguage extends React.Component {
                             currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
-                            paramTypeData: null
+                            paramTypeData: null,
+                            paramAnnotatorCreated: false
                         };
                         const newParamItem = {
                             text: selectedText,
@@ -501,7 +515,8 @@ export default class NaturalLanguage extends React.Component {
                             paramTypeData: {
                                 type: "",
                                 possibleValues: [selectedText],
-                            }
+                            },
+                            paramAnnotatorCreated: false
                         };
                         const newItemOnRight = {
                             text: textOnRight,
@@ -513,7 +528,8 @@ export default class NaturalLanguage extends React.Component {
                             currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
-                            paramTypeData: null
+                            paramTypeData: null,
+                            paramAnnotatorCreated: false
                         };
 
                         // Add replacement items
@@ -725,7 +741,8 @@ export default class NaturalLanguage extends React.Component {
                     currentlySelected: false,
                     paramIsOptional: false,
                     paramMultipleValuesAllowed: false,
-                    paramTypeData: null
+                    paramTypeData: null,
+                    paramAnnotatorCreated: false
                 };
 
                 // Replace childIDs from firstSelectedIDIndex to lastSelectedIDIndex with newGroupItem.uuid
@@ -819,7 +836,8 @@ export default class NaturalLanguage extends React.Component {
                 currentlySelected: false,                
                 paramIsOptional: false,
                 paramMultipleValuesAllowed: false,
-                paramTypeData: null
+                paramTypeData: null,
+                paramAnnotatorCreated: false
             };
 
             console.log("startingIndexToReplace", startingIndexToReplace);
@@ -990,7 +1008,8 @@ export default class NaturalLanguage extends React.Component {
             paramTypeData: {
                 type: "",
                 possibleValues: [],
-            }
+            },
+            paramAnnotatorCreated: true
         };
         
         const idToItemClone = _.cloneDeep(this.state.idToItem);
@@ -1035,6 +1054,7 @@ export default class NaturalLanguage extends React.Component {
                             uuid={textItem.uuid}
                             paramName={textItem.paramName}
                             paramTypeData={textItem.paramTypeData}
+                            paramAnnotatorCreated={textItem.paramAnnotatorCreated}
                             onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                             onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
                             removeItem={() => this.removeItem(textItem.uuid)}
