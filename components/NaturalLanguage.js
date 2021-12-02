@@ -141,6 +141,15 @@ class EnumerationParam extends React.Component {
         );
     }
 }
+class FlagParam extends React.Component {
+    render(){
+        return (
+            /* Nothing to show */
+            <div>
+            </div>
+        );
+    }
+}
 class DateParam extends React.Component {
     render(){
         return (
@@ -289,6 +298,8 @@ class ParamTextItem extends React.Component {
                                             groupSelectionMode={this.props.groupSelectionMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                                         />;
+            }else if(this.props.paramTypeData.type === "flag"){
+                paramTypeSpecificForm = <FlagParam/>;
             }else if(this.props.paramTypeData.type === "date"){
                 paramTypeSpecificForm = <DateParam
                                             dateRestriction={this.props.paramTypeData.dateRestriction}
@@ -363,6 +374,7 @@ class ParamTextItem extends React.Component {
                         <option value="">--Select parameter type--</option>
                         <option value="freeform">Something the user types in</option>
                         <option value="enumeration">Something user selects from a list</option>
+                        <option value="flag">Single-value flag</option>
                         <option value="date">A date</option>
                         <option value="number">A number</option>
                     </select>
@@ -371,7 +383,7 @@ class ParamTextItem extends React.Component {
 
                     {/* Only show these questions after the user has selected a parameter type
                     (because we want the user to focus on that first) */}
-                    {this.props.paramTypeData.type !== "" ? (
+                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" ? (
                         <div
                             className={styles.paramDataChunk}
                         >
@@ -918,6 +930,8 @@ export default class NaturalLanguage extends React.Component {
         if(value === "freeform"){
             // Nothing else to set
         }else if(value === "enumeration"){
+            // Nothing else to set
+        }else if(value === "flag"){
             // Nothing else to set
         }else if(value === "date"){
             paramTypeData.dateRestriction = "";
