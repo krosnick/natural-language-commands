@@ -375,7 +375,7 @@ class ParamTextItem extends React.Component {
                         onChange={(e) => this.props.handleParamTypeChange(e, this.props.uuid)}
                         disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                     >
-                        <option value="">--Select parameter type--</option>
+                        <option value="">--Select value type--</option>
                         <option value="freeform">Something the user types in</option>
                         <option value="enumeration">Something user selects from a list</option>
                         <option value="flag">Yes/no flag</option>
@@ -391,7 +391,7 @@ class ParamTextItem extends React.Component {
                         <div
                             className={styles.paramDataChunk}
                         >
-                            Can the user leave this parameter blank?
+                            Can the user leave this value blank?
                             <div>
                                 <input
                                     type="radio"
@@ -401,7 +401,7 @@ class ParamTextItem extends React.Component {
                                     onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
                                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                                 />
-                                <label htmlFor={`optional_paramOptional_${this.props.uuid}`}>Yes, this parameter is optional</label>
+                                <label htmlFor={`optional_paramOptional_${this.props.uuid}`}>Yes, this value is optional</label>
                             </div>
 
                             <div>
@@ -526,7 +526,8 @@ export default class NaturalLanguage extends React.Component {
                             type: "param",
                             itemIDs: [],
                             parentID: parentID,
-                            paramName: `<set param name for *${selectedText}*>`,
+                            //paramName: `<name for *${selectedText}*>`,
+                            paramName: `<name>`,
                             currentlySelected: false,
                             paramIsOptional: false,
                             paramMultipleValuesAllowed: false,
@@ -776,7 +777,7 @@ export default class NaturalLanguage extends React.Component {
                     paramMultipleValuesAllowed: false,
                     paramTypeData: null,
                     paramAnnotatorCreated: false,
-                    groupName: "<Name group>"
+                    groupName: "<name>"
                 };
 
                 // Replace childIDs from firstSelectedIDIndex to lastSelectedIDIndex with newGroupItem.uuid
@@ -1037,7 +1038,7 @@ export default class NaturalLanguage extends React.Component {
             type: "param",
             itemIDs: [],
             parentID: uuid,
-            paramName: `<set param name>`,
+            paramName: `<name>`,
             currentlySelected: false,
             paramIsOptional: false,
             paramMultipleValuesAllowed: false,
@@ -1177,7 +1178,7 @@ export default class NaturalLanguage extends React.Component {
                                             className={styles.addParameterButton}
                                             onClick={() => this.addParameter(textItem.uuid)}
                                             disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                                        >Add parameter</button>
+                                        >Add item</button>
                                     ):(
                                         ""
                                     ) }
@@ -1275,7 +1276,7 @@ export default class NaturalLanguage extends React.Component {
                                     className={styles.addParameterButton}
                                     onClick={() => this.addParameter("root")}
                                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                                >Add parameter</button>
+                                >Add item</button>
                             </span>
                         ) : (
                             ""
