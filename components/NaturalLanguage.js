@@ -1123,10 +1123,10 @@ export default class NaturalLanguage extends React.Component {
                         className={styles.group}
                     >
                         <span
-                            className={styles.groupName}
+                            className={styles.groupNameContainer}
                         >
                             <input
-                                className={`${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')}`}
+                                className={`${styles.groupName} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')}`}
                                 type="text"
                                 value={textItem.groupName}
                                 onChange={(e) => this.handleGroupNameChange(e, textItem.uuid)}

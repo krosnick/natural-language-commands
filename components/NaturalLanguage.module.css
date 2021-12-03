@@ -151,11 +151,15 @@
     margin-bottom: var(--item-padding);
 }
 
-.groupName {
+.groupNameContainer {
     position: absolute;
     top: 0px;
     left: 0px;
     padding: 2px;
+}
+
+.groupName {
+    font-size: 20px;
 }
 
 .errorMessage {
