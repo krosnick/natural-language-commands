@@ -378,7 +378,7 @@ class ParamTextItem extends React.Component {
                         <option value="">--Select parameter type--</option>
                         <option value="freeform">Something the user types in</option>
                         <option value="enumeration">Something user selects from a list</option>
-                        <option value="flag">Single-value flag</option>
+                        <option value="flag">Yes/no flag</option>
                         <option value="date">A date</option>
                         <option value="number">A number</option>
                     </select>
