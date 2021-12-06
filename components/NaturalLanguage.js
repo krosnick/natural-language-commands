@@ -590,10 +590,7 @@ export default class NaturalLanguage extends React.Component {
                             hoveredID: newParamItem.uuid
                         });
 
-                        // This is a bit hacky, but want to wait long enough for the state to update to include this new param, then we'll scroll to it
-                        setTimeout(function(){
-                            document.querySelector(`[uuid="${newParamItem.uuid}"]`).scrollIntoView({block: "end", inline: "nearest"});
-                        }, 0);
+                        this.scrollParamIntoViewAndHighlightText(newParamItem.uuid);
                     }
 
                     //this.exitEditMode();
@@ -1075,10 +1072,7 @@ export default class NaturalLanguage extends React.Component {
             hoveredID: newParamItem.uuid
         });
 
-        // This is a bit hacky, but want to wait long enough for the state to update to include this new param, then we'll scroll to it
-        setTimeout(function(){
-            document.querySelector(`[uuid="${newParamItem.uuid}"]`).scrollIntoView({block: "end", inline: "nearest"});
-        }, 0);
+        this.scrollParamIntoViewAndHighlightText(newParamItem.uuid);
     }
 
 /*     componentDidUpdate(){
@@ -1087,6 +1081,14 @@ export default class NaturalLanguage extends React.Component {
             this.mainText.focus();
         }
     } */
+
+    scrollParamIntoViewAndHighlightText(uuid){
+        // This is a bit hacky, but want to wait long enough for the state to update to include this new param, then we'll scroll to it and highlight the text
+        setTimeout(function(){
+            document.querySelector(`[uuid="${uuid}"]`).scrollIntoView({block: "end", inline: "nearest"});
+            document.querySelector(`[uuid="${uuid}"]`).select();
+        }, 0);
+    }
 
     renderItemsList(itemIDs){
         
