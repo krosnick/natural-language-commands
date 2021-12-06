@@ -186,3 +186,7 @@
 .itemSelected {
     border: 1px solid rgb(26 115 232);
 }
+
+.contentArea {
+    position: relative;
+}

@@ -710,7 +710,10 @@ export default class NaturalLanguage extends React.Component {
         // Add checkbox in top-right corner of each parameter
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
-        idToItemClone[uuid].currentlySelected = true;
+        if(uuid){
+            // Set initial selection, only if a non-null uuid is passed in
+            idToItemClone[uuid].currentlySelected = true;
+        }
         this.setState({
             groupSelectionMode: true,
             idToItem: idToItemClone
@@ -1095,7 +1098,11 @@ export default class NaturalLanguage extends React.Component {
     scrollGroupIntoViewAndHighlightNameText(uuid){
         // This is a bit hacky, but want to wait long enough for the state to update to include this new group, then we'll scroll to it and highlight the text
         setTimeout(function(){
-            document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "start", inline: "nearest"});
+            //document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "start", inline: "nearest"});
+            const groupTop = document.querySelector(`[uuid="${uuid}"]`).closest("[container]").getBoundingClientRect().top;
+            const contentAreaTop = document.querySelector("[content-area]").getBoundingClientRect().top;
+            const relativeChange = groupTop - contentAreaTop;
+            window.scroll(0, relativeChange);
             document.querySelector(`[uuid="${uuid}"] [group-name]`).select();
         }, 0);
     }
@@ -1260,63 +1267,89 @@ export default class NaturalLanguage extends React.Component {
             <div
                 // className={(this.state.uuidInEditMode ? styles.editBackground : '')}
             >
-                {this.state.groupSelectionMode ? (
-                    <span
+                
+                <span
                     className={styles.topButtonRow}
-                    >
-                        <button
-                            className={styles.topButton}
-                            onClick={() => this.createGroup()}
-                        >
-                            Create group
-                        </button>
-                        <button
-                            className={styles.topButton}
-                            onClick={() => this.exitGroupCreationMode()}
-                        >
-                            Cancel
-                        </button>
-                    </span>
-                ) : (
-                    ""
-                )}
-                <div>
-                    <p
-                        className={styles.errorMessage}
-                    >
-                        {this.state.errorMessage}
-                    </p>
-                </div>
-                <div
-                    className={styles.request}
                 >
-                    <span
-                        container=""
-                        className={`${styles.container} ${(this.state.hoveredID === "root" ? styles.hoveredOuterContainer : styles.notHovered)}`}
-                        onMouseEnter={() => this.handleOnMouseEnter("root")}
-                        onMouseLeave={() => this.handleOnMouseLeave("root")}
-                    >
-                        {this.state.hoveredID === "root" && !this.state.groupSelectionMode ? (
-                            <span
-                                className={styles.operationsButtonGroup}
-                            >
+                    <div>
+                        <button
+                            className={styles.topButton}
+                            onClick={() => this.addParameter("root")}
+                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                        >
+                            Add item
+                        </button>
+                        <button
+                            className={styles.topButton}
+                            onClick={() => this.enterGroupSelection(null)}
+                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                        >
+                            Group
+                        </button>
+                        {/* State-specific buttons */}
+                        {this.state.groupSelectionMode ? (
+                            <span>
                                 <button
-                                    className={styles.addParameterButton}
-                                    onClick={() => this.addParameter("root")}
-                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                                >Add item</button>
+                                    className={styles.topButton}
+                                    onClick={() => this.createGroup()}
+                                >
+                                    Create group
+                                </button>
+                                <button
+                                    className={styles.topButton}
+                                    onClick={() => this.exitGroupCreationMode()}
+                                >
+                                    Cancel
+                                </button>
                             </span>
                         ) : (
                             ""
-                        ) }
-                        {domTextItems}
-                    </span>
+                        )}
+                    </div>
+                    <div>
+                        <p
+                            className={styles.errorMessage}
+                        >
+                        {this.state.errorMessage}
+                    </p>
                 </div>
-                <iframe
-                    width="100%"
-                    height="700"
-                    src={this.state.websiteUrl}>
-                </iframe>
+                </span>
+                
+                <div
+                    className={styles.contentArea}
+                    content-area=""
+                >
+                    <div
+                        className={styles.request}
+                    >
+                        <span
+                            container=""
+                            className={`${styles.container} ${(this.state.hoveredID === "root" ? styles.hoveredOuterContainer : styles.notHovered)}`}
+                            onMouseEnter={() => this.handleOnMouseEnter("root")}
+                            onMouseLeave={() => this.handleOnMouseLeave("root")}
+                        >
+                            {this.state.hoveredID === "root" && !this.state.groupSelectionMode ? (
+                                <span
+                                    className={styles.operationsButtonGroup}
+                                >
+                                    <button
+                                        className={styles.addParameterButton}
+                                        onClick={() => this.addParameter("root")}
+                                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                    >Add item</button>
+                                </span>
+                            ) : (
+                                ""
+                            ) }
+                            {domTextItems}
+                        </span>
+                    </div>
+                    <iframe
+                        width="100%"
+                        height="700"
+                        src={this.state.websiteUrl}>
+                    </iframe>
+                </div>
 
             </div>
         );
