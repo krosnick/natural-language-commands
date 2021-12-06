@@ -590,7 +590,7 @@ export default class NaturalLanguage extends React.Component {
                             hoveredID: newParamItem.uuid
                         });
 
-                        this.scrollParamIntoViewAndHighlightText(newParamItem.uuid);
+                        this.scrollParamIntoViewAndHighlightNameText(newParamItem.uuid);
                     }
 
                     //this.exitEditMode();
@@ -819,6 +819,8 @@ export default class NaturalLanguage extends React.Component {
                     hoveredID: newGroupItem.uuid,
                     errorMessage: null
                 });
+
+                this.scrollGroupIntoViewAndHighlightNameText(newGroupItem.uuid);
             }
         }else{
             this.exitGroupCreationMode();
@@ -1072,7 +1074,7 @@ export default class NaturalLanguage extends React.Component {
             hoveredID: newParamItem.uuid
         });
 
-        this.scrollParamIntoViewAndHighlightText(newParamItem.uuid);
+        this.scrollParamIntoViewAndHighlightNameText(newParamItem.uuid);
     }
 
 /*     componentDidUpdate(){
@@ -1082,11 +1084,19 @@ export default class NaturalLanguage extends React.Component {
         }
     } */
 
-    scrollParamIntoViewAndHighlightText(uuid){
+    scrollParamIntoViewAndHighlightNameText(uuid){
         // This is a bit hacky, but want to wait long enough for the state to update to include this new param, then we'll scroll to it and highlight the text
         setTimeout(function(){
             document.querySelector(`[uuid="${uuid}"]`).scrollIntoView({block: "end", inline: "nearest"});
             document.querySelector(`[uuid="${uuid}"]`).select();
+        }, 0);
+    }
+
+    scrollGroupIntoViewAndHighlightNameText(uuid){
+        // This is a bit hacky, but want to wait long enough for the state to update to include this new group, then we'll scroll to it and highlight the text
+        setTimeout(function(){
+            document.querySelector(`[uuid="${uuid}"]`).scrollIntoView({block: "start", inline: "nearest"});
+            document.querySelector(`[uuid="${uuid}"] [group-name]`).select();
         }, 0);
     }
 
@@ -1135,11 +1145,13 @@ export default class NaturalLanguage extends React.Component {
                 itemContents = (
                     <span
                         className={styles.group}
+                        uuid={textItem.uuid}
                     >
                         <span
                             className={styles.groupNameContainer}
                         >
                             <input
+                                group-name=""
                                 className={`${styles.groupName} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')}`}
                                 type="text"
                                 value={textItem.groupName}
