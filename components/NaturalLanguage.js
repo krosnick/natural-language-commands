@@ -117,6 +117,7 @@ class EnumerationParam extends React.Component {
                         <input
                             type="radio"
                             name={`one_numValuesAllowed_${this.props.uuid}`}
+                            id={`one_numValuesAllowed_${this.props.uuid}`}
                             value="one"
                             checked={!this.props.paramMultipleValuesAllowed}
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
@@ -129,6 +130,7 @@ class EnumerationParam extends React.Component {
                         <input
                             type="radio"
                             name={`multiple_numValuesAllowed_${this.props.uuid}`}
+                            id={`multiple_numValuesAllowed_${this.props.uuid}`}
                             value="multiple"
                             checked={this.props.paramMultipleValuesAllowed}
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
@@ -162,6 +164,7 @@ class DateParam extends React.Component {
                         <input
                             type="radio"
                             name={`past_dateRestrictions_${this.props.uuid}`}
+                            id={`past_dateRestrictions_${this.props.uuid}`}
                             value="past"
                             checked={this.props.dateRestriction === "past"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
@@ -173,6 +176,7 @@ class DateParam extends React.Component {
                         <input
                             type="radio"
                             name={`future_dateRestrictions_${this.props.uuid}`}
+                            id={`future_dateRestrictions_${this.props.uuid}`}
                             value="future"
                             checked={this.props.dateRestriction === "future"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
@@ -184,6 +188,7 @@ class DateParam extends React.Component {
                         <input
                             type="radio"
                             name={`none_dateRestrictions_${this.props.uuid}`}
+                            id={`none_dateRestrictions_${this.props.uuid}`}
                             value="none"
                             checked={this.props.dateRestriction === "none"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
@@ -195,6 +200,7 @@ class DateParam extends React.Component {
                         <input
                             type="radio"
                             name={`other_dateRestrictions_${this.props.uuid}`}
+                            id={`other_dateRestrictions_${this.props.uuid}`}
                             value="other"
                             checked={this.props.dateRestriction === "other"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
@@ -219,6 +225,7 @@ class NumberParam extends React.Component {
                         <input
                             type="checkbox"
                             name={`integers_${this.props.uuid}`}
+                            id={`integers_${this.props.uuid}`}
                             value="integers"
                             checked={this.props.restrictedToIntegers}
                             onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)}
@@ -230,6 +237,7 @@ class NumberParam extends React.Component {
                         <input
                             type="checkbox"
                             name={`range_${this.props.uuid}`}
+                            id={`range_${this.props.uuid}`}
                             value="range"
                             checked={this.props.restrictedToRange}
                             onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToRange", this.props.uuid)}
@@ -247,6 +255,7 @@ class NumberParam extends React.Component {
                             <input
                                 type="text"
                                 name={`rangeStart_${this.props.uuid}`}
+                                id={`rangeStart_${this.props.uuid}`}
                                 value={this.props.rangeStart}
                                 onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeStart", this.props.uuid)}
                                 disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
@@ -258,6 +267,7 @@ class NumberParam extends React.Component {
                             <input
                                 type="text"
                                 name={`rangeEnd_${this.props.uuid}`}
+                                id={`rangeEnd_${this.props.uuid}`}
                                 value={this.props.rangeEnd}
                                 onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeEnd", this.props.uuid)}
                                 disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
@@ -396,6 +406,7 @@ class ParamTextItem extends React.Component {
                                 <input
                                     type="radio"
                                     name={`optional_paramOptional_${this.props.uuid}`}
+                                    id={`optional_paramOptional_${this.props.uuid}`}
                                     value="optional"
                                     checked={this.props.paramIsOptional}
                                     onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
@@ -408,6 +419,7 @@ class ParamTextItem extends React.Component {
                                 <input
                                     type="radio"
                                     name={`notOptional_paramOptional_${this.props.uuid}`}
+                                    id={`notOptional_paramOptional_${this.props.uuid}`}
                                     value="notOptional"
                                     checked={!this.props.paramIsOptional}
                                     onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
