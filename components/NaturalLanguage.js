@@ -1087,7 +1087,7 @@ export default class NaturalLanguage extends React.Component {
     scrollParamIntoViewAndHighlightNameText(uuid){
         // This is a bit hacky, but want to wait long enough for the state to update to include this new param, then we'll scroll to it and highlight the text
         setTimeout(function(){
-            document.querySelector(`[uuid="${uuid}"]`).scrollIntoView({block: "end", inline: "nearest"});
+            document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "end", inline: "nearest"});
             document.querySelector(`[uuid="${uuid}"]`).select();
         }, 0);
     }
@@ -1095,7 +1095,7 @@ export default class NaturalLanguage extends React.Component {
     scrollGroupIntoViewAndHighlightNameText(uuid){
         // This is a bit hacky, but want to wait long enough for the state to update to include this new group, then we'll scroll to it and highlight the text
         setTimeout(function(){
-            document.querySelector(`[uuid="${uuid}"]`).scrollIntoView({block: "start", inline: "nearest"});
+            document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "start", inline: "nearest"});
             document.querySelector(`[uuid="${uuid}"] [group-name]`).select();
         }, 0);
     }
@@ -1166,6 +1166,7 @@ export default class NaturalLanguage extends React.Component {
 
             return (
                 <span
+                    container=""
                     className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)} ${(textItem.currentlySelected ? styles.itemSelected : '')}`}
                     onMouseEnter={() => this.handleOnMouseEnter(textItem.uuid)}
                     onMouseLeave={() => this.handleOnMouseLeave(textItem.uuid)}
@@ -1290,6 +1291,7 @@ export default class NaturalLanguage extends React.Component {
                     className={styles.request}
                 >
                     <span
+                        container=""
                         className={`${styles.container} ${(this.state.hoveredID === "root" ? styles.hoveredOuterContainer : styles.notHovered)}`}
                         onMouseEnter={() => this.handleOnMouseEnter("root")}
                         onMouseLeave={() => this.handleOnMouseLeave("root")}
