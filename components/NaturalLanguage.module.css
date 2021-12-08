@@ -110,6 +110,11 @@
     cursor: pointer;
 }
 
+.submitButton {
+    font-size: large;
+    cursor: pointer;
+}
+
 .topButtonRow {
     display: flex;
     justify-content: center;

@@ -1,4 +1,5 @@
 import React, {useRef} from 'react';
+import { withRouter } from 'next/router';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styles from './NaturalLanguage.module.css';
@@ -437,7 +438,7 @@ class ParamTextItem extends React.Component {
     }
 }
 
-export default class NaturalLanguage extends React.Component {
+class NaturalLanguage extends React.Component {
     constructor(props){
         super(props);
 
@@ -1107,6 +1108,16 @@ export default class NaturalLanguage extends React.Component {
         }, 0);
     }
 
+    async handleSubmit(){
+        console.log("handleSubmit");
+
+        // Save data to db
+        await fetch('/api/new/');
+
+        // Show "finished" view
+        this.props.router.push("/finished");
+    }
+
     renderItemsList(itemIDs){
         
         function renderParamOrGroup(key, textItem){
@@ -1351,7 +1362,15 @@ export default class NaturalLanguage extends React.Component {
                     </iframe>
                 </div>
 
+                <button
+                    onClick={() => this.handleSubmit()}
+                    className={styles.submitButton}
+                >
+                    Submit
+                </button>
             </div>
         );
     }
 }
+
+export default withRouter(NaturalLanguage);
