@@ -7,7 +7,8 @@ export default async function handler(req, res) {
     await db
         .collection("annotationData")
         .insertOne({
-            idToItem: body,
+            idToItem: body.idToItem,
+            clientID: body.clientID,
             time: Date.now()
         });
     

@@ -483,7 +483,8 @@ class NaturalLanguage extends React.Component {
             hoveredID: null,
             errorMessage: null,
             websiteUrl: props.websiteUrl,
-            textEditable: props.textEditable
+            textEditable: props.textEditable,
+            clientID: props.clientID
         }
     }
 
@@ -1117,7 +1118,10 @@ class NaturalLanguage extends React.Component {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(this.state.idToItem),
+            body: JSON.stringify({
+                idToItem: this.state.idToItem,
+                clientID: this.state.clientID
+            }),
         })
 
         // Show "finished" view
@@ -1322,6 +1326,13 @@ class NaturalLanguage extends React.Component {
                         ) : (
                             ""
                         )}
+                        <button
+                            onClick={() => this.handleSubmit()}
+                            className={`${styles.submitButton} ${styles.topButton}`}
+                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                        >
+                            Submit
+                        </button>
                     </div>
                     <div>
                         <p
@@ -1367,13 +1378,6 @@ class NaturalLanguage extends React.Component {
                         src={this.state.websiteUrl}>
                     </iframe>
                 </div>
-
-                <button
-                    onClick={() => this.handleSubmit()}
-                    className={styles.submitButton}
-                >
-                    Submit
-                </button>
             </div>
         );
     }
