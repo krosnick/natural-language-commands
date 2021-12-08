@@ -1112,7 +1112,13 @@ class NaturalLanguage extends React.Component {
         console.log("handleSubmit");
 
         // Save data to db
-        await fetch('/api/new/');
+        await fetch('/api/new', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(this.state.idToItem),
+        })
 
         // Show "finished" view
         this.props.router.push("/finished");

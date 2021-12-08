@@ -1,12 +1,13 @@
 import { connectToDatabase } from '../../util/mongodb';
 
 export default async function handler(req, res) {
-    const { db } = await connectToDatabase();
+    const body = req.body;
 
+    const { db } = await connectToDatabase();
     await db
-        .collection("test")
+        .collection("annotationData")
         .insertOne({
-            name: "test",
+            idToItem: body,
             time: Date.now()
         });
     
