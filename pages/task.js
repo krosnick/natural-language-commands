@@ -12,11 +12,27 @@ export default function Task() {
     
     const [userFinishedVideo, updateFinishedVideoStatus] = useState(false);
 
+    function showNLTask(){
+        updateFinishedVideoStatus(true);
+        
+        // Scroll to the task area; using setTimeout might be a bit hacky
+        setTimeout(function(){
+            const taskAreaTop = document.querySelector("#taskArea").getBoundingClientRect().top;
+            window.scroll({
+                top: taskAreaTop,
+                left: 0,
+                behavior: "smooth"
+            });
+        }, 100); // waiting 100ms to ensure #taskArea element is already rendered
+    }
+
     return (
         <div>
             <iframe
-                width="560"
-                height="315"
+                /* width="560"
+                height="315" */
+                width="1200"
+                height="675"
                 src="https://www.youtube.com/embed/jYjzl2gYlkQ"
                 title="YouTube video player"
                 frameborder="0"
@@ -26,7 +42,9 @@ export default function Task() {
             ></iframe>
             {
                 userFinishedVideo ? (
-                    <div>
+                    <div
+                        id="taskArea"
+                    >
                         {/* <NaturalLanguage
                             text="Which MLB player had the most home runs this year?"
                             websiteUrl="https://www.mlb.com/stats/"
@@ -82,7 +100,7 @@ export default function Task() {
             {
                 !userFinishedVideo ? (
                     <button
-                        onClick={() => updateFinishedVideoStatus(true)}
+                        onClick={() => showNLTask()}
                     >
                         Next
                     </button>
