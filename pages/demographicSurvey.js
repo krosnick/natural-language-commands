@@ -1,15 +1,14 @@
-import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/router';
 
-export default function Home() {
-  
+export default function DemographicSurvey() {
     const router = useRouter();
-    const clientID = uuidv4();
-    
-    function goToDemographicSurvey(clientID){
+    const { clientID } = router.query;
+
+    function goToTask(clientID){
+        
         // Use router to navigate to next page
         router.push({
-            pathname: '/demographicSurvey',
+            pathname: '/task',
             query: { clientID: clientID },
         });
     }
@@ -18,22 +17,22 @@ export default function Home() {
         <div>
             <div>
                 <iframe
-                    src="https://docs.google.com/forms/d/e/1FAIpQLSf2F_NEL2Q8d-mIJqXvCFZA8LP4VHjDx34P6ZSGyzXbqaOJcQ/viewform?embedded=true"
+                    src="https://docs.google.com/forms/d/e/1FAIpQLScSORDPbl3wbBTzrEeyygPMpatnIpsG33mGLQal8G_HBwtC8g/viewform?embedded=true"
                     width="640"
-                    height="574"
+                    height="879"
                     frameborder="0"
                     marginheight="0"
                     marginwidth="0"
-                    id="consentForm"
+                    id="demographicSurvey"
                 >
                     Loading…
                 </iframe>
             </div>
             <button
-                onClick={() => goToDemographicSurvey(clientID)}
+                onClick={() => goToTask(clientID)}
             >
                 Next
             </button>
         </div>
-    )
+    );
 }
