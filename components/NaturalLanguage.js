@@ -1153,24 +1153,27 @@ class NaturalLanguage extends React.Component {
         }
 
         if(incompleteFormParamIDs.length === 0){
-            // All parameter forms have been filled in; complete the submit operation
+            // All parameter forms have been filled in; confirm with user that they are finished, and then complete the submit operation
             
-            // Save data to db
-            await fetch('/api/new', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    idToItem: this.state.idToItem,
-                    clientID: this.state.clientID,
-                    userFeedback: this.state.userFeedback
-                }),
-            })
+            const proceed = window.confirm("Are you sure you want to submit? You won't be able to make any further changes.");
 
-            // Show "finished" view
-            this.props.router.push("/finished");
+            if(proceed){
+                // Save data to db
+                await fetch('/api/new', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        idToItem: this.state.idToItem,
+                        clientID: this.state.clientID,
+                        userFeedback: this.state.userFeedback
+                    }),
+                })
 
+                // Show "finished" view
+                this.props.router.push("/finished");
+            }
         }else{
             // Some parameter forms haven't been filled in; show the user an error
             window.alert("Some forms not completed. Make sure to complete all forms before submitting.");
