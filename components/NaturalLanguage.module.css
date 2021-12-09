@@ -196,3 +196,17 @@
 .contentArea {
     position: relative;
 }
+
+.userFeedback {
+    display: block;
+    font-family: sans-serif;
+    width: 80%;
+}
+
+.userFeedbackLabel {
+    display: block;
+}
+
+.userFeedbackArea {
+    margin: 20px;
+}

@@ -484,6 +484,7 @@ class NaturalLanguage extends React.Component {
             errorMessage: null,
             websiteUrl: props.websiteUrl,
             textEditable: props.textEditable,
+            userFeedback: "",
             clientID: props.clientID
         }
     }
@@ -704,6 +705,12 @@ class NaturalLanguage extends React.Component {
         idToItemClone[uuid].currentlySelected = e.target.checked;
         this.setState({
             idToItem: idToItemClone
+        });
+    }
+
+    handleUserFeedbackChange(e, uuid) {
+        this.setState({
+            userFeedback: e.target.value
         });
     }
 
@@ -1120,7 +1127,8 @@ class NaturalLanguage extends React.Component {
             },
             body: JSON.stringify({
                 idToItem: this.state.idToItem,
-                clientID: this.state.clientID
+                clientID: this.state.clientID,
+                userFeedback: this.state.userFeedback
             }),
         })
 
@@ -1377,6 +1385,26 @@ class NaturalLanguage extends React.Component {
                         height="700"
                         src={this.state.websiteUrl}>
                     </iframe>
+                </div>
+                <div
+                    className={styles.userFeedbackArea}
+                >
+                    <label
+                        htmlFor="userFeedback"
+                        className={styles.userFeedbackLabel}
+                    >
+                        Do you have any feedback, or is there any other information you wanted to share that the interface didn't let you share?
+                    </label>
+                    <textarea
+                        className={styles.userFeedback}
+                        id="userFeedback"
+                        name="userFeedback"
+                        rows="5"
+                        cols="33"
+                        value={this.state.userFeedback}
+                        onChange={(e) => this.handleUserFeedbackChange(e)}
+                    >
+                    </textarea>
                 </div>
                 <button
                     onClick={() => this.handleSubmit()}
