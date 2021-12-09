@@ -15,6 +15,15 @@ export default function Home() {
         });
     }
 
+    function iframeLoaded(scrollHeight) {
+        const iframeElement = document.querySelector('iframe');
+        if(iframeElement) {
+              // here you can make the height, I delete it first, then I make it again
+              iframeElement.height = "";
+              iframeElement.height = (scrollHeight + 100) + "px";
+        }   
+    }
+
     return (
         <div>
             <div>
@@ -26,6 +35,7 @@ export default function Home() {
                     marginheight="0"
                     marginwidth="0"
                     id="consentForm"
+                    onLoad={() => iframeLoaded(document.body.scrollHeight)}
                 >
                     Loading…
                 </iframe>
