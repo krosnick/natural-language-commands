@@ -29,7 +29,8 @@ export default function Home() {
             <div>
                 <iframe
                     src="https://docs.google.com/forms/d/e/1FAIpQLSf2F_NEL2Q8d-mIJqXvCFZA8LP4VHjDx34P6ZSGyzXbqaOJcQ/viewform?embedded=true"
-                    width="640"
+                    //width="640"
+                    width="100%"
                     height="574"
                     frameborder="0"
                     marginheight="0"

@@ -1,5 +1,8 @@
 .nextButton {
-    font-size: large;
+    font-size: xx-large;
     cursor: pointer;
+    padding: 10px;
+    position: relative;
+    left: 90%;
     margin: 10px;
 }

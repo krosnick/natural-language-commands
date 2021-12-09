@@ -28,7 +28,8 @@ export default function DemographicSurvey() {
             <div>
                 <iframe
                     src="https://docs.google.com/forms/d/e/1FAIpQLScSORDPbl3wbBTzrEeyygPMpatnIpsG33mGLQal8G_HBwtC8g/viewform?embedded=true"
-                    width="640"
+                    //width="640"
+                    width="100%"
                     height="879"
                     frameborder="0"
                     marginheight="0"
