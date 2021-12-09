@@ -1099,20 +1099,25 @@ class NaturalLanguage extends React.Component {
     scrollParamIntoViewAndHighlightNameText(uuid){
         // This is a bit hacky, but want to wait long enough for the state to update to include this new param, then we'll scroll to it and highlight the text
         setTimeout(function(){
-            document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "end", inline: "nearest"});
-            document.querySelector(`[uuid="${uuid}"]`).select();
+            // Check if parameter element (specifically, its bottom) is currently within viewport. If it isn't, only then call scrollIntoView (we don't want to call scrollIntoView unnecessarily, because it will cause things to move around and confuse the user)
+            if(document.querySelector(`[uuid="${uuid}"]`).closest("[container]").getBoundingClientRect().bottom > window.innerHeight){
+                document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "end", inline: "nearest"});
+                document.querySelector(`[uuid="${uuid}"]`).select();
+            }
         }, 0);
     }
 
     scrollGroupIntoViewAndHighlightNameText(uuid){
         // This is a bit hacky, but want to wait long enough for the state to update to include this new group, then we'll scroll to it and highlight the text
         setTimeout(function(){
-            //document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "start", inline: "nearest"});
             const groupTop = document.querySelector(`[uuid="${uuid}"]`).closest("[container]").getBoundingClientRect().top;
-            const contentAreaTop = document.querySelector("[content-area]").getBoundingClientRect().top;
-            const relativeChange = groupTop - contentAreaTop;
-            window.scroll(0, relativeChange);
-            document.querySelector(`[uuid="${uuid}"] [group-name]`).select();
+
+            // Check if group top is in viewport. Only if it isn't, scroll to show it at top. Don't want to scroll unnecessarily (will make things move around and confuse the user)
+            if(groupTop < 0){
+                const topButtonRowHeight = document.querySelector("[topButtonRow]").getBoundingClientRect().height;
+                window.scroll(0, (groupTop + window.scrollY) - topButtonRowHeight);
+                document.querySelector(`[uuid="${uuid}"] [group-name]`).select();
+            }
         }, 0);
     }
 
@@ -1299,6 +1304,7 @@ class NaturalLanguage extends React.Component {
                 
                 <span
                     className={styles.topButtonRow}
+                    topButtonRow=""
                 >
                     <div>
                         <button
