@@ -31,9 +31,9 @@ export default function DemographicSurvey() {
                     //width="640"
                     width="100%"
                     height="879"
-                    frameborder="0"
-                    marginheight="0"
-                    marginwidth="0"
+                    frameBorder="0"
+                    marginHeight="0"
+                    marginWidth="0"
                     id="demographicSurvey"
                     onLoad={() => iframeLoaded(document.body.scrollHeight)}
                 >

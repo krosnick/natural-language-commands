@@ -32,9 +32,9 @@ export default function Home() {
                     //width="640"
                     width="100%"
                     height="574"
-                    frameborder="0"
-                    marginheight="0"
-                    marginwidth="0"
+                    frameBorder="0"
+                    marginHeight="0"
+                    marginWidth="0"
                     id="consentForm"
                     onLoad={() => iframeLoaded(document.body.scrollHeight)}
                 >
