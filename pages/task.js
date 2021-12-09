@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import styles from '../components/styles.module.css';
 const NaturalLanguage = dynamic(
     () => import('../components/NaturalLanguage'),
     { ssr: false }
@@ -101,6 +102,7 @@ export default function Task() {
                 !userFinishedVideo ? (
                     <button
                         onClick={() => showNLTask()}
+                        className={styles.nextButton}
                     >
                         Next
                     </button>

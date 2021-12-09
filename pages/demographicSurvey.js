@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import styles from '../components/styles.module.css';
 
 export default function DemographicSurvey() {
     const router = useRouter();
@@ -30,6 +31,7 @@ export default function DemographicSurvey() {
             </div>
             <button
                 onClick={() => goToTask(clientID)}
+                className={styles.nextButton}
             >
                 Next
             </button>
