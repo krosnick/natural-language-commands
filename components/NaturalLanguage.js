@@ -1378,6 +1378,13 @@ class NaturalLanguage extends React.Component {
                         src={this.state.websiteUrl}>
                     </iframe>
                 </div>
+                <button
+                    onClick={() => this.handleSubmit()}
+                    className={`${styles.submitButton} ${styles.topButton}`}
+                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                >
+                    Submit
+                </button>
             </div>
         );
     }
