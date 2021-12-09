@@ -385,6 +385,7 @@ class ParamTextItem extends React.Component {
                         value={this.props.paramTypeData.type}
                         onChange={(e) => this.props.handleParamTypeChange(e, this.props.uuid)}
                         disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
                     >
                         <option value="">--Select value type--</option>
                         <option value="freeform">Something the user types in</option>
@@ -485,6 +486,7 @@ class NaturalLanguage extends React.Component {
             websiteUrl: props.websiteUrl,
             textEditable: props.textEditable,
             userFeedback: "",
+            incompleteFormParamIDs: [],
             clientID: props.clientID
         }
     }
@@ -971,6 +973,17 @@ class NaturalLanguage extends React.Component {
             type: value,
             possibleValues: idToItemClone[uuid].paramTypeData.possibleValues
         };
+
+        // Check if param type is actually set, and if so, make sure to remove the param's uuid from this.state.incompleteFormParamIDs if it is in there
+        const incompleteFormParamIDsClone = _.cloneDeep(this.state.incompleteFormParamIDs);
+        if(value !== ""){
+            // Param type is set
+            if(incompleteFormParamIDsClone.includes(uuid)){
+                const index = incompleteFormParamIDsClone.indexOf(uuid);
+                incompleteFormParamIDsClone.splice(index, 1);
+            }
+        }
+
         if(value === "freeform"){
             // Nothing else to set
         }else if(value === "enumeration"){
@@ -988,7 +1001,8 @@ class NaturalLanguage extends React.Component {
         idToItemClone[uuid].paramTypeData = paramTypeData;
 
         this.setState({
-            idToItem: idToItemClone
+            idToItem: idToItemClone,
+            incompleteFormParamIDs: incompleteFormParamIDsClone
         });
     }
 
@@ -1124,21 +1138,49 @@ class NaturalLanguage extends React.Component {
     async handleSubmit(){
         console.log("handleSubmit");
 
-        // Save data to db
-        await fetch('/api/new', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                idToItem: this.state.idToItem,
-                clientID: this.state.clientID,
-                userFeedback: this.state.userFeedback
-            }),
-        })
+        // First, check that all parameter forms have been completed (for now, that a type has been selected from the <select> menu)
+            // If a type hasn't been selected, then show user a pop-up alert and highlight the items that need to be fixed (e.g., with a red border)
+        
+        let incompleteFormParamIDs = [];
+        for (const [key, value] of Object.entries(this.state.idToItem)) {
+            // If it's a param, 
+            if(value.type === "param"){
+                if(value.paramTypeData.type === ""){
+                    // The user didn't select a param type from the <select> menu yet
+                    incompleteFormParamIDs.push(key);
+                }
+            }
+        }
 
-        // Show "finished" view
-        this.props.router.push("/finished");
+        if(incompleteFormParamIDs.length === 0){
+            // All parameter forms have been filled in; complete the submit operation
+            
+            // Save data to db
+            await fetch('/api/new', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idToItem: this.state.idToItem,
+                    clientID: this.state.clientID,
+                    userFeedback: this.state.userFeedback
+                }),
+            })
+
+            // Show "finished" view
+            this.props.router.push("/finished");
+
+        }else{
+            // Some parameter forms haven't been filled in; show the user an error
+            window.alert("Some forms not completed. Make sure to complete all forms before submitting.");
+
+            // Show a red border around forms that haven't been filled in, to indicate error
+            // Have a state variable for things that haven't been filled in
+            this.setState({
+                incompleteFormParamIDs: incompleteFormParamIDs
+            });
+        }
     }
 
     renderItemsList(itemIDs){
@@ -1170,6 +1212,7 @@ class NaturalLanguage extends React.Component {
                             currentlySelected={textItem.currentlySelected}
                             uuidInEditMode={this.state.uuidInEditMode}
                             groupSelectionMode={this.state.groupSelectionMode}
+                            incompleteFormParamIDs={this.state.incompleteFormParamIDs}
                             paramIsOptional={textItem.paramIsOptional}
                             paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
                             handleParamOptionalChange={(e) => this.handleParamOptionalChange(e, textItem.uuid)}

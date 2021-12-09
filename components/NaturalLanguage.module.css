@@ -210,3 +210,7 @@
 .userFeedbackArea {
     margin: 20px;
 }
+
+.incompleteForm {
+    border: 1px solid red;
+}
