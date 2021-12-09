@@ -8,12 +8,19 @@ export default function DemographicSurvey() {
 
     const [participantID, updateParticipantID] = useState("");
 
+    let iframeLoadedCount = 0;
+    const pageLoadedTime = Date.now();
+
     function goToTask(clientID){
-        
+        //console.log("iframeLoadedCount", iframeLoadedCount);
         if(participantID === "" || participantID === null){
             window.alert("Fill in participant ID");
             updateParticipantID(null); // using null as signifier that participantID is not filled in (UI shows red error border)
             window.scroll(0, 0); // scroll to top of page for user to see blank participant ID field
+        }else if(iframeLoadedCount < 1){
+            // Check that the user has submitted the Google form
+            // Use iframeLoadedCount as a proxy
+            window.alert("Please fill out and submit the Google form first.");
         }else{
             // Use router to navigate to next page
             router.push({
@@ -26,13 +33,21 @@ export default function DemographicSurvey() {
         }
     }
 
-    function iframeLoaded(scrollHeight) {
+    function iframeLoaded(scrollHeight) { 
+        //console.log("iframeLoaded");
         const iframeElement = document.querySelector('iframe');
-        if(iframeElement) {
-              // here you can make the height, I delete it first, then I make it again
-              iframeElement.height = "";
-              iframeElement.height = (scrollHeight + 100) + "px";
-        }   
+        if(iframeElement){
+            if(Date.now() - pageLoadedTime < 2000){
+                // Initial load
+                // Adjust height so no scrolling within iframe
+                iframeElement.height = "";
+                iframeElement.height = (scrollHeight + 100) + "px";
+            }else{
+                // A later load, e.g., Google form submitted
+                iframeLoadedCount += 1;
+                //console.log("iframeLoadedCount += 1");
+            }
+        }
     }
 
     function handleParticipantIDUpdate(e){

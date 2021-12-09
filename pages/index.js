@@ -6,22 +6,40 @@ export default function Home() {
   
     const router = useRouter();
     const clientID = uuidv4();
+
+    let iframeLoadedCount = 0;
+    const pageLoadedTime = Date.now();
     
     function goToDemographicSurvey(clientID){
-        // Use router to navigate to next page
-        router.push({
-            pathname: '/demographicSurvey',
-            query: { clientID: clientID },
-        });
+        //console.log("iframeLoadedCount", iframeLoadedCount);
+        // First check that the user has submitted the Google form
+            // Use iframeLoadedCount as a proxy
+        if(iframeLoadedCount < 1){
+            window.alert("Please fill out and submit the Google form first.");
+        }else{
+            // Use router to navigate to next page
+            router.push({
+                pathname: '/demographicSurvey',
+                query: { clientID: clientID },
+            });
+        }
     }
 
-    function iframeLoaded(scrollHeight) {
+    function iframeLoaded(scrollHeight) { 
+        //console.log("iframeLoaded");
         const iframeElement = document.querySelector('iframe');
-        if(iframeElement) {
-              // here you can make the height, I delete it first, then I make it again
-              iframeElement.height = "";
-              iframeElement.height = (scrollHeight + 100) + "px";
-        }   
+        if(iframeElement){
+            if(Date.now() - pageLoadedTime < 2000){
+                // Initial load
+                // Adjust height so no scrolling within iframe
+                iframeElement.height = "";
+                iframeElement.height = (scrollHeight + 100) + "px";
+            }else{
+                // A later load, e.g., Google form submitted
+                iframeLoadedCount += 1;
+                //console.log("iframeLoadedCount += 1");
+            }
+        }
     }
 
     return (
