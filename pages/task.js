@@ -100,12 +100,14 @@ export default function Task() {
             }
             {
                 !userFinishedVideo ? (
-                    <button
-                        onClick={() => showNLTask()}
-                        className={styles.nextButton}
-                    >
-                        Next
-                    </button>
+                    <div>
+                        <button
+                            onClick={() => showNLTask()}
+                            className={styles.nextButton}
+                        >
+                            Next
+                        </button>
+                    </div>
                 ) : (
                     ""
                 )
