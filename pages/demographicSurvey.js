@@ -18,7 +18,10 @@ export default function DemographicSurvey() {
             // Use router to navigate to next page
             router.push({
                 pathname: '/task',
-                query: { clientID: clientID },
+                query: {
+                    clientID: clientID,
+                    participantID: participantID
+                },
             });
         }
     }

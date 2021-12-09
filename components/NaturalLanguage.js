@@ -487,7 +487,8 @@ class NaturalLanguage extends React.Component {
             textEditable: props.textEditable,
             userFeedback: "",
             incompleteFormParamIDs: [],
-            clientID: props.clientID
+            clientID: props.clientID,
+            participantID: props.participantID
         }
     }
 
@@ -1167,6 +1168,7 @@ class NaturalLanguage extends React.Component {
                     body: JSON.stringify({
                         idToItem: this.state.idToItem,
                         clientID: this.state.clientID,
+                        participantID: this.state.participantID,
                         userFeedback: this.state.userFeedback
                     }),
                 })

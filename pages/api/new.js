@@ -9,6 +9,7 @@ export default async function handler(req, res) {
         .insertOne({
             idToItem: body.idToItem,
             clientID: body.clientID,
+            participantID: body.participantID,
             userFeedback: body.userFeedback,
             time: Date.now()
         });
