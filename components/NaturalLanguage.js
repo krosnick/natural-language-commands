@@ -1422,7 +1422,7 @@ class NaturalLanguage extends React.Component {
                     <div
                         className={styles.request}
                     >
-                        <span
+                        {/* <span
                             container=""
                             className={`${styles.container} ${(this.state.hoveredID === "root" ? styles.hoveredOuterContainer : styles.notHovered)}`}
                             onMouseEnter={() => this.handleOnMouseEnter("root")}
@@ -1440,9 +1440,9 @@ class NaturalLanguage extends React.Component {
                                 </span>
                             ) : (
                                 ""
-                            ) }
+                            ) } */}
                             {domTextItems}
-                        </span>
+                        {/* </span> */}
                     </div>
                     <iframe
                         width="100%"
