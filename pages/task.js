@@ -50,6 +50,7 @@ export default function Task() {
                             text="Which MLB player had the most home runs this year?"
                             websiteUrl="https://www.mlb.com/stats/"
                             textEditable={false}
+                            groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
                         /> */}
@@ -57,6 +58,7 @@ export default function Task() {
                             text="Book a flight from Detroit to Boston on November 20"
                             websiteUrl="https://www.spirit.com/"
                             textEditable={false}
+                            groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
                         /> */}
@@ -64,6 +66,7 @@ export default function Task() {
                             text="Order a chicken burrito bowl with black beans, white rice, sour cream, green salsa, and red salsa from Chipotle. Place the order now and for pickup."
                             websiteUrl="https://www.chipotle.com/order"
                             textEditable={false}
+                            groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
                         />
@@ -71,6 +74,7 @@ export default function Task() {
                             text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"
                             websiteUrl="https://www.georgetowncupcake.com/OrderType.aspx"
                             textEditable={false}
+                            groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
                         /> */}
@@ -83,6 +87,7 @@ export default function Task() {
                             text="Order one scoop of coffee ice cream from Blank Slate"
                             websiteUrl="https://blank-slate-creamery.square.site/"
                             textEditable={false}
+                            groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
                         /> */}
@@ -90,6 +95,7 @@ export default function Task() {
                             text="Order a little cheeseburger from Five Guys with mayo, lettuce, and grilled onions"
                             websiteUrl="https://order.fiveguys.com/"
                             textEditable={false}
+                            groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
                         /> */}
@@ -97,6 +103,7 @@ export default function Task() {
                             text="What movie won Best Picture at the Oscars in 2011?"
                             websiteUrl="https://www.oscars.org/oscars/ceremonies/2021"
                             textEditable={false}
+                            groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
                         /> */}

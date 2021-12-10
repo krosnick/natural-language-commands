@@ -485,6 +485,7 @@ class NaturalLanguage extends React.Component {
             errorMessage: null,
             websiteUrl: props.websiteUrl,
             textEditable: props.textEditable,
+            groupingSupported: props.groupingSupported,
             userFeedback: "",
             incompleteFormParamIDs: [],
             clientID: props.clientID,
@@ -1281,24 +1282,29 @@ class NaturalLanguage extends React.Component {
                                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
                                     title={textItem.type === "param" ? "Delete parameter" : "Delete group"}
                                 >x</button>
-                                <span
-                                    className={styles.operationsButtonGroup}
-                                >
-                                    <button
-                                        className={styles.groupButton}
-                                        onClick={() => this.enterGroupSelection(textItem.uuid)}
-                                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                                    >Group</button>
-                                    { textItem.type === "group" ? (
+                                {this.state.groupingSupported ? (
+                                    <span
+                                        className={styles.operationsButtonGroup}
+                                    >
                                         <button
-                                            className={styles.addParameterButton}
-                                            onClick={() => this.addParameter(textItem.uuid)}
+                                            className={styles.groupButton}
+                                            onClick={() => this.enterGroupSelection(textItem.uuid)}
                                             disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                                        >Add item</button>
-                                    ):(
-                                        ""
-                                    ) }
-                                </span>
+                                        >Group</button>
+                                        { textItem.type === "group" ? (
+                                            <button
+                                                className={styles.addParameterButton}
+                                                onClick={() => this.addParameter(textItem.uuid)}
+                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                            >Add item</button>
+                                        ):(
+                                            ""
+                                        ) }
+                                    </span>
+                                ) : (
+                                    ""
+                                ) }
+                                
                             </span>
                         ) : (
                             ""
@@ -1362,13 +1368,17 @@ class NaturalLanguage extends React.Component {
                         >
                             Add item
                         </button>
-                        <button
-                            className={styles.topButton}
-                            onClick={() => this.enterGroupSelection(null)}
-                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                        >
-                            Group
-                        </button>
+                        {this.state.groupingSupported ? (
+                            <button
+                                className={styles.topButton}
+                                onClick={() => this.enterGroupSelection(null)}
+                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                            >
+                                Group
+                            </button>
+                        ) : (
+                            ""
+                        ) }
                         {/* State-specific buttons */}
                         {this.state.groupSelectionMode ? (
                             <span>
