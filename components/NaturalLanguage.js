@@ -1137,7 +1137,7 @@ class NaturalLanguage extends React.Component {
 
             // Check if group top is in viewport. Only if it isn't, scroll to show it at top. Don't want to scroll unnecessarily (will make things move around and confuse the user)
             if(groupTop < 0){
-                const topButtonRowHeight = document.querySelector("[topButtonRow]").getBoundingClientRect().height;
+                const topButtonRowHeight = document.querySelector("[top-button-row]").getBoundingClientRect().height;
                 window.scroll(0, (groupTop + window.scrollY) - topButtonRowHeight);
                 document.querySelector(`[uuid="${uuid}"] [group-name]`).select();
             }
@@ -1365,7 +1365,7 @@ class NaturalLanguage extends React.Component {
                 
                 <span
                     className={styles.topButtonRow}
-                    topButtonRow=""
+                    top-button-row=""
                 >
                     <div>
                         <button
