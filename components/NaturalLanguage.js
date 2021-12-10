@@ -1118,8 +1118,8 @@ class NaturalLanguage extends React.Component {
             // Check if parameter element (specifically, its bottom) is currently within viewport. If it isn't, only then call scrollIntoView (we don't want to call scrollIntoView unnecessarily, because it will cause things to move around and confuse the user)
             if(document.querySelector(`[uuid="${uuid}"]`).closest("[container]").getBoundingClientRect().bottom > window.innerHeight){
                 document.querySelector(`[uuid="${uuid}"]`).closest("[container]").scrollIntoView({block: "end", inline: "nearest"});
-                document.querySelector(`[uuid="${uuid}"]`).select();
             }
+            document.querySelector(`[uuid="${uuid}"]`).select(); // Select param name text so user can just start typing to edit
         }, 0);
     }
 
