@@ -65,6 +65,7 @@ class UserProvidedExamples extends React.Component {
         return (
             <div
                 className={styles.paramDataChunk}
+                examples-area=""
             >
                 {this.props.examplesText}
                 <ul>{possibleValues}</ul>
@@ -701,7 +702,13 @@ class NaturalLanguage extends React.Component {
         this.setState({
             idToItem: idToItemClone
         });
-        //this.exitEditMode();
+
+        // Select/put cursor in newly added <input>
+        setTimeout(function(){
+            const exampleTextFields = document.querySelector(`[uuid="${uuid}"]`).closest("[container]").querySelectorAll("[examples-area] input[type='text']");
+            const lastTextField = exampleTextFields[exampleTextFields.length-1];
+            lastTextField.select();
+        }, 0);
     }
 
     handleGroupSelectionChange(e, uuid){
