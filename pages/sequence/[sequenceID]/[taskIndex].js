@@ -30,10 +30,10 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, taskLis
     }
 
     function directToNextPage(){
-        console.log("directToNextPage");
+        /*console.log("directToNextPage");
         console.log("sequenceID", sequenceID);
         console.log("taskIndex", taskIndex);
-        console.log("taskListLength", taskListLength);
+        console.log("taskListLength", taskListLength);*/
     
         // Determine if this is the last task in the sequence or not, and based on that decide if we go to "finished" page or to next task page
         if(taskIndex === taskListLength-1){
