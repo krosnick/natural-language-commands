@@ -5,7 +5,7 @@ import styles from '../components/styles.module.css';
 export default function Home() {
   
     const router = useRouter();
-    const { name } = router.query;
+    const { sequenceID } = router.query;
     const clientID = uuidv4();
 
     let iframeLoadedCount = 0;
@@ -23,7 +23,7 @@ export default function Home() {
                 pathname: '/demographicSurvey',
                 query: {
                     clientID: clientID,
-                    name: name
+                    sequenceID: sequenceID
                 },
             });
         }

@@ -4,7 +4,7 @@ import styles from '../components/styles.module.css';
 
 export default function DemographicSurvey() {
     const router = useRouter();
-    const { clientID, name } = router.query;
+    const { clientID, sequenceID } = router.query;
 
     const [participantID, updateParticipantID] = useState("");
 
@@ -24,9 +24,10 @@ export default function DemographicSurvey() {
         }else{
             // Use router to navigate to next page
             router.push({
-                pathname: '/task/[name]',
+                pathname: '/sequence/[sequenceID]/[taskIndex]',
                 query: {
-                    name: name,
+                    sequenceID: sequenceID,
+                    taskIndex: 0,
                     clientID: clientID,
                     participantID: participantID
                 },

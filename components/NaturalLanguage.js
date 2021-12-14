@@ -1174,6 +1174,7 @@ class NaturalLanguage extends React.Component {
                     'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
+                        name: this.props.name,
                         idToItem: this.state.idToItem,
                         clientID: this.state.clientID,
                         participantID: this.state.participantID,
@@ -1181,8 +1182,7 @@ class NaturalLanguage extends React.Component {
                     }),
                 })
 
-                // Show "finished" view
-                this.props.router.push("/finished");
+                this.props.directToNextPage();
             }
         }else{
             // Some parameter forms haven't been filled in; show the user an error
