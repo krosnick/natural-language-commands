@@ -162,10 +162,13 @@ export async function getServerSideProps({params}) {
     
     const taskObject = await cursor.next();
     
-    const text = taskObject.text;
-    const websiteUrl = taskObject.websiteUrl;
-    
-  
-    // Pass data to the page via props
-    return { props: { text,  websiteUrl } }
+    try{
+        const text = taskObject.text;
+        const websiteUrl = taskObject.websiteUrl;
+        
+        // Pass data to the page via props
+        return { props: { text,  websiteUrl } }
+    }catch(error){
+        return { notFound: true };
+    }
 }

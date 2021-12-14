@@ -5,6 +5,7 @@ import styles from '../components/styles.module.css';
 export default function Home() {
   
     const router = useRouter();
+    const { name } = router.query;
     const clientID = uuidv4();
 
     let iframeLoadedCount = 0;
@@ -20,7 +21,10 @@ export default function Home() {
             // Use router to navigate to next page
             router.push({
                 pathname: '/demographicSurvey',
-                query: { clientID: clientID },
+                query: {
+                    clientID: clientID,
+                    name: name
+                },
             });
         }
     }

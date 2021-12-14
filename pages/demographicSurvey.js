@@ -4,7 +4,7 @@ import styles from '../components/styles.module.css';
 
 export default function DemographicSurvey() {
     const router = useRouter();
-    const { clientID } = router.query;
+    const { clientID, name } = router.query;
 
     const [participantID, updateParticipantID] = useState("");
 
@@ -26,7 +26,7 @@ export default function DemographicSurvey() {
             router.push({
                 pathname: '/task/[name]',
                 query: {
-                    name: "chipotle",
+                    name: name,
                     clientID: clientID,
                     participantID: participantID
                 },
