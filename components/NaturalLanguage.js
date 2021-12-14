@@ -488,9 +488,7 @@ class NaturalLanguage extends React.Component {
             textEditable: props.textEditable,
             groupingSupported: props.groupingSupported,
             userFeedback: "",
-            incompleteFormParamIDs: [],
-            clientID: props.clientID,
-            participantID: props.participantID
+            incompleteFormParamIDs: []
         }
     }
 
@@ -1168,21 +1166,13 @@ class NaturalLanguage extends React.Component {
 
             if(proceed){
                 // Save data to db
-                await fetch('/api/new', {
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name: this.props.name,
-                        idToItem: this.state.idToItem,
-                        clientID: this.state.clientID,
-                        participantID: this.state.participantID,
-                        userFeedback: this.state.userFeedback
-                    }),
-                })
+                const dataObj = {
+                    name: this.props.name,
+                    idToItem: this.state.idToItem,
+                    userFeedback: this.state.userFeedback
+                };
 
-                this.props.directToNextPage();
+                this.props.writeToDBAndDirectToNextPage(dataObj);
             }
         }else{
             // Some parameter forms haven't been filled in; show the user an error

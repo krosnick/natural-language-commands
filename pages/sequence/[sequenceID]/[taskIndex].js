@@ -29,12 +29,22 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
         }, 100); // waiting 100ms to ensure #taskArea element is already rendered
     }
 
-    function directToNextPage(){
-        /*console.log("directToNextPage");
-        console.log("sequenceID", sequenceID);
-        console.log("taskIndex", taskIndex);
-        console.log("taskListLength", taskListLength);*/
-    
+    async function writeToDBAndDirectToNextPage(dataObj){
+        // Augment dataObj with task metadata
+        dataObj.sequenceID = sequenceID;
+        dataObj.taskIndex = taskIndex;
+        dataObj.clientID = clientID;
+        dataObj.participantID = participantID;
+
+        // Save data to db
+        await fetch('/api/new', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataObj)
+        });
+
         // Determine if this is the last task in the sequence or not, and based on that decide if we go to "finished" page or to next task page
         if(taskIndex === taskListLength-1){
             // This is the last task. After user submits their answers, show "finished" view
@@ -80,7 +90,7 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                             groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
-                            directToNextPage={() => directToNextPage()}
+                            writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
                             key={router.asPath}
                         />
                         {/* <NaturalLanguage
