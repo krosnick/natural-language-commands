@@ -24,8 +24,9 @@ export default function DemographicSurvey() {
         }else{
             // Use router to navigate to next page
             router.push({
-                pathname: '/task',
+                pathname: '/task/[name]',
                 query: {
+                    name: "chipotle",
                     clientID: clientID,
                     participantID: participantID
                 },

@@ -1,13 +1,14 @@
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import styles from '../components/styles.module.css';
+import { connectToDatabase } from '../../util/mongodb';
+import styles from '../../components/styles.module.css';
 const NaturalLanguage = dynamic(
-    () => import('../components/NaturalLanguage'),
+    () => import('../../components/NaturalLanguage'),
     { ssr: false }
 )
 
-export default function Task() {
+export default function Task( { text, websiteUrl }) {
     const router = useRouter();
     const { clientID, participantID } = router.query;
     
@@ -46,6 +47,14 @@ export default function Task() {
                     <div
                         id="taskArea"
                     >
+                        <NaturalLanguage
+                            text={text}
+                            websiteUrl={websiteUrl}
+                            textEditable={false}
+                            groupingSupported={false}
+                            clientID={clientID}
+                            participantID={participantID}
+                        />
                         {/* <NaturalLanguage
                             text="Which MLB player had the most home runs this year?"
                             websiteUrl="https://www.mlb.com/stats/"
@@ -62,14 +71,14 @@ export default function Task() {
                             clientID={clientID}
                             participantID={participantID}
                         /> */}
-                        <NaturalLanguage
+                        {/* <NaturalLanguage
                             text="Order a chicken burrito bowl with black beans, white rice, sour cream, green salsa, and red salsa from Chipotle. Place the order now and for pickup."
                             websiteUrl="https://www.chipotle.com/order"
                             textEditable={false}
                             groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
-                        />
+                        /> */}
                         {/* <NaturalLanguage
                             text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"
                             websiteUrl="https://www.georgetowncupcake.com/OrderType.aspx"
@@ -142,4 +151,21 @@ export default function Task() {
             `}</style>
         </div>
     );
+}
+
+export async function getServerSideProps({params}) {
+    
+    const { db } = await connectToDatabase();
+    const cursor = await db
+                        .collection("tasks")
+                        .find({name: params.name});
+    
+    const taskObject = await cursor.next();
+    
+    const text = taskObject.text;
+    const websiteUrl = taskObject.websiteUrl;
+    
+  
+    // Pass data to the page via props
+    return { props: { text,  websiteUrl } }
 }
