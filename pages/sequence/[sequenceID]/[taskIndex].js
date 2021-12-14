@@ -9,9 +9,9 @@ const NaturalLanguage = dynamic(
     { ssr: false }
 )
 
-export default function Task( { text, websiteUrl, sequenceID, taskIndex, taskListLength }) {
+export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, taskListLength }) {
     const router = useRouter();
-    const { clientID, participantID, name } = router.query;
+    const { clientID, participantID } = router.query;
     
     const [userFinishedVideo, updateFinishedVideoStatus] = useState(false);
 
@@ -216,6 +216,7 @@ export async function getServerSideProps({params}) {
                 websiteUrl,
                 sequenceID,
                 taskIndex,
+                name: taskName,
                 taskListLength
             }
         }

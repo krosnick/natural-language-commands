@@ -6,13 +6,7 @@ export default async function handler(req, res) {
     const { db } = await connectToDatabase();
     await db
         .collection("annotationData")
-        .insertOne({
-            idToItem: body.idToItem,
-            clientID: body.clientID,
-            participantID: body.participantID,
-            userFeedback: body.userFeedback,
-            time: Date.now()
-        });
+        .insertOne(body);
     
     res.status(200).send("Done");
 }  
