@@ -39,7 +39,7 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                 left: 0,
                 behavior: "smooth"
             });
-        }, 100); // waiting 100ms to ensure #taskArea element is already rendered
+        }, 1000); // waiting 100ms to ensure #taskArea element is already rendered
     }
 
     async function writeToDBAndDirectToNextPage(dataObj){
