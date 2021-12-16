@@ -10,3 +10,8 @@
 .incompleteForm {
     border: 1px solid red;
 }
+
+.textInstructions {
+    font-size: x-large;
+    padding: 10px;
+}

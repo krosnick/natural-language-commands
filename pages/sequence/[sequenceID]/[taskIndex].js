@@ -65,23 +65,31 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
 
     return (
         <div>
-            <iframe
-                /* width="560"
-                height="315" */
-                width="1200"
-                height="675"
-                src="https://www.youtube.com/embed/jYjzl2gYlkQ"
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                id="demoVideo"
-            ></iframe>
+            <div>
+                <p
+                    className={styles.textInstructions}
+                >Watch this tutorial video to learn how to use the text tagging interface.</p>
+                <iframe
+                    /* width="560"
+                    height="315" */
+                    width="1200"
+                    height="675"
+                    src="https://www.youtube.com/embed/jYjzl2gYlkQ"
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    id="demoVideo"
+                ></iframe>
+            </div>
             {
                 userFinishedVideo ? (
                     <div
                         id="taskArea"
                     >
+                        <p
+                            className={styles.textInstructions}
+                        ><b>Instructions:</b> Below is a command that someone might give to their virtual assistant (e.g., Siri). As demonstrated in the tutorial video, highlight chunks of text that can be “generalized”, and for each one fill out the associated form. To determine what text can be “generalized”, look at the website to understand what commands and values are possible.</p>
                         <NaturalLanguage
                             name={name}
                             text={text}
