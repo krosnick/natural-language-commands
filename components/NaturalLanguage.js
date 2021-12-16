@@ -1480,7 +1480,7 @@ class NaturalLanguage extends React.Component {
                     className={`${styles.submitButton} ${styles.topButton}`}
                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
                 >
-                    Submit
+                    {this.props.submitText}
                 </button>
             </div>
         );

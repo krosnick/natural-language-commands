@@ -125,6 +125,7 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                             groupingSupported={false}
                             clientID={clientID}
                             participantID={participantID}
+                            submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
                             writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
                             key={router.asPath}
                         />
