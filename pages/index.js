@@ -35,10 +35,10 @@ export default function Home() {
         if(iframeElement){
             if(Date.now() - pageLoadedTime < 2000){
                 // Initial load
-                // Adjust height so no scrolling within iframe
+                /*// Adjust height so no scrolling within iframe
                 iframeElement.height = "";
                 //iframeElement.height = (scrollHeight + 25) + "px";
-                iframeElement.height = (scrollHeight) + "px";
+                iframeElement.height = (scrollHeight) + "px";*/
             }else{
                 // A later load, e.g., Google form submitted
                 iframeLoadedCount += 1;

@@ -41,10 +41,10 @@ export default function DemographicSurvey() {
         if(iframeElement){
             if(Date.now() - pageLoadedTime < 2000){
                 // Initial load
-                // Adjust height so no scrolling within iframe
+                /*// Adjust height so no scrolling within iframe
                 iframeElement.height = "";
                 //iframeElement.height = (scrollHeight + 25) + "px";
-                iframeElement.height = (scrollHeight) + "px";
+                iframeElement.height = (scrollHeight) + "px";*/
             }else{
                 // A later load, e.g., Google form submitted
                 iframeLoadedCount += 1;
@@ -64,7 +64,9 @@ export default function DemographicSurvey() {
     return (
         <div>
             <div>
-                <label htmlFor="participantIDField">Participant ID: </label>
+                <p
+                    className={styles.textInstructions}
+                >Please enter your participant ID:</p>
                 <input
                     type="text"
                     id="participantIDField"
@@ -88,7 +90,7 @@ export default function DemographicSurvey() {
                     src="https://docs.google.com/forms/d/e/1FAIpQLScSORDPbl3wbBTzrEeyygPMpatnIpsG33mGLQal8G_HBwtC8g/viewform?embedded=true"
                     //width="640"
                     width="100%"
-                    height="879"
+                    height="574"
                     frameBorder="0"
                     marginHeight="0"
                     marginWidth="0"
