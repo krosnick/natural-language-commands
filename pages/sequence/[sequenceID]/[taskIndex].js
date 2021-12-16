@@ -66,17 +66,19 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
     return (
         <div>
             <div>
-                <p
-                    className={styles.textInstructions}
-                >Watch this tutorial video to learn how to use the text tagging interface, then press the “Next” button:</p>
                 {
                     !userFinishedVideo ? (
-                        <button
-                            onClick={() => showNLTask()}
-                            className={styles.nextButton}
-                        >
-                            Next
-                        </button>
+                        <div>
+                            <p
+                                className={styles.textInstructions}
+                            >Watch this tutorial video to learn how to use the text tagging interface, then press the “Next” button:</p>
+                            <button
+                                onClick={() => showNLTask()}
+                                className={styles.nextButton}
+                            >
+                                Next
+                            </button>
+                        </div>
                     ) : (
                         ""
                     )

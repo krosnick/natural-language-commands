@@ -1142,6 +1142,14 @@ class NaturalLanguage extends React.Component {
         }, 0);
     }
 
+    scrollToBottomOfPage(){
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            left: 0,
+            behavior: "smooth"
+        });
+    }
+
     async handleSubmit(){
         console.log("handleSubmit");
 
@@ -1396,11 +1404,11 @@ class NaturalLanguage extends React.Component {
                             ""
                         )}
                         <button
-                            onClick={() => this.handleSubmit()}
+                            onClick={() => this.scrollToBottomOfPage()}
                             className={`${styles.submitButton} ${styles.topButton}`}
                             disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
                         >
-                            Submit
+                            Next
                         </button>
                     </div>
                     <div>
