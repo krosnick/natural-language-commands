@@ -3,8 +3,9 @@
     cursor: pointer;
     padding: 10px;
     position: relative;
-    left: 90%;
+    /*left: 90%;*/
     margin: 10px;
+    display: inline;
 }
 
 .incompleteForm {
@@ -14,4 +15,5 @@
 .textInstructions {
     font-size: x-large;
     padding: 10px;
+    display: inline;
 }

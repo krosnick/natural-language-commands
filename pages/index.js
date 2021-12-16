@@ -49,6 +49,15 @@ export default function Home() {
 
     return (
         <div>
+            <p
+                className={styles.textInstructions}
+            >Fill out and submit this Google form, then press the “Next” button:</p>
+            <button
+                onClick={() => goToDemographicSurvey(clientID)}
+                className={styles.nextButton}
+            >
+                Next
+            </button>
             <div>
                 <iframe
                     src="https://docs.google.com/forms/d/e/1FAIpQLSf2F_NEL2Q8d-mIJqXvCFZA8LP4VHjDx34P6ZSGyzXbqaOJcQ/viewform?embedded=true"
@@ -64,12 +73,6 @@ export default function Home() {
                     Loading…
                 </iframe>
             </div>
-            <button
-                onClick={() => goToDemographicSurvey(clientID)}
-                className={styles.nextButton}
-            >
-                Next
-            </button>
         </div>
     )
 }

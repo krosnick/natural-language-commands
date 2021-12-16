@@ -68,7 +68,19 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
             <div>
                 <p
                     className={styles.textInstructions}
-                >Watch this tutorial video to learn how to use the text tagging interface.</p>
+                >Watch this tutorial video to learn how to use the text tagging interface, then press the “Next” button:</p>
+                {
+                    !userFinishedVideo ? (
+                        <button
+                            onClick={() => showNLTask()}
+                            className={styles.nextButton}
+                        >
+                            Next
+                        </button>
+                    ) : (
+                        ""
+                    )
+                }
                 <iframe
                     /* width="560"
                     height="315" */
@@ -162,20 +174,6 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                             clientID={clientID}
                             participantID={participantID}
                         /> */}
-                    </div>
-                ) : (
-                    ""
-                )
-            }
-            {
-                !userFinishedVideo ? (
-                    <div>
-                        <button
-                            onClick={() => showNLTask()}
-                            className={styles.nextButton}
-                        >
-                            Next
-                        </button>
                     </div>
                 ) : (
                     ""

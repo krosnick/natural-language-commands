@@ -74,6 +74,15 @@ export default function DemographicSurvey() {
                 >
                 </input>
             </div>
+            <p
+                className={styles.textInstructions}
+            >Fill out and submit this Google form, then press the “Next” button:</p>
+            <button
+                onClick={() => goToTask(clientID)}
+                className={styles.nextButton}
+            >
+                Next
+            </button>
             <div>
                 <iframe
                     src="https://docs.google.com/forms/d/e/1FAIpQLScSORDPbl3wbBTzrEeyygPMpatnIpsG33mGLQal8G_HBwtC8g/viewform?embedded=true"
@@ -89,12 +98,6 @@ export default function DemographicSurvey() {
                     Loading…
                 </iframe>
             </div>
-            <button
-                onClick={() => goToTask(clientID)}
-                className={styles.nextButton}
-            >
-                Next
-            </button>
         </div>
     );
 }
