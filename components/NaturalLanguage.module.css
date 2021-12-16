@@ -215,3 +215,7 @@
 .incompleteForm {
     border: 1px solid red;
 }
+
+.websiteIframe {
+    margin: 10px;
+}

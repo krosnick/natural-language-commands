@@ -1450,8 +1450,9 @@ class NaturalLanguage extends React.Component {
                         {/* </span> */}
                     </div>
                     <iframe
-                        width="100%"
+                        width="98%"
                         height="700"
+                        className={styles.websiteIframe}
                         src={this.state.websiteUrl}>
                     </iframe>
                 </div>
