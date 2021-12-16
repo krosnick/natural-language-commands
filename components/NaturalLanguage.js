@@ -1191,6 +1191,19 @@ class NaturalLanguage extends React.Component {
             this.setState({
                 incompleteFormParamIDs: incompleteFormParamIDs
             });
+
+            // Scroll to first form that isn't filled in
+            setTimeout(function(){
+
+                const firstFormUUID = incompleteFormParamIDs[0];
+                const paramTop = document.querySelector(`[uuid="${firstFormUUID}"]`).closest("[container]").getBoundingClientRect().top;
+
+                // Check if param top is in viewport. Only if it isn't, scroll to show it at top. Don't want to scroll unnecessarily (will make things move around and confuse the user)
+                if(paramTop < 0){
+                    const topButtonRowHeight = document.querySelector("[top-button-row]").getBoundingClientRect().height;
+                    window.scroll(0, (paramTop + window.scrollY) - topButtonRowHeight);
+                }
+            }, 100);
         }
     }
 
