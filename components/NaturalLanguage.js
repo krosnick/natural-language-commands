@@ -208,7 +208,16 @@ class DateParam extends React.Component {
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                             disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
                         />
-                        <label htmlFor={`other_dateRestrictions_${this.props.uuid}`}>Other</label>
+                        <label htmlFor={`other_dateRestrictions_${this.props.uuid}`}>Other: </label>
+                        <input
+                            type="text"
+                            name={`other_dateRestrictions_text_${this.props.uuid}`}
+                            id={`other_dateRestrictions_text_${this.props.uuid}`}
+                            value={this.props.otherDataValue}
+                            onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
+                            disabled={this.props.dateRestriction !== "other" || this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        >
+                        </input>
                     </div>
                 </div>
             </div>
@@ -315,6 +324,7 @@ class ParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "date"){
                 paramTypeSpecificForm = <DateParam
                                             dateRestriction={this.props.paramTypeData.dateRestriction}
+                                            otherDataValue={this.props.paramTypeData.otherDataValue}
                                             uuid={this.props.uuid}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
@@ -999,6 +1009,7 @@ class NaturalLanguage extends React.Component {
             // Nothing else to set
         }else if(value === "date"){
             paramTypeData.dateRestriction = "";
+            paramTypeData.otherDataValue = "";
         }else if(value === "number"){
             paramTypeData.restrictedToIntegers = false;
             paramTypeData.restrictedToRange = false;
@@ -1045,11 +1056,17 @@ class NaturalLanguage extends React.Component {
 
     handleParamDateRestrictionChange(e, uuid){
         const target = e.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
-        //console.log("value", value);
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
-        idToItemClone[uuid].paramTypeData.dateRestriction = value;
+
+        // Check if type is "text", if it is then update otherDataValue value (and dateRestriction should be "other")
+        if(target.type === "text"){
+            idToItemClone[uuid].paramTypeData.dateRestriction = "other";
+            idToItemClone[uuid].paramTypeData.otherDataValue = target.value;
+        }else{
+            const value = target.type === 'checkbox' ? target.checked : target.value;
+            idToItemClone[uuid].paramTypeData.dateRestriction = value;
+        }
         this.setState({
             idToItem: idToItemClone
         });
