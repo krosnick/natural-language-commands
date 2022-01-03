@@ -15,18 +15,22 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
     
     const [userFinishedVideo, updateFinishedVideoStatus] = useState(false);
 
-    router.events.on('routeChangeComplete', (url, { shallow }) => {
-        /*console.log(
-          `App is changing to ${url} ${
-            shallow ? 'with' : 'without'
-          } shallow routing`
-        )*/
-        //console.log("url", url);
-        // If on task page and not first task, fix scroll position to scroll to top of NL task
-        if(url.includes("/sequence/") && taskIndex > 0){
-            showNLTask();
-        }
-    });
+    try{
+        router.events.on('routeChangeComplete', (url, { shallow }) => {
+            /*console.log(
+              `App is changing to ${url} ${
+                shallow ? 'with' : 'without'
+              } shallow routing`
+            )*/
+            //console.log("url", url);
+            // If on task page and not first task, fix scroll position to scroll to top of NL task
+            if(url.includes("/sequence/") && taskIndex > 0){
+                showNLTask();
+            }
+        });
+    }catch(error){
+        //console.log("router.events error caught");
+    }
 
     function showNLTask(){
         updateFinishedVideoStatus(true);
