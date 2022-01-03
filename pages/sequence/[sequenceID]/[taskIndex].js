@@ -120,6 +120,12 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                     >
                         <p
                             className={styles.textInstructions}
+                        >
+                            Task {taskIndex + 1} of {taskListLength}
+                        </p>
+                        <br></br>
+                        <p
+                            className={styles.textInstructions}
                         ><b>Instructions:</b> Below is a command that someone might give to their virtual assistant (e.g., Siri). As demonstrated in the tutorial video, highlight chunks of text that can be “generalized”, and for each one fill out the associated form. To determine what text can be “generalized”, look at the website to understand what commands and values are possible.</p>
                         <NaturalLanguage
                             name={name}
