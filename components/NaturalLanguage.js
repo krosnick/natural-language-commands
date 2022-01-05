@@ -1479,12 +1479,20 @@ class NaturalLanguage extends React.Component {
                             {domTextItems}
                         {/* </span> */}
                     </div>
-                    <iframe
-                        width="98%"
-                        height="700"
+                    <div
                         className={styles.websiteIframe}
-                        src={this.state.websiteUrl}>
-                    </iframe>
+                    >
+                        <a
+                            href={this.state.websiteUrl}
+                        >
+                            {this.state.websiteUrl}
+                        </a>
+                        <iframe
+                            width="98%"
+                            height="700"
+                            src={this.state.websiteUrl}>
+                        </iframe>
+                    </div>
                 </div>
                 <div
                     className={styles.userFeedbackArea}
@@ -1493,7 +1501,7 @@ class NaturalLanguage extends React.Component {
                         htmlFor="userFeedback"
                         className={styles.userFeedbackLabel}
                     >
-                        Do you have any feedback, or is there any other information you wanted to share that the interface didn't let you share?
+                        Do you have any feedback for us, or is there any other information you wanted to share that the interface didn't let you share?
                     </label>
                     <textarea
                         className={styles.userFeedback}
