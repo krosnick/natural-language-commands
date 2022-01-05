@@ -44,27 +44,27 @@ export default function Tutorial(props){
 
     const stepData = [
         {
-            text: `The first step to generalizing this command is to notice that "Zingerman's Reuben" is a particular sandwich, one of many offered on the Zingerman's website. We can highlight the text "Zingerman's Reuben" and then type "sandwich" to use as the generalized term.`,
+            text: <span>The first step to generalizing this command is to notice that "Zingerman's Reuben" is a particular sandwich, one of many offered on the Zingerman's website. <b>We can highlight the text "Zingerman's Reuben" and then type "sandwich" to use as the generalized term.</b></span>,
             videoID: "lhXOoYb9WNs"
         },
         {
-            text: `Next, we select the type of value "sandwich" is from the dropdown menu -- here, "something user selects from a list" (because there is a pre-determined set of sandwiches on the website).`,
+            text: <span>Next, <b>we select the type of value "sandwich" is from the dropdown menu</b> -- here, "something user selects from a list" (because there is a pre-determined set of sandwiches on the website).</span>,
             videoID: "acZfudXdFFk"
         },
         {
-            text: `Next, we give examples of sandwiches listed on the website. "Zingerman's Reuben" is already pre-populated, and we also add "Tarb's Tenacious Tenure" and "Georgia Reuben".`,
+            text: <span>Next, <b>we give examples of sandwiches listed on the website</b>. "Zingerman's Reuben" is already pre-populated, and we also add "Tarb's Tenacious Tenure" and "Georgia Reuben".</span>,
             videoID: "eRZh6bWgyec"
         },
         {
-            text: `Now, we follow the same process to create a generalized "pickle" term and enter the 2 possible pickle types: "crunchy, cucumbery NEW" and "traditional, garlic-cured OLD".`,
+            text: <span>Now, we follow the same process to create a generalized "pickle" term and enter the 2 possible pickle types: "crunchy, cucumbery NEW" and "traditional, garlic-cured OLD".</span>,
             videoID: "o5aGoAk7lfk"
         },
         {
-            text: `We now fill out more details in the form for the "pickle" term. The Zingerman's website indicates that the customer can actually opt for "both pickles"; therefore, in our form, we answer that the user can choose "1 or more" values. The Zingerman's website also indicates that the customer can opt for "no pickle"; therefore, in our form, we answer "yes, this value is optional".`,
+            text: <span>We now fill out more details in the form for the "pickle" term. The Zingerman's website indicates that the customer can actually opt for "both pickles"; therefore, in our form, we answer that the user can choose "1 or more" values. The Zingerman's website also indicates that the customer can opt for "no pickle"; therefore, in our form, we answer "yes, this value is optional".</span>,
             videoID: "GUD_nBC8b-8"
         },
         {
-            text: `The Zingerman's website allows the customer to optionally choose sides for their sandwich. One kind of side is "chips", but "chips" wasn't included in the original text command. Here, we click the "Add item" button to add a new term named "chips".`,
+            text: <span>The Zingerman's website allows the customer to optionally choose sides for their sandwich. One kind of side is "chips", but "chips" wasn't included in the original text command. Here, <b>we click the "Add item" button to add a new term named "chips"</b>.</span>,
             videoID: "t3hLfzqO8Rg"
         }
     ];
@@ -85,7 +85,7 @@ export default function Tutorial(props){
                 className={styles.tutorialStep}
                 >
                 <p>You will be presented with {props.taskListLength} tasks. In each task, you will see a command that someone might give to their virtual assistant (e.g., Siri) and a corresponding website. Your goal is to help identify what commands and values are possible in the context of the website. You will do this by <b>using a text annotation interface to highlight chunks of text that can be "generalized", and for each chunk filling out the associated form.</b></p>
-                <p><b>Here we provide a tutorial that shows how to use the text annotation interface:</b></p>
+                <p><b>Here we provide a tutorial that shows how to use the text annotation interface.</b> Please review this tutorial, and then we will present you with tasks to complete.</p>
             </div>
             <ImageTutorialStep
                 //text={`A command to perform in the context of the Zingerman's website (https://order.snackpass.co/Zingermans-Delicatessen-5ca639cc3184f900e25012dc?utm_source=Deli_Front_Page&utm_medium=Sandwiches_Box&utm_campaign=Zingermans_Snackpass).`}
