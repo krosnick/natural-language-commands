@@ -7,7 +7,8 @@ import { ObjectId } from 'mongodb';
 const NaturalLanguage = dynamic(
     () => import('../../../components/NaturalLanguage'),
     { ssr: false }
-)
+);
+import Tutorial from '../../../components/Tutorial';
 
 export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, taskListLength }) {
     const router = useRouter();
@@ -39,7 +40,7 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
         setTimeout(function(){
             const taskAreaTop = document.querySelector("#taskArea").getBoundingClientRect().top;
             window.scroll({
-                top: taskAreaTop,
+                top: taskAreaTop + window.scrollY,
                 left: 0,
                 behavior: "smooth"
             });
@@ -83,12 +84,15 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
     return (
         <div>
             <div>
+                <Tutorial
+                    taskListLength={taskListLength}
+                />
                 {
                     !userFinishedVideo ? (
                         <div>
                             <p
                                 className={styles.textInstructions}
-                            >Watch this tutorial video to learn how to use the text tagging interface, then press the “Next” button:</p>
+                            >Press the “Next” button to move on to the first task:</p>
                             <button
                                 onClick={() => showNLTask()}
                                 className={styles.nextButton}
@@ -100,18 +104,6 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                         ""
                     )
                 }
-                <iframe
-                    /* width="560"
-                    height="315" */
-                    width="1200"
-                    height="675"
-                    src="https://www.youtube.com/embed/jYjzl2gYlkQ"
-                    title="YouTube video player"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    id="demoVideo"
-                ></iframe>
             </div>
             {
                 userFinishedVideo ? (
