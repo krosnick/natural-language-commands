@@ -88,7 +88,9 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
 
     return (
         <div>
-            <div>
+            <div
+                className={styles.tutorialArea}
+            >
                 <Tutorial
                     taskListLength={taskListLength}
                 />
@@ -114,6 +116,7 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                 userFinishedVideo ? (
                     <div
                         id="taskArea"
+                        className={styles.taskArea}
                     >
                         <p
                             className={styles.textInstructions}
