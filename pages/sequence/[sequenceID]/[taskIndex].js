@@ -66,7 +66,12 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
         // Determine if this is the last task in the sequence or not, and based on that decide if we go to "finished" page or to next task page
         if(taskIndex === taskListLength-1){
             // This is the last task. After user submits their answers, show "finished" view
-            router.push("/finished");
+            router.push({
+                pathname: '/finished',
+                query: {
+                    clientID: clientID
+                },
+            });
         }else{
             // Not the last task, so let's direct to the next task
             router.push({

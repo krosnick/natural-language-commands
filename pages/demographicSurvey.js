@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+//import { useState } from 'react';
 import styles from '../components/styles.module.css';
 
 export default function DemographicSurvey() {
@@ -66,7 +66,7 @@ export default function DemographicSurvey() {
             <div>
                 <p
                     className={styles.textInstructions}
-                >Your participant ID is: {clientID}</p>
+                >Your participant ID is: <b>{clientID}</b></p>
                 {/* <p
                     className={styles.textInstructions}
                 >Please enter your participant ID:</p>
