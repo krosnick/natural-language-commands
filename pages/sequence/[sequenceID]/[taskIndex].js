@@ -12,7 +12,7 @@ import Tutorial from '../../../components/Tutorial';
 
 export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, taskListLength }) {
     const router = useRouter();
-    const { clientID, participantID } = router.query;
+    const { clientID/*, participantID*/ } = router.query;
     
     const [userFinishedVideo, updateFinishedVideoStatus] = useState(false);
 
@@ -52,7 +52,7 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
         dataObj.sequenceID = sequenceID;
         dataObj.taskIndex = taskIndex;
         dataObj.clientID = clientID;
-        dataObj.participantID = participantID;
+        //dataObj.participantID = participantID;
 
         // Save data to db
         await fetch('/api/new', {
@@ -74,8 +74,8 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                 query: {
                     sequenceID: sequenceID, // sequenceID is the same
                     taskIndex: (taskIndex + 1), // next task
-                    clientID: clientID,
-                    participantID: participantID
+                    clientID: clientID/*,
+                    participantID: participantID*/
                 },
             }, undefined, { shallow: false });
         }
@@ -126,7 +126,7 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                             textEditable={false}
                             groupingSupported={false}
                             clientID={clientID}
-                            participantID={participantID}
+                            //participantID={participantID}
                             submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
                             writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
                             key={router.asPath}

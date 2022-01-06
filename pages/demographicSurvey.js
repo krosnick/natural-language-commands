@@ -6,18 +6,18 @@ export default function DemographicSurvey() {
     const router = useRouter();
     const { clientID, sequenceID } = router.query;
 
-    const [participantID, updateParticipantID] = useState("");
+    //const [participantID, updateParticipantID] = useState("");
 
     let iframeLoadedCount = 0;
     const pageLoadedTime = Date.now();
 
     function goToTask(clientID){
         //console.log("iframeLoadedCount", iframeLoadedCount);
-        if(participantID === "" || participantID === null){
+        /*if(participantID === "" || participantID === null){
             window.alert("Fill in participant ID");
             updateParticipantID(null); // using null as signifier that participantID is not filled in (UI shows red error border)
             window.scroll(0, 0); // scroll to top of page for user to see blank participant ID field
-        }else if(iframeLoadedCount < 1){
+        }else*/ if(iframeLoadedCount < 1){
             // Check that the user has submitted the Google form
             // Use iframeLoadedCount as a proxy
             window.alert("Please fill out and submit the Google form first.");
@@ -28,8 +28,8 @@ export default function DemographicSurvey() {
                 query: {
                     sequenceID: sequenceID,
                     taskIndex: 0,
-                    clientID: clientID,
-                    participantID: participantID
+                    clientID: clientID/*,
+                    participantID: participantID*/
                 },
             });
         }
@@ -53,18 +53,21 @@ export default function DemographicSurvey() {
         }
     }
 
-    function handleParticipantIDUpdate(e){
+    /*function handleParticipantIDUpdate(e){
         if(e.target.value === ""){
             updateParticipantID(null); // using null as signifier that participantID is not filled in (UI shows red error border)
         }else{
             updateParticipantID(e.target.value);
         }
-    }
+    }*/
 
     return (
         <div>
             <div>
                 <p
+                    className={styles.textInstructions}
+                >Your participant ID is: {clientID}</p>
+                {/* <p
                     className={styles.textInstructions}
                 >Please enter your participant ID:</p>
                 <input
@@ -74,7 +77,7 @@ export default function DemographicSurvey() {
                     onChange={(e) => handleParticipantIDUpdate(e)}
                     className={participantID === null ? styles.incompleteForm : "" }
                 >
-                </input>
+                </input> */}
             </div>
             <p
                 className={styles.textInstructions}
