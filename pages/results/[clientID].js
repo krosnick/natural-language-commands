@@ -1,31 +1,31 @@
 import { connectToDatabase } from '../../util/mongodb';
 import dynamic from 'next/dynamic';
+import styles from '../../components/styles.module.css';
 const NaturalLanguage = dynamic(
     () => import('../../components/NaturalLanguage'),
     { ssr: false }
 );;
 
 export default function Results( { resultList }) {
-    console.log("resultList", resultList);
-
     const resultItems = resultList.map((resultObj, i) => {
         return (
-            <div>
+            <div
+                className={styles.resultItem}
+            >
                 <p>Name: {resultObj.name}</p>
                 <p>Task index: {resultObj.taskIndex}</p>
                 <p>Feedback: {resultObj.userFeedback}</p>
                 <NaturalLanguage
+                    viewOnlyMode={true}
                     idToItem={resultObj.idToItem}
                     /*name={name}
                     text={text}
-                    websiteUrl={websiteUrl}
+                    websiteUrl={websiteUrl}*/
                     textEditable={false}
                     groupingSupported={false}
-                    clientID={clientID}
-                    //participantID={participantID}
-                    submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
-                    writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
-                    key={router.asPath}*/
+                    //submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
+                    //writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
+                    //key={router.asPath}
                 />
             </div>
         );

@@ -51,13 +51,13 @@ class UserProvidedExamples extends React.Component {
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 >
                 </input>
                 <button
                     onClick={() => this.props.removeValue(i, this.props.uuid)}
                     className={styles.removeValueButton}
-                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                     title="Delete"
                 >x</button>
             </li>
@@ -72,7 +72,7 @@ class UserProvidedExamples extends React.Component {
                 <button
                     onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                     className={styles.addValuesButton}
-                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 >
                     Add another value
                 </button>
@@ -91,6 +91,7 @@ class FreeformParam extends React.Component {
                     handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
+                    viewOnlyMode={this.props.viewOnlyMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                     examplesText="What are some values the user can type in?"
                 />
@@ -108,6 +109,7 @@ class EnumerationParam extends React.Component {
                     handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
+                    viewOnlyMode={this.props.viewOnlyMode}
                     removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                     examplesText="What are some values the user can choose?"
                 />
@@ -123,7 +125,7 @@ class EnumerationParam extends React.Component {
                             value="one"
                             checked={!this.props.paramMultipleValuesAllowed}
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`one_numValuesAllowed_${this.props.uuid}`}>Just 1</label>
                     </div>
@@ -136,7 +138,7 @@ class EnumerationParam extends React.Component {
                             value="multiple"
                             checked={this.props.paramMultipleValuesAllowed}
                             onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`multiple_numValuesAllowed_${this.props.uuid}`}>1 or more</label>
                     </div>
@@ -170,7 +172,7 @@ class DateParam extends React.Component {
                             value="past"
                             checked={this.props.dateRestriction === "past"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`past_dateRestrictions_${this.props.uuid}`}>Restricted to dates in the past</label>
                     </div>
@@ -182,7 +184,7 @@ class DateParam extends React.Component {
                             value="future"
                             checked={this.props.dateRestriction === "future"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`future_dateRestrictions_${this.props.uuid}`}>Restricted to dates in the future</label>
                     </div>
@@ -194,7 +196,7 @@ class DateParam extends React.Component {
                             value="none"
                             checked={this.props.dateRestriction === "none"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`none_dateRestrictions_${this.props.uuid}`}>No restrictions</label>
                     </div>
@@ -206,7 +208,7 @@ class DateParam extends React.Component {
                             value="other"
                             checked={this.props.dateRestriction === "other"}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`other_dateRestrictions_${this.props.uuid}`}>Other: </label>
                         <input
@@ -215,7 +217,7 @@ class DateParam extends React.Component {
                             id={`other_dateRestrictions_text_${this.props.uuid}`}
                             value={this.props.otherDataValue}
                             onChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
-                            disabled={this.props.dateRestriction !== "other" || this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.dateRestriction !== "other" || this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         >
                         </input>
                     </div>
@@ -240,7 +242,7 @@ class NumberParam extends React.Component {
                             value="integers"
                             checked={this.props.restrictedToIntegers}
                             onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`integers_${this.props.uuid}`}>Restricted to integers</label>
                     </div>
@@ -252,7 +254,7 @@ class NumberParam extends React.Component {
                             value="range"
                             checked={this.props.restrictedToRange}
                             onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToRange", this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         />
                         <label htmlFor={`range_${this.props.uuid}`}>Restricted to range</label>
                     </div>
@@ -269,7 +271,7 @@ class NumberParam extends React.Component {
                                 id={`rangeStart_${this.props.uuid}`}
                                 value={this.props.rangeStart}
                                 onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeStart", this.props.uuid)}
-                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                             >
                             </input>
                         </div>
@@ -281,7 +283,7 @@ class NumberParam extends React.Component {
                                 id={`rangeEnd_${this.props.uuid}`}
                                 value={this.props.rangeEnd}
                                 onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "rangeEnd", this.props.uuid)}
-                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                                disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                             >
                             </input>
                         </div>
@@ -305,6 +307,7 @@ class ParamTextItem extends React.Component {
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "enumeration"){
@@ -317,6 +320,7 @@ class ParamTextItem extends React.Component {
                                             handleParamNumValuesAllowedChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "flag"){
@@ -328,6 +332,7 @@ class ParamTextItem extends React.Component {
                                             uuid={this.props.uuid}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
                                             handleParamDateRestrictionChange={(e) => this.props.handleParamDateRestrictionChange(e, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "number"){
@@ -339,6 +344,7 @@ class ParamTextItem extends React.Component {
                                             uuid={this.props.uuid}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
                                             handleParamNumberRestrictionChange={(e, restrictionToChange) => this.props.handleParamNumberRestrictionChange(e, restrictionToChange, this.props.uuid)}
                                         />;
             }
@@ -354,7 +360,7 @@ class ParamTextItem extends React.Component {
                     size={Math.max(this.props.paramName.length, 20)}
                     value={this.props.paramName}
                     onChange={(e) => this.props.handleParamNameChange(e, this.props.uuid)}
-                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 >
                 </input>
                 {
@@ -395,7 +401,7 @@ class ParamTextItem extends React.Component {
                         name={`paramType_${this.props.uuid}`}
                         value={this.props.paramTypeData.type}
                         onChange={(e) => this.props.handleParamTypeChange(e, this.props.uuid)}
-                        disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                        disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                         className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
                     >
                         <option value="">--Select value type--</option>
@@ -423,7 +429,7 @@ class ParamTextItem extends React.Component {
                                     value="optional"
                                     checked={this.props.paramIsOptional}
                                     onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
-                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                                 />
                                 <label htmlFor={`optional_paramOptional_${this.props.uuid}`}>Yes, this value is optional</label>
                             </div>
@@ -436,7 +442,7 @@ class ParamTextItem extends React.Component {
                                     value="notOptional"
                                     checked={!this.props.paramIsOptional}
                                     onChange={(e) => this.props.handleParamOptionalChange(e, this.props.uuid)}
-                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode}
+                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                                 />
                                 <label htmlFor={`notOptional_paramOptional_${this.props.uuid}`}>No, the user has to choose a value</label>
                             </div>
@@ -503,127 +509,128 @@ class NaturalLanguage extends React.Component {
     }
 
     handleTextSelection(textElement, uuid){
-        
-        // Get currently selected text
-        const selectionObj = window.getSelection();
-        console.log("selectionObj", selectionObj);
-        const selectedText = selectionObj.toString();
-        console.log("selectedText", selectedText);
-        
-        // Confirm that anchorNode and focusNode have the same parent
-            // (if they don't, then don't make a parameter, it doesn't make sense, because basically the user is selecting text that includes an existing param too)
-            // or, if no anchorNode, then just ignore, not a real selection
-        if(selectionObj.anchorNode && selectionObj.focusNode && selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement){
-            console.log("selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement");
+        if(!this.props.viewOnlyMode){
+            // Get currently selected text
+            const selectionObj = window.getSelection();
+            console.log("selectionObj", selectionObj);
+            const selectedText = selectionObj.toString();
+            console.log("selectedText", selectedText);
             
-            // Ignore if in edit mode or group selection mode
-            if(!this.state.uuidInEditMode && !this.state.groupSelectionMode){
-                if(selectedText.length > 0){
-                    
-                    // Now need to split this 
-                    // Create a param from this text
-                    
-                    const anchorOffset = selectionObj.anchorOffset;
-                    const focusOffset = selectionObj.focusOffset;
-
-                    if(!isNaN(anchorOffset) && !isNaN(focusOffset)){
-                        let startIndex = Math.min(anchorOffset, focusOffset);
-                        let endIndex = Math.max(anchorOffset, focusOffset);
+            // Confirm that anchorNode and focusNode have the same parent
+                // (if they don't, then don't make a parameter, it doesn't make sense, because basically the user is selecting text that includes an existing param too)
+                // or, if no anchorNode, then just ignore, not a real selection
+            if(selectionObj.anchorNode && selectionObj.focusNode && selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement){
+                console.log("selectionObj.anchorNode.parentElement === selectionObj.focusNode.parentElement");
+                
+                // Ignore if in edit mode or group selection mode
+                if(!this.state.uuidInEditMode && !this.state.groupSelectionMode){
+                    if(selectedText.length > 0){
                         
-                        const textOnLeft = selectionObj.anchorNode.textContent.substring(0, startIndex);
-                        const textOnRight = selectionObj.anchorNode.textContent.substring(endIndex);
+                        // Now need to split this 
+                        // Create a param from this text
+                        
+                        const anchorOffset = selectionObj.anchorOffset;
+                        const focusOffset = selectionObj.focusOffset;
 
-                        const parentID = this.state.idToItem[uuid].parentID;
+                        if(!isNaN(anchorOffset) && !isNaN(focusOffset)){
+                            let startIndex = Math.min(anchorOffset, focusOffset);
+                            let endIndex = Math.max(anchorOffset, focusOffset);
+                            
+                            const textOnLeft = selectionObj.anchorNode.textContent.substring(0, startIndex);
+                            const textOnRight = selectionObj.anchorNode.textContent.substring(endIndex);
 
-                        const newItemOnLeft = {
-                            text: textOnLeft,
-                            uuid: uuidv4(),
-                            type: "text",
-                            itemIDs: [],
-                            parentID: parentID,
-                            paramName: null,
-                            currentlySelected: false,
-                            paramIsOptional: false,
-                            paramMultipleValuesAllowed: false,
-                            paramTypeData: null,
-                            paramAnnotatorCreated: false
-                        };
-                        const newParamItem = {
-                            text: selectedText,
-                            uuid: uuidv4(),
-                            type: "param",
-                            itemIDs: [],
-                            parentID: parentID,
-                            //paramName: `<name for *${selectedText}*>`,
-                            paramName: `<name>`,
-                            currentlySelected: false,
-                            paramIsOptional: false,
-                            paramMultipleValuesAllowed: false,
-                            paramTypeData: {
-                                type: "",
-                                possibleValues: [selectedText],
-                            },
-                            paramAnnotatorCreated: false
-                        };
-                        const newItemOnRight = {
-                            text: textOnRight,
-                            uuid: uuidv4(),
-                            type: "text",
-                            itemIDs: [],
-                            parentID: parentID,
-                            paramName: null,
-                            currentlySelected: false,
-                            paramIsOptional: false,
-                            paramMultipleValuesAllowed: false,
-                            paramTypeData: null,
-                            paramAnnotatorCreated: false
-                        };
+                            const parentID = this.state.idToItem[uuid].parentID;
 
-                        // Add replacement items
-                        const idToItemClone = _.cloneDeep(this.state.idToItem);
-                        idToItemClone[newItemOnLeft.uuid] = newItemOnLeft;
-                        idToItemClone[newParamItem.uuid] = newParamItem;
-                        idToItemClone[newItemOnRight.uuid] = newItemOnRight;
+                            const newItemOnLeft = {
+                                text: textOnLeft,
+                                uuid: uuidv4(),
+                                type: "text",
+                                itemIDs: [],
+                                parentID: parentID,
+                                paramName: null,
+                                currentlySelected: false,
+                                paramIsOptional: false,
+                                paramMultipleValuesAllowed: false,
+                                paramTypeData: null,
+                                paramAnnotatorCreated: false
+                            };
+                            const newParamItem = {
+                                text: selectedText,
+                                uuid: uuidv4(),
+                                type: "param",
+                                itemIDs: [],
+                                parentID: parentID,
+                                //paramName: `<name for *${selectedText}*>`,
+                                paramName: `<name>`,
+                                currentlySelected: false,
+                                paramIsOptional: false,
+                                paramMultipleValuesAllowed: false,
+                                paramTypeData: {
+                                    type: "",
+                                    possibleValues: [selectedText],
+                                },
+                                paramAnnotatorCreated: false
+                            };
+                            const newItemOnRight = {
+                                text: textOnRight,
+                                uuid: uuidv4(),
+                                type: "text",
+                                itemIDs: [],
+                                parentID: parentID,
+                                paramName: null,
+                                currentlySelected: false,
+                                paramIsOptional: false,
+                                paramMultipleValuesAllowed: false,
+                                paramTypeData: null,
+                                paramAnnotatorCreated: false
+                            };
 
-                        // Remove old item
-                        delete idToItemClone[uuid];
+                            // Add replacement items
+                            const idToItemClone = _.cloneDeep(this.state.idToItem);
+                            idToItemClone[newItemOnLeft.uuid] = newItemOnLeft;
+                            idToItemClone[newParamItem.uuid] = newParamItem;
+                            idToItemClone[newItemOnRight.uuid] = newItemOnRight;
 
-                        // Update ID list
-                        const itemIDsList = idToItemClone[parentID].itemIDs;
+                            // Remove old item
+                            delete idToItemClone[uuid];
 
-                        for(let i = 0; i < itemIDsList.length; i++){
-                            if(itemIDsList[i] === uuid){
-                                itemIDsList.splice(i, 1, newItemOnLeft.uuid, newParamItem.uuid, newItemOnRight.uuid);
+                            // Update ID list
+                            const itemIDsList = idToItemClone[parentID].itemIDs;
+
+                            for(let i = 0; i < itemIDsList.length; i++){
+                                if(itemIDsList[i] === uuid){
+                                    itemIDsList.splice(i, 1, newItemOnLeft.uuid, newParamItem.uuid, newItemOnRight.uuid);
+                                }
                             }
+
+                            // Clear text selection
+                            selectionObj.removeAllRanges();
+
+                            // Update whole textItems to make sure we re-render
+                            this.setState({
+                                idToItem: idToItemClone,
+                                hoveredID: newParamItem.uuid
+                            });
+
+                            this.scrollParamIntoViewAndHighlightNameText(newParamItem.uuid);
                         }
 
-                        // Clear text selection
-                        selectionObj.removeAllRanges();
+                        //this.exitEditMode();
+                    }else if(this.state.textEditable){
+                        // Enter edit mode, only if allowed (i.e., this.state.textEditable is true)
 
-                        // Update whole textItems to make sure we re-render
+                        // Selection length is 0, so just a single cursor click
+                        
+                        // Assume this means the user is trying to edit text, so let's update uuidInEditMode
                         this.setState({
-                            idToItem: idToItemClone,
-                            hoveredID: newParamItem.uuid
+                            uuidInEditMode: uuid
                         });
-
-                        this.scrollParamIntoViewAndHighlightNameText(newParamItem.uuid);
+        
+                        // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
+                        setTimeout(function(textElement){
+                            textElement.current.focus();
+                        }, 0, textElement);
                     }
-
-                    //this.exitEditMode();
-                }else if(this.state.textEditable){
-                    // Enter edit mode, only if allowed (i.e., this.state.textEditable is true)
-
-                    // Selection length is 0, so just a single cursor click
-                    
-                    // Assume this means the user is trying to edit text, so let's update uuidInEditMode
-                    this.setState({
-                        uuidInEditMode: uuid
-                    });
-    
-                    // This is a bit hacky, but we want to make sure to give the contentEditable area focus as soon as the user clicks it (don't want them to have to click twice)
-                    setTimeout(function(textElement){
-                        textElement.current.focus();
-                    }, 0, textElement);
                 }
             }
         }
@@ -1253,6 +1260,7 @@ class NaturalLanguage extends React.Component {
                             currentlySelected={textItem.currentlySelected}
                             uuidInEditMode={this.state.uuidInEditMode}
                             groupSelectionMode={this.state.groupSelectionMode}
+                            viewOnlyMode={this.props.viewOnlyMode}
                             incompleteFormParamIDs={this.state.incompleteFormParamIDs}
                             paramIsOptional={textItem.paramIsOptional}
                             paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
@@ -1281,7 +1289,7 @@ class NaturalLanguage extends React.Component {
                                 type="text"
                                 value={textItem.groupName}
                                 onChange={(e) => this.handleGroupNameChange(e, textItem.uuid)}
-                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                             ></input>
                         </span>
                         {this.renderItemsList(textItem.itemIDs)}
@@ -1314,7 +1322,7 @@ class NaturalLanguage extends React.Component {
                                 <button
                                     className={styles.removeButton}
                                     onClick={() => this.removeItem(textItem.uuid)}
-                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                                     title={textItem.type === "param" ? "Delete parameter" : "Delete group"}
                                 >x</button>
                                 {this.state.groupingSupported ? (
@@ -1324,13 +1332,13 @@ class NaturalLanguage extends React.Component {
                                         <button
                                             className={styles.groupButton}
                                             onClick={() => this.enterGroupSelection(textItem.uuid)}
-                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                                         >Group</button>
                                         { textItem.type === "group" ? (
                                             <button
                                                 className={styles.addParameterButton}
                                                 onClick={() => this.addParameter(textItem.uuid)}
-                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                                             >Add item</button>
                                         ):(
                                             ""
@@ -1370,6 +1378,7 @@ class NaturalLanguage extends React.Component {
                             uuid={textItem.uuid}
                             uuidInEditMode={this.state.uuidInEditMode}
                             groupSelectionMode={this.state.groupSelectionMode}
+                            viewOnlyMode={this.props.viewOnlyMode}
                             handleSave={(textElement) => this.handleSave(textElement, textItem.uuid)}
                             handleTextSelection={(textElement) => this.handleTextSelection(textElement, textItem.uuid)}
                         />
@@ -1390,65 +1399,68 @@ class NaturalLanguage extends React.Component {
             <div
                 // className={(this.state.uuidInEditMode ? styles.editBackground : '')}
             >
-                
-                <span
-                    className={styles.topButtonRow}
-                    top-button-row=""
-                >
-                    <div>
-                        <button
-                            className={styles.topButton}
-                            onClick={() => this.addParameter("root")}
-                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                        >
-                            Add item
-                        </button>
-                        {this.state.groupingSupported ? (
+                {!this.props.viewOnlyMode ? (
+                    <span
+                        className={styles.topButtonRow}
+                        top-button-row=""
+                    >
+                        <div>
                             <button
                                 className={styles.topButton}
-                                onClick={() => this.enterGroupSelection(null)}
-                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
+                                onClick={() => this.addParameter("root")}
+                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                             >
-                                Group
+                                Add item
                             </button>
-                        ) : (
-                            ""
-                        ) }
-                        {/* State-specific buttons */}
-                        {this.state.groupSelectionMode ? (
-                            <span>
+                            {this.state.groupingSupported ? (
                                 <button
                                     className={styles.topButton}
-                                    onClick={() => this.createGroup()}
+                                    onClick={() => this.enterGroupSelection(null)}
+                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                                 >
-                                    Create group
+                                    Group
                                 </button>
-                                <button
-                                    className={styles.topButton}
-                                    onClick={() => this.exitGroupCreationMode()}
-                                >
-                                    Cancel
-                                </button>
-                            </span>
-                        ) : (
-                            ""
-                        )}
-                        <button
-                            onClick={() => this.scrollToBottomOfPage()}
-                            className={`${styles.submitButton} ${styles.topButton}`}
-                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                        >
-                            Next
-                        </button>
-                    </div>
-                    <div>
-                        <p
-                            className={styles.errorMessage}
-                        >
-                        {this.state.errorMessage}
-                    </p>
-                </div>
-                </span>
+                            ) : (
+                                ""
+                            ) }
+                            {/* State-specific buttons */}
+                            {this.state.groupSelectionMode ? (
+                                <span>
+                                    <button
+                                        className={styles.topButton}
+                                        onClick={() => this.createGroup()}
+                                    >
+                                        Create group
+                                    </button>
+                                    <button
+                                        className={styles.topButton}
+                                        onClick={() => this.exitGroupCreationMode()}
+                                    >
+                                        Cancel
+                                    </button>
+                                </span>
+                            ) : (
+                                ""
+                            )}
+                            <button
+                                onClick={() => this.scrollToBottomOfPage()}
+                                className={`${styles.submitButton} ${styles.topButton}`}
+                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
+                            >
+                                Next
+                            </button>
+                        </div>
+                        <div>
+                            <p
+                                className={styles.errorMessage}
+                            >
+                                {this.state.errorMessage}
+                            </p>
+                        </div>
+                    </span>
+                ) : (
+                    ""
+                ) }
                 
                 <div
                     className={styles.contentArea}
@@ -1494,33 +1506,41 @@ class NaturalLanguage extends React.Component {
                         </iframe>
                     </div>
                 </div>
-                <div
-                    className={styles.userFeedbackArea}
-                >
-                    <label
-                        htmlFor="userFeedback"
-                        className={styles.userFeedbackLabel}
+                {!this.props.viewOnlyMode ? (
+                    <div
+                        className={styles.userFeedbackArea}
                     >
-                        Do you have any feedback for us, or is there any other information you wanted to share that the interface didn't let you share?
-                    </label>
-                    <textarea
-                        className={styles.userFeedback}
-                        id="userFeedback"
-                        name="userFeedback"
-                        rows="5"
-                        cols="33"
-                        value={this.state.userFeedback}
-                        onChange={(e) => this.handleUserFeedbackChange(e)}
+                        <label
+                            htmlFor="userFeedback"
+                            className={styles.userFeedbackLabel}
+                        >
+                            Do you have any feedback for us, or is there any other information you wanted to share that the interface didn't let you share?
+                        </label>
+                        <textarea
+                            className={styles.userFeedback}
+                            id="userFeedback"
+                            name="userFeedback"
+                            rows="5"
+                            cols="33"
+                            value={this.state.userFeedback}
+                            onChange={(e) => this.handleUserFeedbackChange(e)}
+                        >
+                        </textarea>
+                    </div>
+                ) : (
+                    ""
+                ) }
+                {!this.props.viewOnlyMode ? (
+                    <button
+                        onClick={() => this.handleSubmit()}
+                        className={`${styles.submitButton} ${styles.topButton}`}
+                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                     >
-                    </textarea>
-                </div>
-                <button
-                    onClick={() => this.handleSubmit()}
-                    className={`${styles.submitButton} ${styles.topButton}`}
-                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode}
-                >
-                    {this.props.submitText}
-                </button>
+                        {this.props.submitText}
+                    </button>
+                ) : (
+                    ""
+                ) }
             </div>
         );
     }

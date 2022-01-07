@@ -25,3 +25,8 @@
 .taskArea {
     margin-top: 50px;
 }
+
+.resultItem {
+    border-bottom: 1px solid black;
+    padding-bottom: 20px;
+}
