@@ -488,7 +488,7 @@ class NaturalLanguage extends React.Component {
         this.state = {
             text: props.text,
             //textItems: initialTextItems,
-            idToItem: initialTextItems,
+            idToItem: props.idToItem || initialTextItems, // want to use existing data passed in via props (or if no data exists, then use initialTextItems)
             groupSelectionMode: false,
             //uuidInEditMode: false
             uuidInEditMode: null,
