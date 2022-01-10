@@ -26,6 +26,7 @@ function RegularTextItem(props){
         >
             <span
                 className={`${styles.inputNaturalLanguage} ${(props.uuidInEditMode === props.uuid ? styles.editBackground : '')} ${(props.uuidInEditMode && props.uuidInEditMode !== props.uuid || props.groupSelectionMode ? styles.grayedOut : '')}`}
+                log-this-element=""
                 uuid={props.uuid}
                 text-item-type="regular"
                 contentEditable={props.uuidInEditMode === props.uuid}
@@ -48,6 +49,7 @@ class UserProvidedExamples extends React.Component {
             >
                 <input
                     className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
+                    log-this-element=""
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
@@ -120,6 +122,7 @@ class EnumerationParam extends React.Component {
                     <div>
                         <input
                             type="radio"
+                            log-this-element=""
                             name={`one_numValuesAllowed_${this.props.uuid}`}
                             id={`one_numValuesAllowed_${this.props.uuid}`}
                             value="one"
@@ -133,6 +136,7 @@ class EnumerationParam extends React.Component {
                     <div>
                         <input
                             type="radio"
+                            log-this-element=""
                             name={`multiple_numValuesAllowed_${this.props.uuid}`}
                             id={`multiple_numValuesAllowed_${this.props.uuid}`}
                             value="multiple"
@@ -167,6 +171,7 @@ class DateParam extends React.Component {
                     <div>
                         <input
                             type="radio"
+                            log-this-element=""
                             name={`past_dateRestrictions_${this.props.uuid}`}
                             id={`past_dateRestrictions_${this.props.uuid}`}
                             value="past"
@@ -179,6 +184,7 @@ class DateParam extends React.Component {
                     <div>
                         <input
                             type="radio"
+                            log-this-element=""
                             name={`future_dateRestrictions_${this.props.uuid}`}
                             id={`future_dateRestrictions_${this.props.uuid}`}
                             value="future"
@@ -191,6 +197,7 @@ class DateParam extends React.Component {
                     <div>
                         <input
                             type="radio"
+                            log-this-element=""
                             name={`none_dateRestrictions_${this.props.uuid}`}
                             id={`none_dateRestrictions_${this.props.uuid}`}
                             value="none"
@@ -203,6 +210,7 @@ class DateParam extends React.Component {
                     <div>
                         <input
                             type="radio"
+                            log-this-element=""
                             name={`other_dateRestrictions_${this.props.uuid}`}
                             id={`other_dateRestrictions_${this.props.uuid}`}
                             value="other"
@@ -213,6 +221,7 @@ class DateParam extends React.Component {
                         <label htmlFor={`other_dateRestrictions_${this.props.uuid}`}>Other: </label>
                         <input
                             type="text"
+                            log-this-element=""
                             name={`other_dateRestrictions_text_${this.props.uuid}`}
                             id={`other_dateRestrictions_text_${this.props.uuid}`}
                             value={this.props.otherDataValue}
@@ -237,6 +246,7 @@ class NumberParam extends React.Component {
                     <div>
                         <input
                             type="checkbox"
+                            log-this-element=""
                             name={`integers_${this.props.uuid}`}
                             id={`integers_${this.props.uuid}`}
                             value="integers"
@@ -249,6 +259,7 @@ class NumberParam extends React.Component {
                     <div>
                         <input
                             type="checkbox"
+                            log-this-element=""
                             name={`range_${this.props.uuid}`}
                             id={`range_${this.props.uuid}`}
                             value="range"
@@ -267,6 +278,7 @@ class NumberParam extends React.Component {
                             <label htmlFor={`rangeStart_${this.props.uuid}`}>Range start: </label>
                             <input
                                 type="text"
+                                log-this-element=""
                                 name={`rangeStart_${this.props.uuid}`}
                                 id={`rangeStart_${this.props.uuid}`}
                                 value={this.props.rangeStart}
@@ -279,6 +291,7 @@ class NumberParam extends React.Component {
                             <label htmlFor={`rangeEnd_${this.props.uuid}`}>Range end: </label>
                             <input
                                 type="text"
+                                log-this-element=""
                                 name={`rangeEnd_${this.props.uuid}`}
                                 id={`rangeEnd_${this.props.uuid}`}
                                 value={this.props.rangeEnd}
@@ -354,6 +367,7 @@ class ParamTextItem extends React.Component {
             <span>
                 <input
                     className={`${this.props.paramAnnotatorCreated ? styles.paramTextAnnotatorCreated : styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
+                    log-this-element=""
                     uuid={this.props.uuid}
                     text-item-type="param"
                     type="text"
@@ -399,6 +413,7 @@ class ParamTextItem extends React.Component {
                     </label> */}
                     <select
                         name={`paramType_${this.props.uuid}`}
+                        log-this-element=""
                         value={this.props.paramTypeData.type}
                         onChange={(e) => this.props.handleParamTypeChange(e, this.props.uuid)}
                         disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
@@ -424,6 +439,7 @@ class ParamTextItem extends React.Component {
                             <div>
                                 <input
                                     type="radio"
+                                    log-this-element=""
                                     name={`optional_paramOptional_${this.props.uuid}`}
                                     id={`optional_paramOptional_${this.props.uuid}`}
                                     value="optional"
@@ -437,6 +453,7 @@ class ParamTextItem extends React.Component {
                             <div>
                                 <input
                                     type="radio"
+                                    log-this-element=""
                                     name={`notOptional_paramOptional_${this.props.uuid}`}
                                     id={`notOptional_paramOptional_${this.props.uuid}`}
                                     value="notOptional"
@@ -1287,6 +1304,7 @@ class NaturalLanguage extends React.Component {
                                 group-name=""
                                 className={`${styles.groupName} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')}`}
                                 type="text"
+                                log-this-element=""
                                 value={textItem.groupName}
                                 onChange={(e) => this.handleGroupNameChange(e, textItem.uuid)}
                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
@@ -1310,6 +1328,7 @@ class NaturalLanguage extends React.Component {
                         <input
                             className={styles.groupSelectionCheckbox}
                             type="checkbox"
+                            log-this-element=""
                             name={`groupSelection_${textItem.uuid}`}
                             value="groupSelected"
                             uuid={textItem.uuid}
