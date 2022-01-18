@@ -10,7 +10,7 @@ const NaturalLanguage = dynamic(
 );
 import Tutorial from '../../../components/Tutorial';
 
-export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, taskListLength }) {
+export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, taskIndex, name, taskListLength }) {
     
     console.log("process.env.NODE_ENV", process.env.NODE_ENV);
     // Only do fullstory logging if we're in production mode
@@ -160,7 +160,8 @@ export default function Task( { text, websiteUrl, sequenceID, taskIndex, name, t
                         <NaturalLanguage
                             name={name}
                             text={text}
-                            websiteUrl={websiteUrl}
+                            // websiteUrl={websiteUrl}
+                            websiteHTML={websiteHTML}
                             textEditable={false}
                             groupingSupported={false}
                             clientID={clientID}
@@ -279,13 +280,15 @@ export async function getServerSideProps({params}) {
 
         const taskObject = await taskCursor.next();
         const text = taskObject.text;
-        const websiteUrl = taskObject.websiteUrl;
+        //const websiteUrl = taskObject.websiteUrl;
+        const websiteHTML = taskObject.websiteHTML;
         
         // Pass data to the page via props
         return {
             props: {
                 text, 
-                websiteUrl,
+                //websiteUrl,
+                websiteHTML,
                 sequenceID,
                 taskIndex,
                 name: taskName,

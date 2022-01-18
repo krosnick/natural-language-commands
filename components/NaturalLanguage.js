@@ -3,8 +3,9 @@ import { withRouter } from 'next/router';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styles from './NaturalLanguage.module.css';
-import ChipotleClone from './website_clones/ChipotleClone';
-import OscarsClone from './website_clones/OscarsClone';
+// import ChipotleClone from './website_clones/ChipotleClone';
+// import OscarsClone from './website_clones/OscarsClone';
+import Clone from './website_clones/Clone';
 
 function RegularTextItem(props){
     const textElement = useRef(null);
@@ -519,7 +520,7 @@ class NaturalLanguage extends React.Component {
             uuidInEditMode: null,
             hoveredID: null,
             errorMessage: null,
-            websiteUrl: props.websiteUrl,
+            //websiteUrl: props.websiteUrl,
             textEditable: props.textEditable,
             groupingSupported: props.groupingSupported,
             userFeedback: "",
@@ -1515,11 +1516,11 @@ class NaturalLanguage extends React.Component {
                     <div
                         className={styles.websiteIframe}
                     >
-                        <a
+                        {/* <a
                             href={this.state.websiteUrl}
                         >
                             {this.state.websiteUrl}
-                        </a>
+                        </a> */}
                         {/* <iframe
                             width="98%"
                             height="700"
@@ -1527,8 +1528,11 @@ class NaturalLanguage extends React.Component {
                             src="/website_clones/chipotle_clone.html"
                         >
                         </iframe> */}
-                        <ChipotleClone />
+                        {/* <ChipotleClone /> */}
                         {/* <OscarsClone /> */}
+                        <Clone
+                            websiteHTML={this.props.websiteHTML}
+                        />
                     </div>
                 </div>
                 {!this.props.viewOnlyMode ? (
