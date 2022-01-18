@@ -3,6 +3,8 @@ import { withRouter } from 'next/router';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styles from './NaturalLanguage.module.css';
+import ChipotleClone from './website_clones/ChipotleClone';
+import OscarsClone from './website_clones/OscarsClone';
 
 function RegularTextItem(props){
     const textElement = useRef(null);
@@ -1518,11 +1520,15 @@ class NaturalLanguage extends React.Component {
                         >
                             {this.state.websiteUrl}
                         </a>
-                        <iframe
+                        {/* <iframe
                             width="98%"
                             height="700"
-                            src={this.state.websiteUrl}>
-                        </iframe>
+                            //src={this.state.websiteUrl}
+                            src="/website_clones/chipotle_clone.html"
+                        >
+                        </iframe> */}
+                        {/* <ChipotleClone /> */}
+                        <OscarsClone />
                     </div>
                 </div>
                 {!this.props.viewOnlyMode ? (
