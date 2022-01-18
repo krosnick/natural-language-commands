@@ -753,7 +753,7 @@ function createHTML() {
 
 
 export default function ChipotleClone() {
-    return <div chipotle_clone = ""
+    return <div clone = ""
     dangerouslySetInnerHTML = { createHTML() }
     />;
 }

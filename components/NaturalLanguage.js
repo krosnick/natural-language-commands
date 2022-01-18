@@ -1527,8 +1527,8 @@ class NaturalLanguage extends React.Component {
                             src="/website_clones/chipotle_clone.html"
                         >
                         </iframe> */}
-                        {/* <ChipotleClone /> */}
-                        <OscarsClone />
+                        <ChipotleClone />
+                        {/* <OscarsClone /> */}
                     </div>
                 </div>
                 {!this.props.viewOnlyMode ? (

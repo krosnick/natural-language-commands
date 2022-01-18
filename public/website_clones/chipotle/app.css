@@ -2032,7 +2032,7 @@
 
 .app,
 .app-container,
-[chipotle_clone],
+[clone],
 html {
     box-sizing: border-box
 }
@@ -28012,12 +28012,12 @@ h6 {
     letter-spacing: .05em
 }
 
-[chipotle_clone],
+[clone],
 h6 {
     font-family: Nunito, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol
 }
 
-[chipotle_clone] {
+[clone] {
     background-color: #fff;
     margin: 0;
     min-width: 320px
