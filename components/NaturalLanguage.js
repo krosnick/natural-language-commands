@@ -6,6 +6,7 @@ import styles from './NaturalLanguage.module.css';
 // import ChipotleClone from './website_clones/ChipotleClone';
 // import OscarsClone from './website_clones/OscarsClone';
 import Clone from './website_clones/Clone';
+import { getValues } from './valueExtraction';
 
 function RegularTextItem(props){
     const textElement = useRef(null);
@@ -45,6 +46,8 @@ function RegularTextItem(props){
 
 class UserProvidedExamples extends React.Component {
     render(){
+        console.log("this.props", this.props);
+        console.log("this.props.possibleValues", this.props.possibleValues);
         const possibleValues = this.props.possibleValues.map((value, i) =>
             <li
                 // key={`${value}_${i}`}
@@ -626,6 +629,13 @@ class NaturalLanguage extends React.Component {
                             // Clear text selection
                             selectionObj.removeAllRanges();
 
+                            // Extract values from page, using the initial value highlighted in the NL
+                                // Trim initial example value (in case user accidentally included whitespace at beginning or end when doing text selection)
+                            const extractedExampleValues = getValues([selectedText.trim()]);
+                            
+                            // Update these values in the data structure, so that it renders on the page
+                            newParamItem.paramTypeData.possibleValues = extractedExampleValues;
+                            
                             // Update whole textItems to make sure we re-render
                             this.setState({
                                 idToItem: idToItemClone,
