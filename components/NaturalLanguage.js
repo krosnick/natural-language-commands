@@ -59,6 +59,7 @@ class UserProvidedExamples extends React.Component {
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                    onBlur={(e) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 >
                 </input>
@@ -97,6 +98,7 @@ class FreeformParam extends React.Component {
                     possibleValues={this.props.possibleValues}
                     handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                     handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                    handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
                     viewOnlyMode={this.props.viewOnlyMode}
@@ -115,6 +117,7 @@ class EnumerationParam extends React.Component {
                     possibleValues={this.props.possibleValues}
                     handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                     handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                    handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                     uuidInEditMode={this.props.uuidInEditMode}
                     groupSelectionMode={this.props.groupSelectionMode}
                     viewOnlyMode={this.props.viewOnlyMode}
@@ -324,6 +327,7 @@ class ParamTextItem extends React.Component {
                                             possibleValues={this.props.paramTypeData.possibleValues}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                                            handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
                                             viewOnlyMode={this.props.viewOnlyMode}
@@ -336,6 +340,7 @@ class ParamTextItem extends React.Component {
                                             paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                                            handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                                             handleParamNumValuesAllowedChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
@@ -513,6 +518,8 @@ class NaturalLanguage extends React.Component {
             paramTypeData: null,
             paramAnnotatorCreated: false
         };
+
+        this.runExtractionTimeout;
 
         this.state = {
             text: props.text,
@@ -734,6 +741,39 @@ class NaturalLanguage extends React.Component {
         console.log("e", e);
         const idToItemClone = _.cloneDeep(this.state.idToItem);
         idToItemClone[uuid].paramTypeData.possibleValues[i] = e.target.value;
+
+        // We don't want to run extraction algorithm after every keypress
+            // That's going to be confusing and annoying (a copy of each intermediate string would appear as a new value)
+        // So instead, we'll wait for x seconds of inactivity; at that point, we'll assume the user has finished typing their value and we'll run the extraction algorithm
+        clearTimeout(this.runExtractionTimeout);
+        this.runExtractionTimeout = setTimeout(function(context){            
+            const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+            // Update these values in the data structure, so that it renders on the page
+            idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
+            context.setState({
+                idToItem: idToItemClone
+            });
+        }, 1500, this);
+
+        this.setState({
+            idToItem: idToItemClone
+        });
+        //this.exitEditMode();
+    }
+
+    handleParamValueBlurred(e, i, uuid) {
+        console.log("handleParamValueBlurred");
+        console.log("e", e);
+
+        // Focus has left this example value textfield
+        // In case the user just edited the value of this textfield, let's run the value extraction algorithm
+        
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+
+        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+        // Update these values in the data structure, so that it renders on the page
+        idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
+
         this.setState({
             idToItem: idToItemClone
         });
@@ -1009,6 +1049,11 @@ class NaturalLanguage extends React.Component {
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
         idToItemClone[uuid].paramTypeData.possibleValues.splice(i, 1);
+
+        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+        // Update these values in the data structure, so that it renders on the page
+        idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
+
         this.setState({
             idToItem: idToItemClone
         });
@@ -1285,6 +1330,7 @@ class NaturalLanguage extends React.Component {
                             handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.uuid)}
                             handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.uuid)}
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.uuid)}
+                            handleParamValueBlurred={(e, i) => this.handleParamValueBlurred(e, i, textItem.uuid)}
                             hoveredID={this.state.hoveredID}
                             groupSelectionMode={this.state.groupSelectionMode}
                             currentlySelected={textItem.currentlySelected}
