@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-function indexOfCaseInsensitive(list, value){
+export function indexOfCaseInsensitive(list, value){
     //let found = false;
     let foundIndex = -1;
     list.forEach(function(listItem, index){
@@ -60,6 +60,10 @@ function chooseBestValueSet(candidateValueSets, exampleValuesList){
 
 // Get all possible parameter values, where exampleValuesList is a list of example values the user has provided
 function getCandidateValueSets(exampleValuesList, exactStringBoolean){
+    if(exampleValuesList.length === 0){
+        return {};
+    }
+
     // Look for visible text in the DOM that has value exampleValuesList[0], and then get its parent
         // We'll use exampleValuesList[0] to start the search. Shouldn't matter too much which item in the list we use
     
@@ -149,7 +153,7 @@ function getXPathForElement(el, xml) {
 	return xpath;
 }
 
-export function getValues(exampleValuesList){
+export function getValues(exampleValuesList, valuesToNotInclude){
     var candidates = getCandidateValueSets(exampleValuesList, true);
     var best = chooseBestValueSet(candidates, exampleValuesList);
     var valueSet = [];
@@ -167,6 +171,15 @@ export function getValues(exampleValuesList){
         }else{
             // Value isn't already included. We want to make sure to include it
             valueSet.push(value);
+        }
+    }
+
+    // Want to make sure that no values in valuesToNotInclude appear in valueSet
+    for(let value of valuesToNotInclude){
+        const indexInList = indexOfCaseInsensitive(valueSet, value);
+        if(indexInList > -1){
+            // In valueSet; remove it
+            valueSet.splice(indexInList, 1);
         }
     }
     return valueSet;

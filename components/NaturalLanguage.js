@@ -6,7 +6,7 @@ import styles from './NaturalLanguage.module.css';
 // import ChipotleClone from './website_clones/ChipotleClone';
 // import OscarsClone from './website_clones/OscarsClone';
 import Clone from './website_clones/Clone';
-import { getValues } from './valueExtraction';
+import { getValues, indexOfCaseInsensitive } from './valueExtraction';
 
 function RegularTextItem(props){
     const textElement = useRef(null);
@@ -638,11 +638,13 @@ class NaturalLanguage extends React.Component {
 
                             // Extract values from page, using the initial value highlighted in the NL
                                 // Trim initial example value (in case user accidentally included whitespace at beginning or end when doing text selection)
-                            const extractedExampleValues = getValues([selectedText.trim()]);
+                            const extractedExampleValues = getValues([selectedText.trim()], []);
                             
                             // Update these values in the data structure, so that it renders on the page
                             newParamItem.paramTypeData.possibleValues = extractedExampleValues;
-                            
+                            // Include initial value from NL as added by user
+                            newParamItem.paramTypeData.valuesExplicitlyAddedByUser = [selectedText.trim()];
+
                             // Update whole textItems to make sure we re-render
                             this.setState({
                                 idToItem: idToItemClone,
@@ -740,6 +742,23 @@ class NaturalLanguage extends React.Component {
         console.log("handleParamValueChange");
         console.log("e", e);
         const idToItemClone = _.cloneDeep(this.state.idToItem);
+
+        // Remove previous value of this textfield from valuesExplicitlyAddedByUser
+        //let prevValueIndex = idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.indexOf(idToItemClone[uuid].paramTypeData.possibleValues[i]);
+        let prevValueIndex = indexOfCaseInsensitive(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.possibleValues[i]);
+        if(prevValueIndex > -1){
+            idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.splice(prevValueIndex, 1);
+        }
+
+        // Add new value of this textfield to valuesExplicitlyAddedByUser
+        idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.push(e.target.value);
+        // Also make sure new value of this textfield is not in valuesExplicitlyDeletedByUser (if it is, remove from valuesExplicitlyDeletedByUser)
+        //let curValueIndex = idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.indexOf(e.target.value);
+        let curValueIndex = indexOfCaseInsensitive(idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, e.target.value);
+        if(curValueIndex > -1){
+            idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.splice(curValueIndex, 1);
+        }
+
         idToItemClone[uuid].paramTypeData.possibleValues[i] = e.target.value;
 
         // We don't want to run extraction algorithm after every keypress
@@ -747,7 +766,10 @@ class NaturalLanguage extends React.Component {
         // So instead, we'll wait for x seconds of inactivity; at that point, we'll assume the user has finished typing their value and we'll run the extraction algorithm
         clearTimeout(this.runExtractionTimeout);
         this.runExtractionTimeout = setTimeout(function(context){            
-            const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+            //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+            console.log("idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser", idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser);
+            console.log("idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser", idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
+            const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
             // Update these values in the data structure, so that it renders on the page
             idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
             context.setState({
@@ -770,7 +792,8 @@ class NaturalLanguage extends React.Component {
         
         const idToItemClone = _.cloneDeep(this.state.idToItem);
 
-        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+        //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
         // Update these values in the data structure, so that it renders on the page
         idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
 
@@ -1048,9 +1071,22 @@ class NaturalLanguage extends React.Component {
         console.log("uuid", uuid);
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
+
+        const valueToRemove = idToItemClone[uuid].paramTypeData.possibleValues[i];
+        // Make sure valueToRemove isn't in valuesExplicitlyAddedByUser
+        //const indexOfValueInExplicitlyAddedValuesList = idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.indexOf(valueToRemove);
+        const indexOfValueInExplicitlyAddedValuesList = indexOfCaseInsensitive(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, valueToRemove);
+        if(indexOfValueInExplicitlyAddedValuesList > -1){
+            idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.splice(indexOfValueInExplicitlyAddedValuesList, 1);
+        }
+
+        // Add valueToRemove to valuesExplicitlyDeletedByUser
+        idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.push(valueToRemove);
+
         idToItemClone[uuid].paramTypeData.possibleValues.splice(i, 1);
 
-        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+        //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
+        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
         // Update these values in the data structure, so that it renders on the page
         idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
 
@@ -1070,7 +1106,9 @@ class NaturalLanguage extends React.Component {
         // Update paramOptional checkbox value
         let paramTypeData = {
             type: value,
-            possibleValues: idToItemClone[uuid].paramTypeData.possibleValues
+            possibleValues: idToItemClone[uuid].paramTypeData.possibleValues,
+            valuesExplicitlyAddedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser || [],
+            valuesExplicitlyDeletedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser || []
         };
 
         // Check if param type is actually set, and if so, make sure to remove the param's uuid from this.state.incompleteFormParamIDs if it is in there
