@@ -219,3 +219,7 @@
 .websiteIframe {
     margin: 10px;
 }
+
+.importantMessage {
+    color: blue;
+}

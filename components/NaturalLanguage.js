@@ -77,6 +77,16 @@ class UserProvidedExamples extends React.Component {
                 examples-area=""
             >
                 {this.props.examplesText}
+                <div
+                    className={styles.importantMessage}
+                >
+                    <div>
+                        Please check the auto-populated values,
+                    </div>
+                    <div>
+                        and make corrections as needed.
+                    </div>
+                </div>
                 <ul>{possibleValues}</ul>
                 <button
                     onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
