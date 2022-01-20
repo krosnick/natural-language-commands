@@ -13,7 +13,7 @@ export function indexOfCaseInsensitive(list, value){
     return foundIndex;
 }
 
-function chooseBestValueSet(candidateValueSets, exampleValuesList){
+function chooseBestValueSet(candidateValueSets, positiveExamplesList, negativeExamplesList){
     // candidateValueSets is in the format of matchingItemIndexToPossibleExtractions
     // Merge into a single list of lists
     
@@ -24,31 +24,42 @@ function chooseBestValueSet(candidateValueSets, exampleValuesList){
 
     var valueSetAndRecallList = [];
     for(var valueSet of singleListOfCandidateValueSets){
-        // Count the number of values from exampleValuesList that appear in the set
-        var numValuesFound = 0;
-        for(var value of exampleValuesList){
+        // Count the number of values from positiveExamplesList that appear in the set
+        var numPositiveExamplesFound = 0;
+        var numNegativeExamplesFound = 0;
+        for(var value of positiveExamplesList){
             // Note that .includes is doing an exact string match
-            //if(valueSet.includes(value)){
-            //if(includesCaseInsensitive(valueSet, value)){
             if(indexOfCaseInsensitive(valueSet, value) > -1){
-                numValuesFound += 1;
+                numPositiveExamplesFound += 1;
             }
         }
-        valueSetAndRecallList.push({ valueSet, numValuesFound });
+        for(var value of negativeExamplesList){
+            // Note that .includes is doing an exact string match
+            if(indexOfCaseInsensitive(valueSet, value) > -1){
+                numNegativeExamplesFound += 1;
+            }
+        }
+        valueSetAndRecallList.push({ valueSet, numPositiveExamplesFound, numNegativeExamplesFound });
     }
 
-    // First sort by number of values from exampleValuesList that appear in the set
+    // First sort by number of values from positiveExamplesList that appear in the set
     valueSetAndRecallList = valueSetAndRecallList.sort(
-        // Sort by number of values from exampleValuesList that appear in the set
+        // Sort by number of values from positiveExamplesList that appear in the set
         function compareFn(first, second) {
-            return second.numValuesFound - first.numValuesFound;
+            return second.numPositiveExamplesFound - first.numPositiveExamplesFound;
         }
     );
 
     if(valueSetAndRecallList.length > 0){
+
+        // Next, of the valueSets with the largest numPositiveExamplesFound, sort by fewest numNegativeExamplesFound
+        var largestNumPositiveExamplesFound = valueSetAndRecallList[0].numPositiveExamplesFound;
+        var valueSetAndRecallListHighestRecall = valueSetAndRecallList.filter((obj => obj.numPositiveExamplesFound === largestNumPositiveExamplesFound));
+        valueSetAndRecallListHighestRecall = valueSetAndRecallListHighestRecall.sort(function compareFn(first, second) { return -1*(second.valueSet.numNegativeExamplesFound - first.valueSet.numNegativeExamplesFound)});
+
         // Next, sort by largest length (number of values)
-        var largestNumValuesFound = valueSetAndRecallList[0].numValuesFound;
-        var valueSetAndRecallListHighestRecall = valueSetAndRecallList.filter((obj => obj.numValuesFound === largestNumValuesFound));
+        var smallestNumNegativeExamplesFound = valueSetAndRecallListHighestRecall[0].numNegativeExamplesFound;
+        valueSetAndRecallListHighestRecall = valueSetAndRecallListHighestRecall.filter((obj => obj.numNegativeExamplesFound === smallestNumNegativeExamplesFound));
         valueSetAndRecallListHighestRecall = valueSetAndRecallListHighestRecall.sort(function compareFn(first, second) { return second.valueSet.length - first.valueSet.length});
 
         // Return the first one
@@ -58,25 +69,25 @@ function chooseBestValueSet(candidateValueSets, exampleValuesList){
     }
 }
 
-// Get all possible parameter values, where exampleValuesList is a list of example values the user has provided
-function getCandidateValueSets(exampleValuesList, exactStringBoolean){
-    if(exampleValuesList.length === 0){
+// Get all possible parameter values, where positiveExamplesList is a list of example values the user has provided
+function getCandidateValueSets(positiveExamplesList, exactStringBoolean){
+    if(positiveExamplesList.length === 0){
         return {};
     }
 
-    // Look for visible text in the DOM that has value exampleValuesList[0], and then get its parent
-        // We'll use exampleValuesList[0] to start the search. Shouldn't matter too much which item in the list we use
+    // Look for visible text in the DOM that has value positiveExamplesList[0], and then get its parent
+        // We'll use positiveExamplesList[0] to start the search. Shouldn't matter too much which item in the list we use
     
     var matchingItemIndexToPossibleExtractions = {};
 
-    //var parentNodesContainingKeyword = document.evaluate(`//text()[contains(., \"${exampleValuesList[0]}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    //var parentNodesContainingKeyword = document.evaluate(`//text()[contains(., \"${positiveExamplesList[0]}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     // Adapted from https://stackoverflow.com/questions/8474031/case-insensitive-xpath-contains-possible/23388974
-    var parentNodesContainingKeyword = document.evaluate(`//text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${exampleValuesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    var parentNodesContainingKeyword = document.evaluate(`//text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     
     for(let matchingItemIndex = 0; matchingItemIndex < parentNodesContainingKeyword.snapshotLength; matchingItemIndex++){
         // If we don't care about whether it's an exact string match, then always proceed
         // If we do care that it is an exact string match, then check that before proceeding
-        if(!exactStringBoolean || parentNodesContainingKeyword.snapshotItem(matchingItemIndex).textContent.toLowerCase() === exampleValuesList[0].toLowerCase()){
+        if(!exactStringBoolean || parentNodesContainingKeyword.snapshotItem(matchingItemIndex).textContent.toLowerCase() === positiveExamplesList[0].toLowerCase()){
             var parentNodeOfTextNodeXPath = getXPathForElement(parentNodesContainingKeyword.snapshotItem(matchingItemIndex), document);
             
             if(!parentNodeOfTextNodeXPath.includes("script")){ // We don't want to include text that's within a <script> node
@@ -153,17 +164,17 @@ function getXPathForElement(el, xml) {
 	return xpath;
 }
 
-export function getValues(exampleValuesList, valuesToNotInclude){
-    var candidates = getCandidateValueSets(exampleValuesList, true);
-    var best = chooseBestValueSet(candidates, exampleValuesList);
+export function getValues(positiveExamplesList, negativeExamplesList){
+    var candidates = getCandidateValueSets(positiveExamplesList, true);
+    var best = chooseBestValueSet(candidates, positiveExamplesList, negativeExamplesList);
     var valueSet = [];
     if(best.valueSet){ // Because if no matches, it'll be an empty object
         valueSet = best.valueSet;
     }
 
-    // Want to include all values (case insensitive) from exampleValuesList even if they weren't found on the page (because the user explicitly specified them)
-    //valueSet = _.union(valueSet, exampleValuesList);
-    for(let value of exampleValuesList){
+    // Want to include all values (case insensitive) from positiveExamplesList even if they weren't found on the page (because the user explicitly specified them)
+    //valueSet = _.union(valueSet, positiveExamplesList);
+    for(let value of positiveExamplesList){
         const indexInList = indexOfCaseInsensitive(valueSet, value);
         if(indexInList > -1){
             // Value is already included, but we'll replace with user-given "value" to make sure it matches user-given case
@@ -174,8 +185,8 @@ export function getValues(exampleValuesList, valuesToNotInclude){
         }
     }
 
-    // Want to make sure that no values in valuesToNotInclude appear in valueSet
-    for(let value of valuesToNotInclude){
+    // Want to make sure that no values in negativeExamplesList appear in valueSet
+    for(let value of negativeExamplesList){
         const indexInList = indexOfCaseInsensitive(valueSet, value);
         if(indexInList > -1){
             // In valueSet; remove it
