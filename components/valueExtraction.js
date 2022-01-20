@@ -70,7 +70,7 @@ function chooseBestValueSet(candidateValueSets, positiveExamplesList, negativeEx
 }
 
 // Get all possible parameter values, where positiveExamplesList is a list of example values the user has provided
-function getCandidateValueSets(positiveExamplesList, exactStringBoolean){
+function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
     if(positiveExamplesList.length === 0){
         return {};
     }
@@ -82,7 +82,8 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean){
 
     //var parentNodesContainingKeyword = document.evaluate(`//text()[contains(., \"${positiveExamplesList[0]}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     // Adapted from https://stackoverflow.com/questions/8474031/case-insensitive-xpath-contains-possible/23388974
-    var parentNodesContainingKeyword = document.evaluate(`//text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    //var parentNodesContainingKeyword = document.evaluate(`//text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    var parentNodesContainingKeyword = document.evaluate(`${embeddedWebsitePrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     
     for(let matchingItemIndex = 0; matchingItemIndex < parentNodesContainingKeyword.snapshotLength; matchingItemIndex++){
         // If we don't care about whether it's an exact string match, then always proceed
@@ -164,8 +165,8 @@ function getXPathForElement(el, xml) {
 	return xpath;
 }
 
-export function getValues(positiveExamplesList, negativeExamplesList){
-    var candidates = getCandidateValueSets(positiveExamplesList, true);
+export function getValues(positiveExamplesList, negativeExamplesList, embeddedWebsitePrefix){
+    var candidates = getCandidateValueSets(positiveExamplesList, true, embeddedWebsitePrefix);
     var best = chooseBestValueSet(candidates, positiveExamplesList, negativeExamplesList);
     var valueSet = [];
     if(best.valueSet){ // Because if no matches, it'll be an empty object

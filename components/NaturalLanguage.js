@@ -648,7 +648,7 @@ class NaturalLanguage extends React.Component {
 
                             // Extract values from page, using the initial value highlighted in the NL
                                 // Trim initial example value (in case user accidentally included whitespace at beginning or end when doing text selection)
-                            const extractedExampleValues = getValues([selectedText.trim()], []);
+                            const extractedExampleValues = getValues([selectedText.trim()], [], '//*[@clone]');
                             
                             // Update these values in the data structure, so that it renders on the page
                             newParamItem.paramTypeData.possibleValues = extractedExampleValues;
@@ -779,7 +779,7 @@ class NaturalLanguage extends React.Component {
             //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
             console.log("idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser", idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser);
             console.log("idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser", idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
-            const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
+            const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, '//*[@clone]');
             // Update these values in the data structure, so that it renders on the page
             idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
             context.setState({
@@ -803,7 +803,7 @@ class NaturalLanguage extends React.Component {
         const idToItemClone = _.cloneDeep(this.state.idToItem);
 
         //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
-        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
+        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, '//*[@clone]');
         // Update these values in the data structure, so that it renders on the page
         idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
 
@@ -1096,7 +1096,7 @@ class NaturalLanguage extends React.Component {
         idToItemClone[uuid].paramTypeData.possibleValues.splice(i, 1);
 
         //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
-        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
+        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, '//*[@clone]');
         // Update these values in the data structure, so that it renders on the page
         idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
 
