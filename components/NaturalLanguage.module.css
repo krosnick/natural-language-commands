@@ -86,6 +86,7 @@
 
 .request {
     margin: 40px;
+    border-bottom: 3px black solid;
 }
 
 .displayNone {
