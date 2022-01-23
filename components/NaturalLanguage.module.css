@@ -219,6 +219,8 @@
 
 .websiteIframe {
     margin: 10px;
+    overflow-y: scroll;
+    max-height: 650px;
 }
 
 .importantMessage {
