@@ -225,4 +225,19 @@
 
 .importantMessage {
     color: blue;
+    width: 300px;
+}
+
+.selectInitialValuesButton {
+    font-size: large;
+    cursor: pointer;
+}
+
+.extractedValueForm {
+    width: 300px;
+    margin-top: 10px;
+}
+
+.extractedValueOptionText {
+    margin: 10px;
 }

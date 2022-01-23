@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import { withRouter } from 'next/router';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,7 +6,7 @@ import styles from './NaturalLanguage.module.css';
 // import ChipotleClone from './website_clones/ChipotleClone';
 // import OscarsClone from './website_clones/OscarsClone';
 import Clone from './website_clones/Clone';
-import { getValues, indexOfCaseInsensitive } from './valueExtraction';
+import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
 
 function RegularTextItem(props){
     const textElement = useRef(null);
@@ -44,6 +44,71 @@ function RegularTextItem(props){
     );
 }
 
+function ExtractedValueOptions(props){
+
+    const candidateLists = getCandidateLists([props.selectedText.trim()], true, '//*[@clone]');
+
+    if(candidateLists.length === 0){
+        props.handleInitialValuesSelected([], props.uuid);
+        return null;
+    }else if(candidateLists.length === 1){
+        props.handleInitialValuesSelected(candidateLists[selectedExtractedValueIndex], props.uuid);
+        return null;
+    }else{               
+        const [selectedExtractedValueIndex, updateSelectedExtractedValueIndex] = useState(-1);
+        const radioButtonList = candidateLists.map((value, i) =>
+            <div
+                className={styles.extractedValueOptionText}
+            >
+                <input
+                    type="radio"
+                    log-this-element=""
+                    name={`extractedValueOption_${props.uuid}_${i}`}
+                    id={`extractedValueOption_${props.uuid}_${i}`}
+                    value={i}
+                    checked={selectedExtractedValueIndex === i}
+                    onChange={() => updateSelectedExtractedValueIndex(i)}
+                    disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
+                />
+                <label htmlFor={`extractedValueOption_${props.uuid}_${i}`}
+                >{value.toString()}</label>
+            </div>
+        );
+
+        return (
+            <div
+                className={styles.extractedValueForm}
+            >
+                Select the set of possible values that is <b>most correct</b>. After you click "Select", you will be able to edit, add to, and delete from the list.
+                {radioButtonList}
+                <div
+                    className={styles.extractedValueOptionText}
+                >
+                    <input
+                        type="radio"
+                        log-this-element=""
+                        name={`extractedValueOption_${props.uuid}_${candidateLists.length}`}
+                        id={`extractedValueOption_${props.uuid}_${candidateLists.length}`}
+                        value={candidateLists.length}
+                        checked={selectedExtractedValueIndex === candidateLists.length}
+                        onChange={() => updateSelectedExtractedValueIndex(candidateLists.length)}
+                        disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
+                    />
+                    <label htmlFor={`extractedValueOption_${props.uuid}_${candidateLists.length}`}
+                    >None of these</label>
+                </div>
+                <button
+                    className={styles.selectInitialValuesButton}
+                    disabled={selectedExtractedValueIndex === -1 || props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
+                    onClick={() => props.handleInitialValuesSelected(selectedExtractedValueIndex===candidateLists.length ? ([]):(candidateLists[selectedExtractedValueIndex]), props.uuid)} // Empty list if "None of these" is selected
+                >
+                    Select
+                </button>
+            </div>
+        );
+    }
+}
+
 class UserProvidedExamples extends React.Component {
     render(){
         console.log("this.props", this.props);
@@ -59,7 +124,7 @@ class UserProvidedExamples extends React.Component {
                     type="text"
                     value={value}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    onBlur={(e) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                    //onBlur={(e) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 >
                 </input>
@@ -80,12 +145,7 @@ class UserProvidedExamples extends React.Component {
                 <div
                     className={styles.importantMessage}
                 >
-                    <div>
-                        Please check the auto-populated values,
-                    </div>
-                    <div>
-                        and make corrections as needed.
-                    </div>
+                    Please check the auto-populated values, and make corrections as needed.
                 </div>
                 <ul>{possibleValues}</ul>
                 <button
@@ -104,17 +164,28 @@ class FreeformParam extends React.Component {
     render(){
         return (
             <div>
-                <UserProvidedExamples
-                    possibleValues={this.props.possibleValues}
-                    handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
-                    handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
-                    uuidInEditMode={this.props.uuidInEditMode}
-                    groupSelectionMode={this.props.groupSelectionMode}
-                    viewOnlyMode={this.props.viewOnlyMode}
-                    removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
-                    examplesText="What are some values the user can type in?"
-                />
+                {this.props.initialValuesSelected ? (
+                    <UserProvidedExamples
+                        possibleValues={this.props.possibleValues}
+                        handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                        handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                        handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                        uuidInEditMode={this.props.uuidInEditMode}
+                        groupSelectionMode={this.props.groupSelectionMode}
+                        viewOnlyMode={this.props.viewOnlyMode}
+                        removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                        examplesText="What are some values the user can type in?"
+                    />
+                ):(
+                    <ExtractedValueOptions
+                        selectedText={this.props.selectedText}
+                        uuidInEditMode={this.props.uuidInEditMode}
+                        groupSelectionMode={this.props.groupSelectionMode}
+                        viewOnlyMode={this.props.viewOnlyMode}
+                        uuid={this.props.uuid}
+                        handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
+                    />
+                )}
             </div>
         );
     }
@@ -123,49 +194,62 @@ class EnumerationParam extends React.Component {
     render(){
         return (
             <div>
-                <UserProvidedExamples
-                    possibleValues={this.props.possibleValues}
-                    handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
-                    handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
-                    uuidInEditMode={this.props.uuidInEditMode}
-                    groupSelectionMode={this.props.groupSelectionMode}
-                    viewOnlyMode={this.props.viewOnlyMode}
-                    removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
-                    examplesText="What are some values the user can choose?"
-                />
-                <div
-                    className={styles.paramDataChunk}
-                >
-                    How many of these values can the user choose?
+                {this.props.initialValuesSelected ? (
                     <div>
-                        <input
-                            type="radio"
-                            log-this-element=""
-                            name={`one_numValuesAllowed_${this.props.uuid}`}
-                            id={`one_numValuesAllowed_${this.props.uuid}`}
-                            value="one"
-                            checked={!this.props.paramMultipleValuesAllowed}
-                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                        <UserProvidedExamples
+                            possibleValues={this.props.possibleValues}
+                            handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                            handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                            handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                            uuidInEditMode={this.props.uuidInEditMode}
+                            groupSelectionMode={this.props.groupSelectionMode}
+                            viewOnlyMode={this.props.viewOnlyMode}
+                            removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                            examplesText="What are some values the user can choose?"
                         />
-                        <label htmlFor={`one_numValuesAllowed_${this.props.uuid}`}>Just 1</label>
-                    </div>
+                        <div
+                            className={styles.paramDataChunk}
+                        >
+                            How many of these values can the user choose?
+                            <div>
+                                <input
+                                    type="radio"
+                                    log-this-element=""
+                                    name={`one_numValuesAllowed_${this.props.uuid}`}
+                                    id={`one_numValuesAllowed_${this.props.uuid}`}
+                                    value="one"
+                                    checked={!this.props.paramMultipleValuesAllowed}
+                                    onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
+                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                                />
+                                <label htmlFor={`one_numValuesAllowed_${this.props.uuid}`}>Just 1</label>
+                            </div>
 
-                    <div>
-                        <input
-                            type="radio"
-                            log-this-element=""
-                            name={`multiple_numValuesAllowed_${this.props.uuid}`}
-                            id={`multiple_numValuesAllowed_${this.props.uuid}`}
-                            value="multiple"
-                            checked={this.props.paramMultipleValuesAllowed}
-                            onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
-                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
-                        />
-                        <label htmlFor={`multiple_numValuesAllowed_${this.props.uuid}`}>1 or more</label>
+                            <div>
+                                <input
+                                    type="radio"
+                                    log-this-element=""
+                                    name={`multiple_numValuesAllowed_${this.props.uuid}`}
+                                    id={`multiple_numValuesAllowed_${this.props.uuid}`}
+                                    value="multiple"
+                                    checked={this.props.paramMultipleValuesAllowed}
+                                    onChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
+                                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                                />
+                                <label htmlFor={`multiple_numValuesAllowed_${this.props.uuid}`}>1 or more</label>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                ):(
+                    <ExtractedValueOptions
+                        selectedText={this.props.selectedText}
+                        uuidInEditMode={this.props.uuidInEditMode}
+                        groupSelectionMode={this.props.groupSelectionMode}
+                        viewOnlyMode={this.props.viewOnlyMode}
+                        uuid={this.props.uuid}
+                        handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
+                    />
+                )}
             </div>
         );
     }
@@ -333,29 +417,35 @@ class ParamTextItem extends React.Component {
         if(this.props.paramTypeData.type.length > 0){
             if(this.props.paramTypeData.type === "freeform"){
                 paramTypeSpecificForm = <FreeformParam
-                                            uuid={this.props.uuid}                            
+                                            uuid={this.props.uuid}           
+                                            selectedText={this.props.text}
                                             possibleValues={this.props.paramTypeData.possibleValues}
+                                            initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                                            handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                                            //handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                                            handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTypeSpecificForm = <EnumerationParam
                                             uuid={this.props.uuid}
+                                            selectedText={this.props.text}
                                             possibleValues={this.props.paramTypeData.possibleValues}
+                                            initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
                                             paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                                            handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                                            //handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                                             handleParamNumValuesAllowedChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                                            handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "flag"){
                 paramTypeSpecificForm = <FlagParam/>;
@@ -450,9 +540,9 @@ class ParamTextItem extends React.Component {
 
                     {paramTypeSpecificForm}
 
-                    {/* Only show these questions after the user has selected a parameter type
+                    {/* Only show these questions after the user has selected a parameter type and has selected extracted values (if relevant)
                     (because we want the user to focus on that first) */}
-                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" ? (
+                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" && this.props.paramTypeData.initialValuesSelected ? (
                         <div
                             className={styles.paramDataChunk}
                         >
@@ -608,6 +698,7 @@ class NaturalLanguage extends React.Component {
                                 paramTypeData: {
                                     type: "",
                                     possibleValues: [selectedText],
+                                    initialValuesSelected: undefined // i.e., whether we're past the value extraction state
                                 },
                                 paramAnnotatorCreated: false
                             };
@@ -646,14 +737,14 @@ class NaturalLanguage extends React.Component {
                             // Clear text selection
                             selectionObj.removeAllRanges();
 
-                            // Extract values from page, using the initial value highlighted in the NL
+                            /*// Extract values from page, using the initial value highlighted in the NL
                                 // Trim initial example value (in case user accidentally included whitespace at beginning or end when doing text selection)
                             const extractedExampleValues = getValues([selectedText.trim()], [], '//*[@clone]');
                             
                             // Update these values in the data structure, so that it renders on the page
                             newParamItem.paramTypeData.possibleValues = extractedExampleValues;
                             // Include initial value from NL as added by user
-                            newParamItem.paramTypeData.valuesExplicitlyAddedByUser = [selectedText.trim()];
+                            newParamItem.paramTypeData.valuesExplicitlyAddedByUser = [selectedText.trim()];*/
 
                             // Update whole textItems to make sure we re-render
                             this.setState({
@@ -753,39 +844,36 @@ class NaturalLanguage extends React.Component {
         console.log("e", e);
         const idToItemClone = _.cloneDeep(this.state.idToItem);
 
-        // Remove previous value of this textfield from valuesExplicitlyAddedByUser
+        /*// Remove previous value of this textfield from valuesExplicitlyAddedByUser
         //let prevValueIndex = idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.indexOf(idToItemClone[uuid].paramTypeData.possibleValues[i]);
         let prevValueIndex = indexOfCaseInsensitive(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.possibleValues[i]);
         if(prevValueIndex > -1){
             idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.splice(prevValueIndex, 1);
-        }
+        }*/
 
-        // Add new value of this textfield to valuesExplicitlyAddedByUser
+        /*// Add new value of this textfield to valuesExplicitlyAddedByUser
         idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.push(e.target.value);
         // Also make sure new value of this textfield is not in valuesExplicitlyDeletedByUser (if it is, remove from valuesExplicitlyDeletedByUser)
         //let curValueIndex = idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.indexOf(e.target.value);
         let curValueIndex = indexOfCaseInsensitive(idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, e.target.value);
         if(curValueIndex > -1){
             idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.splice(curValueIndex, 1);
-        }
+        }*/
 
         idToItemClone[uuid].paramTypeData.possibleValues[i] = e.target.value;
 
-        // We don't want to run extraction algorithm after every keypress
+        /*// We don't want to run extraction algorithm after every keypress
             // That's going to be confusing and annoying (a copy of each intermediate string would appear as a new value)
         // So instead, we'll wait for x seconds of inactivity; at that point, we'll assume the user has finished typing their value and we'll run the extraction algorithm
         clearTimeout(this.runExtractionTimeout);
         this.runExtractionTimeout = setTimeout(function(context){            
-            //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
-            console.log("idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser", idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser);
-            console.log("idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser", idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser);
             const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, '//*[@clone]');
             // Update these values in the data structure, so that it renders on the page
             idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
             context.setState({
                 idToItem: idToItemClone
             });
-        }, 1500, this);
+        }, 1500, this);*/
 
         this.setState({
             idToItem: idToItemClone
@@ -793,7 +881,7 @@ class NaturalLanguage extends React.Component {
         //this.exitEditMode();
     }
 
-    handleParamValueBlurred(e, i, uuid) {
+    /*handleParamValueBlurred(e, i, uuid) {
         console.log("handleParamValueBlurred");
         console.log("e", e);
 
@@ -811,7 +899,7 @@ class NaturalLanguage extends React.Component {
             idToItem: idToItemClone
         });
         //this.exitEditMode();
-    }
+    }*/
 
     handleAddBlankParamValue(uuid){
         console.log("handleAddBlankParamValue");
@@ -1082,7 +1170,7 @@ class NaturalLanguage extends React.Component {
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
 
-        const valueToRemove = idToItemClone[uuid].paramTypeData.possibleValues[i];
+        /*const valueToRemove = idToItemClone[uuid].paramTypeData.possibleValues[i];
         // Make sure valueToRemove isn't in valuesExplicitlyAddedByUser
         //const indexOfValueInExplicitlyAddedValuesList = idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser.indexOf(valueToRemove);
         const indexOfValueInExplicitlyAddedValuesList = indexOfCaseInsensitive(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, valueToRemove);
@@ -1091,14 +1179,13 @@ class NaturalLanguage extends React.Component {
         }
 
         // Add valueToRemove to valuesExplicitlyDeletedByUser
-        idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.push(valueToRemove);
+        idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.push(valueToRemove);*/
 
         idToItemClone[uuid].paramTypeData.possibleValues.splice(i, 1);
 
-        //const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.possibleValues);
-        const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, '//*[@clone]');
+        /*const extractedExampleValues = getValues(idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser, idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser, '//*[@clone]');
         // Update these values in the data structure, so that it renders on the page
-        idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;
+        idToItemClone[uuid].paramTypeData.possibleValues = extractedExampleValues;*/
 
         this.setState({
             idToItem: idToItemClone
@@ -1116,9 +1203,10 @@ class NaturalLanguage extends React.Component {
         // Update paramOptional checkbox value
         let paramTypeData = {
             type: value,
-            possibleValues: idToItemClone[uuid].paramTypeData.possibleValues,
+            initialValuesSelected: idToItemClone[uuid].paramTypeData.initialValuesSelected,
+            possibleValues: idToItemClone[uuid].paramTypeData.possibleValues/* ,
             valuesExplicitlyAddedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser || [],
-            valuesExplicitlyDeletedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser || []
+            valuesExplicitlyDeletedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser || [] */
         };
 
         // Check if param type is actually set, and if so, make sure to remove the param's uuid from this.state.incompleteFormParamIDs if it is in there
@@ -1136,15 +1224,17 @@ class NaturalLanguage extends React.Component {
         }else if(value === "enumeration"){
             // Nothing else to set
         }else if(value === "flag"){
-            // Nothing else to set
+            paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
         }else if(value === "date"){
             paramTypeData.dateRestriction = "";
             paramTypeData.otherDataValue = "";
+            paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
         }else if(value === "number"){
             paramTypeData.restrictedToIntegers = false;
             paramTypeData.restrictedToRange = false;
             paramTypeData.rangeStart = "";
             paramTypeData.rangeEnd = "";
+            paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
         }
         idToItemClone[uuid].paramTypeData = paramTypeData;
 
@@ -1220,6 +1310,21 @@ class NaturalLanguage extends React.Component {
         });
     }
 
+    handleInitialValuesSelected(listOfValues, uuid){
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        
+        idToItemClone[uuid].paramTypeData.initialValuesSelected = listOfValues;
+
+        // If length is 0, then just use what we already had for possibleValues (e.g., the original selected text)
+        if(listOfValues.length > 0){
+            idToItemClone[uuid].paramTypeData.possibleValues = listOfValues;
+        }
+
+        this.setState({
+            idToItem: idToItemClone
+        });
+    }
+
     addParameter(uuid){
         // Get uuid's item, create a new empty param obj to add to the end of it
 
@@ -1236,6 +1341,7 @@ class NaturalLanguage extends React.Component {
             paramTypeData: {
                 type: "",
                 possibleValues: [],
+                initialValuesSelected: [] // i.e., whether we're past the value extraction state
             },
             paramAnnotatorCreated: true
         };
@@ -1378,7 +1484,7 @@ class NaturalLanguage extends React.Component {
                             handleParamNameChange={(e) => this.handleParamNameChange(e, textItem.uuid)}
                             handleAddBlankParamValue={() => this.handleAddBlankParamValue(textItem.uuid)}
                             handleParamValueChange={(e, i) => this.handleParamValueChange(e, i, textItem.uuid)}
-                            handleParamValueBlurred={(e, i) => this.handleParamValueBlurred(e, i, textItem.uuid)}
+                            //handleParamValueBlurred={(e, i) => this.handleParamValueBlurred(e, i, textItem.uuid)}
                             hoveredID={this.state.hoveredID}
                             groupSelectionMode={this.state.groupSelectionMode}
                             currentlySelected={textItem.currentlySelected}
@@ -1394,6 +1500,7 @@ class NaturalLanguage extends React.Component {
                             handleParamDateRestrictionChange={(e) => this.handleParamDateRestrictionChange(e, textItem.uuid)}
                             handleParamNumberRestrictionChange={(e, restrictionToChange) => this.handleParamNumberRestrictionChange(e, restrictionToChange, textItem.uuid)}
                             handleGroupSelectionChange={(e) => this.handleGroupSelectionChange(e, textItem.uuid)}
+                            handleInitialValuesSelected={(listOfValues) => this.handleInitialValuesSelected(listOfValues, textItem.uuid)}
                         />
                     </span>
                 );

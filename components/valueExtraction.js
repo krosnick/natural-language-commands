@@ -13,6 +13,31 @@ export function indexOfCaseInsensitive(list, value){
     return foundIndex;
 }
 
+export function getCandidateLists(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
+    const candidates = getCandidateValueSets(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix);
+    
+    // Merge into a single list of lists
+    var singleListOfCandidateValueSets = [];
+    for(var valueSet of Object.values(candidates)){
+        valueSet.sort(); // sort, so that later we can make sure we have no duplicate lists
+        singleListOfCandidateValueSets = singleListOfCandidateValueSets.concat(valueSet);
+    }
+
+    // Make sure  
+    const uniqueSetOfLists = [];
+    for(var candidateList of singleListOfCandidateValueSets){
+        // Only append to uniqueSetOfLists if candidateList isn't already in there
+        if(!_.find(uniqueSetOfLists, function(thisList){ return _.isEqual(candidateList, thisList); })){
+            uniqueSetOfLists.push(candidateList);
+        }
+    }
+
+    // Now, sort uniqueSetOfLists by length of each list
+    uniqueSetOfLists.sort(function(a, b){ return b.length - a.length} );
+
+    return uniqueSetOfLists;
+}
+
 function chooseBestValueSet(candidateValueSets, positiveExamplesList, negativeExamplesList){
     // candidateValueSets is in the format of matchingItemIndexToPossibleExtractions
     // Merge into a single list of lists
