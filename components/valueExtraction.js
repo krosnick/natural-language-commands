@@ -13,7 +13,7 @@ export function indexOfCaseInsensitive(list, value){
     return foundIndex;
 }
 
-export function getCandidateLists(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
+/*export function getCandidateLists(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
     const candidates = getCandidateValueSets(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix);
     
     // Merge into a single list of lists
@@ -36,6 +36,78 @@ export function getCandidateLists(positiveExamplesList, exactStringBoolean, embe
     uniqueSetOfLists.sort(function(a, b){ return b.length - a.length} );
 
     return uniqueSetOfLists;
+}*/
+
+export function getCandidateLists(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
+    
+    var singleListOfCandidateValueSets = [];
+
+    // Try matching the full string against the DOM
+    const candidates = getCandidateValueSets(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix);
+    
+    // If no matches for the full string, then try breaking it down into individual words to search for individually
+    if(Object.keys(candidates).length > 0){
+        // Merge into a single list of lists
+        for(var valueSet of Object.values(candidates)){
+            valueSet.sort(); // sort, so that later we can make sure we have no duplicate lists
+            singleListOfCandidateValueSets = singleListOfCandidateValueSets.concat(valueSet);
+        }
+    }else{
+        // For now, assume positiveExamplesList is a list of size 1
+        const singleFullString = positiveExamplesList[0];
+
+        // Split singleFullString by whitespace, commas, periods
+        const individualWords = singleFullString.split(/[,\s\.\!\;\:\?\(\)\"\/\\\[\]\+]/g);
+
+        // Stop words taken from https://www.nltk.org/book/ch02.html
+        const stopWords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
+        'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers',
+        'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves',
+        'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are',
+        'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does',
+        'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until',
+        'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into',
+        'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down',
+        'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here',
+        'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more',
+        'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so',
+        'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now'];
+
+        for(let word of individualWords){
+            // Try to use this word for extracting values from the web page (as long as the word isn't an empty string or a stop word)
+            if(word !== "" && !stopWords.includes(word.toLowerCase())){
+                const candidates = getCandidateValueSets([word], exactStringBoolean, embeddedWebsitePrefix);
+                
+                // Merge into a single list of lists
+                for(var valueSet of Object.values(candidates)){
+                    valueSet.sort(); // sort, so that later we can make sure we have no duplicate lists
+                    singleListOfCandidateValueSets = singleListOfCandidateValueSets.concat(valueSet);
+                }
+            }
+        }
+    }
+    
+    // Make sure  
+    const uniqueSetOfLists = [];
+    for(var candidateList of singleListOfCandidateValueSets){
+        // Only append to uniqueSetOfLists if candidateList isn't already in there
+        if(!_.find(uniqueSetOfLists, function(thisList){ return _.isEqual(candidateList, thisList); })){
+            uniqueSetOfLists.push(candidateList);
+        }
+    }
+
+    // Now, sort uniqueSetOfLists by length of each list
+    uniqueSetOfLists.sort(function(a, b){ return b.length - a.length} );
+
+    // Let's return at most the top 5 lists; if user selects a long string with lots of words,
+        // then we could have dozens of list which is way too many for the user to process.
+        // The top 5 should probably be enough because we're sorting by length (we'll see in practice)
+
+    if(uniqueSetOfLists.length > 5){
+        return uniqueSetOfLists.slice(0, 5);
+    }else{
+        return uniqueSetOfLists;
+    }
 }
 
 function chooseBestValueSet(candidateValueSets, positiveExamplesList, negativeExamplesList){

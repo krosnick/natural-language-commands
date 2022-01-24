@@ -46,7 +46,8 @@ function RegularTextItem(props){
 
 function ExtractedValueOptions(props){
 
-    const candidateLists = getCandidateLists([props.selectedText.trim()], true, '//*[@clone]');
+    //const candidateLists = getCandidateLists([props.selectedText.trim()], true, '//*[@clone]');
+    const candidateLists = getCandidateLists([props.selectedText.trim()], false, '//*[@clone]');
 
     if(candidateLists.length === 0){
         props.handleInitialValuesSelected([], props.uuid);
