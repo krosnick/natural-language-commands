@@ -46,18 +46,17 @@ function RegularTextItem(props){
 
 function ExtractedValueOptions(props){
 
-    //const candidateLists = getCandidateLists([props.selectedText.trim()], true, '//*[@clone]');
-    const candidateLists = getCandidateLists([props.selectedText.trim()], false, '//*[@clone]');
+    //const candidateLists = getCandidateLists([props.selectedText.trim()], false, '//*[@clone]');
 
-    if(candidateLists.length === 0){
+    if(props.candidateLists.length === 0){
         props.handleInitialValuesSelected([], props.uuid);
         return null;
-    }else if(candidateLists.length === 1){
+    }else if(props.candidateLists.length === 1){
         props.handleInitialValuesSelected(candidateLists[selectedExtractedValueIndex], props.uuid);
         return null;
     }else{               
         const [selectedExtractedValueIndex, updateSelectedExtractedValueIndex] = useState(-1);
-        const radioButtonList = candidateLists.map((value, i) =>
+        const radioButtonList = props.candidateLists.map((value, i) =>
             <div
                 className={styles.extractedValueOptionText}
             >
@@ -88,20 +87,20 @@ function ExtractedValueOptions(props){
                     <input
                         type="radio"
                         log-this-element=""
-                        name={`extractedValueOption_${props.uuid}_${candidateLists.length}`}
-                        id={`extractedValueOption_${props.uuid}_${candidateLists.length}`}
-                        value={candidateLists.length}
-                        checked={selectedExtractedValueIndex === candidateLists.length}
-                        onChange={() => updateSelectedExtractedValueIndex(candidateLists.length)}
+                        name={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                        id={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                        value={props.candidateLists.length}
+                        checked={selectedExtractedValueIndex === props.candidateLists.length}
+                        onChange={() => updateSelectedExtractedValueIndex(props.candidateLists.length)}
                         disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
                     />
-                    <label htmlFor={`extractedValueOption_${props.uuid}_${candidateLists.length}`}
+                    <label htmlFor={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
                     >None of these</label>
                 </div>
                 <button
                     className={styles.selectInitialValuesButton}
                     disabled={selectedExtractedValueIndex === -1 || props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
-                    onClick={() => props.handleInitialValuesSelected(selectedExtractedValueIndex===candidateLists.length ? ([]):(candidateLists[selectedExtractedValueIndex]), props.uuid)} // Empty list if "None of these" is selected
+                    onClick={() => props.handleInitialValuesSelected(selectedExtractedValueIndex===props.candidateLists.length ? ([]):(props.candidateLists[selectedExtractedValueIndex]), props.uuid)} // Empty list if "None of these" is selected
                 >
                     Select
                 </button>
@@ -179,6 +178,7 @@ class FreeformParam extends React.Component {
                     />
                 ):(
                     <ExtractedValueOptions
+                        candidateLists={this.props.candidateLists}
                         selectedText={this.props.selectedText}
                         uuidInEditMode={this.props.uuidInEditMode}
                         groupSelectionMode={this.props.groupSelectionMode}
@@ -243,6 +243,7 @@ class EnumerationParam extends React.Component {
                     </div>
                 ):(
                     <ExtractedValueOptions
+                        candidateLists={this.props.candidateLists}
                         selectedText={this.props.selectedText}
                         uuidInEditMode={this.props.uuidInEditMode}
                         groupSelectionMode={this.props.groupSelectionMode}
@@ -422,6 +423,7 @@ class ParamTextItem extends React.Component {
                                             selectedText={this.props.text}
                                             possibleValues={this.props.paramTypeData.possibleValues}
                                             initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
+                                            candidateLists={this.props.paramTypeData.candidateLists}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                                             //handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
@@ -437,6 +439,7 @@ class ParamTextItem extends React.Component {
                                             selectedText={this.props.text}
                                             possibleValues={this.props.paramTypeData.possibleValues}
                                             initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
+                                            candidateLists={this.props.paramTypeData.candidateLists}
                                             paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
@@ -543,7 +546,7 @@ class ParamTextItem extends React.Component {
 
                     {/* Only show these questions after the user has selected a parameter type and has selected extracted values (if relevant)
                     (because we want the user to focus on that first) */}
-                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" && this.props.paramTypeData.initialValuesSelected ? (
+                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" && (this.props.paramTypeData.initialValuesSelected || (this.props.paramTypeData.type !== "freeform" && this.props.paramTypeData.type !== "enumeration")) ? (
                         <div
                             className={styles.paramDataChunk}
                         >
@@ -699,7 +702,8 @@ class NaturalLanguage extends React.Component {
                                 paramTypeData: {
                                     type: "",
                                     possibleValues: [selectedText],
-                                    initialValuesSelected: undefined // i.e., whether we're past the value extraction state
+                                    initialValuesSelected: undefined, // i.e., whether we're past the value extraction state
+                                    candidateLists: undefined
                                 },
                                 paramAnnotatorCreated: false
                             };
@@ -754,6 +758,16 @@ class NaturalLanguage extends React.Component {
                             });
 
                             this.scrollParamIntoViewAndHighlightNameText(newParamItem.uuid);
+
+                            // Do this in the background, as to not slow down initial param rendering
+                            setTimeout(function(uuid, context){
+                                const candidateLists = getCandidateLists([selectedText.trim()], false, '//*[@clone]');
+                                const idToItemClone = _.cloneDeep(context.state.idToItem);
+                                idToItemClone[uuid].paramTypeData.candidateLists = candidateLists;
+                                context.setState({
+                                    idToItem: idToItemClone
+                                });
+                            }, 0, newParamItem.uuid, this)
                         }
 
                         //this.exitEditMode();
@@ -1205,6 +1219,7 @@ class NaturalLanguage extends React.Component {
         let paramTypeData = {
             type: value,
             initialValuesSelected: idToItemClone[uuid].paramTypeData.initialValuesSelected,
+            candidateLists: idToItemClone[uuid].paramTypeData.candidateLists,
             possibleValues: idToItemClone[uuid].paramTypeData.possibleValues/* ,
             valuesExplicitlyAddedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser || [],
             valuesExplicitlyDeletedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser || [] */
@@ -1225,17 +1240,17 @@ class NaturalLanguage extends React.Component {
         }else if(value === "enumeration"){
             // Nothing else to set
         }else if(value === "flag"){
-            paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
+            //paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
         }else if(value === "date"){
             paramTypeData.dateRestriction = "";
             paramTypeData.otherDataValue = "";
-            paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
+            //paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
         }else if(value === "number"){
             paramTypeData.restrictedToIntegers = false;
             paramTypeData.restrictedToRange = false;
             paramTypeData.rangeStart = "";
             paramTypeData.rangeEnd = "";
-            paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
+            //paramTypeData.initialValuesSelected = []; // because we want it to be set (and not undefined)
         }
         idToItemClone[uuid].paramTypeData = paramTypeData;
 
@@ -1342,7 +1357,8 @@ class NaturalLanguage extends React.Component {
             paramTypeData: {
                 type: "",
                 possibleValues: [],
-                initialValuesSelected: [] // i.e., whether we're past the value extraction state
+                initialValuesSelected: [], // i.e., whether we're past the value extraction state
+                candidateLists: []
             },
             paramAnnotatorCreated: true
         };
