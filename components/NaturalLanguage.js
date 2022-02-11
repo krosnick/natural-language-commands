@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import styles from './NaturalLanguage.module.css';
 // import ChipotleClone from './website_clones/ChipotleClone';
 // import OscarsClone from './website_clones/OscarsClone';
+import MLBClone from './website_clones/MLBClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
 
@@ -1758,6 +1759,7 @@ class NaturalLanguage extends React.Component {
                         </iframe> */}
                         {/* <ChipotleClone /> */}
                         {/* <OscarsClone /> */}
+                        {/* <MLBClone /> */}
                         <Clone
                             websiteHTML={this.props.websiteHTML}
                         />

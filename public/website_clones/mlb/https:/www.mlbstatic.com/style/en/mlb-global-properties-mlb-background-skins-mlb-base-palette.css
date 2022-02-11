@@ -1,0 +1,658 @@
+.league-mlb{
+    background-color:#f3f3f3
+}
+.league-mlb .l-grid__col{
+    background-color:#fff
+}
+.league-mlb .l-grid__content--box{
+    background-color:#fff
+}
+.league-mlb .l-grid__content-title{
+    font-size:1.145rem;
+    color:#333
+}
+@media (min-width:768px){
+    .league-mlb .l-grid__content-title{
+        font-size:1.235rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .l-grid__content-title{
+        font-size:1.235rem
+    }
+}
+.league-mlb .l-grid__content-title--line::after{
+    background-color:#333
+}
+.league-mlb #bam-form .live-form .btn-primary{
+    background-color:#489dff;
+    border-color:#248aff;
+    color:#fff;
+    text-shadow:0 1px 0 #248aff;
+    transition:.2s
+}
+.league-mlb #bam-form .live-form .btn-primary:hover{
+    color:#fff
+}
+.league-mlb #bam-form a{
+    color:#333;
+    text-decoration:none
+}
+.league-mlb #bam-form a:hover{
+    color:#057aff
+}
+.league-mlb #bam-form a:active{
+    color:#002d72
+}
+.league-mlb .fc-field__button--primary{
+    background-color:#489dff;
+    border-color:#248aff;
+    color:#fff;
+    text-shadow:0 1px 0 #248aff;
+    transition:.2s
+}
+.league-mlb .fc-field__button--primary:hover{
+    color:#fff
+}
+.league-mlb .p-button__button--primary{
+    background-color:#489dff;
+    border-color:#248aff;
+    color:#fff;
+    text-shadow:0 1px 0 #248aff
+}
+.league-mlb .p-button__button--primary:hover{
+    color:#fff
+}
+.league-mlb .p-button__button--primary:disabled{
+    background-color:rgba(72,157,255,.55);
+    border-color:rgba(72,157,255,.5);
+    color:rgba(255,255,255,.8);
+    cursor:not-allowed
+}
+.league-mlb .p-content-heading--themed{
+    background-color:#041e42;
+    border-left:solid .5rem #d50032;
+    padding-bottom:.5rem;
+    padding-left:.5rem;
+    padding-top:.5rem
+}
+.league-mlb .p-content-heading--themed .p-content-heading__text--themed{
+    font-size:1.145rem;
+    font-weight:700;
+    color:#fff
+}
+@media (min-width:768px){
+    .league-mlb .p-content-heading--themed .p-content-heading__text--themed{
+        font-size:1.235rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-content-heading--themed .p-content-heading__text--themed{
+        font-size:1.235rem
+    }
+}
+.league-mlb .p-content-heading--themed .p-icon{
+    color:#fff
+}
+.league-mlb .p-content-heading--themed.p-content-heading--center{
+    border-right:.5rem solid #d50032
+}
+.league-mlb .p-content-heading--lined::before{
+    background-color:#ececec
+}
+.league-mlb .p-content-heading__text--lined,.league-mlb .p-content-heading__text--none{
+    font-size:1.311025rem;
+    font-weight:700;
+    color:#333
+}
+@media (min-width:768px){
+    .league-mlb .p-content-heading__text--lined,.league-mlb .p-content-heading__text--none{
+        font-size:1.525225rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-content-heading__text--lined,.league-mlb .p-content-heading__text--none{
+        font-size:1.525225rem
+    }
+}
+.league-mlb .p-content-heading__text--lined{
+    background-color:#fff
+}
+.league-mlb .p-embed-player .homepage-drawer-embed .video-preview-metadata__type,.league-mlb .p-embed-player .video-preview-metadata__type{
+    background-color:#041e42;
+    color:#fff
+}
+.league-mlb .p-featured-content__tag{
+    background-color:#041e42;
+    color:#fff
+}
+.league-mlb .p-follow__item--email{
+    background-color:#489dff
+}
+.league-mlb .p-follow__item--email .p-follow__link{
+    color:#fff
+}
+.league-mlb .p-follow__item--email .p-follow__icon use{
+    fill:#fff
+}
+.league-mlb .site-footer{
+    background-color:#333
+}
+.league-mlb .site-footer__frame{
+    background-color:#333
+}
+.league-mlb .site-footer__team-links{
+    border-bottom:solid 1px #f3f3f3
+}
+.league-mlb .site-footer__team-link{
+    color:#fff
+}
+.league-mlb .site-footer__team-link:hover{
+    color:#147cd1
+}
+.league-mlb .site-footer__team-link:active{
+    color:#fff
+}
+.league-mlb .site-footer__legal-link,.league-mlb .site-footer__legal-links a{
+    color:#fff
+}
+.league-mlb .site-footer__legal-link:hover,.league-mlb .site-footer__legal-links a:hover{
+    color:#147cd1
+}
+.league-mlb .site-footer__legal-link:active,.league-mlb .site-footer__legal-links a:active{
+    color:#fff
+}
+.league-mlb .site-footer__copyright-container{
+    color:#d2d2d2
+}
+.league-mlb .megamenu[data-is-club] .megamenu-logobar,.league-mlb .megamenu[data-is-club] .megamenu__main-container,.league-mlb .megamenu[data-is-microsite] .megamenu-logobar,.league-mlb .megamenu[data-is-microsite] .megamenu__main-container{
+    background:#041e42
+}
+.league-mlb .megamenu[data-is-club] .megamenu-logobar::before,.league-mlb .megamenu[data-is-club] .megamenu__main-container::before,.league-mlb .megamenu[data-is-microsite] .megamenu-logobar::before,.league-mlb .megamenu[data-is-microsite] .megamenu__main-container::before{
+    background:#041e42
+}
+.league-mlb .megamenu-club-logobar{
+    background-color:#002d72
+}
+.league-mlb .megamenu-club-logobar::before{
+    background:#002d72
+}
+.league-mlb .megamenu-club-logobar__logo{
+    margin-left:0;
+    margin-top:0
+}
+.league-mlb .megamenu-club-logobar__logo img{
+    max-height:unset
+}
+.league-mlb .megamenu-club-logobar__tagline{
+    max-width:512px;
+    margin-left:0;
+    margin-top:0;
+    line-height:56px;
+    height:56px
+}
+@media screen and (min-width:320px){
+    .league-mlb .megamenu-static-navbar .megamenu-static-navbar__menu-button{
+        color:#fff
+    }
+    .league-mlb .megamenu-static-navbar .megamenu-static-navbar__menu-item{
+        color:#fff
+    }
+    .league-mlb .megamenu-static-navbar .megamenu-static-navbar__menu-item--hovered,.league-mlb .megamenu-static-navbar .megamenu-static-navbar__menu-item--visible,.league-mlb .megamenu-static-navbar .no-js .megamenu-static-navbar__menu-item:hover{
+        color:#fff
+    }
+    .league-mlb .megamenu-static-navbar .megamenu-static-navbar__menu-item--spotlight-item{
+        background-color:#333;
+        color:#fff
+    }
+    .league-mlb .megamenu-static-navbar .megamenu-static-navbar__menu-item--spotlight-item:hover{
+        background-color:#4d4d4d;
+        color:#fff
+    }
+}
+@media screen and (min-width:1200px){
+    .league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item-link{
+        color:#fff
+    }
+    .league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item--spotlight-item{
+        background-color:#333;
+        color:#fff
+    }
+    .league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item--spotlight-item:hover{
+        background-color:#4d4d4d;
+        color:#fff
+    }
+    .league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item--is-active .megamenu-navbar-overflow__menu-item-link{
+        border-top-color:#057aff;
+        color:#fff
+    }
+    .league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item--hovered .megamenu-navbar-overflow__menu-item-link,.league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item--visible .megamenu-navbar-overflow__menu-item-link,.league-mlb .megamenu-navbar-overflow__menu .no-js .megamenu-navbar-overflow__menu-item:hover .megamenu-navbar-overflow__menu-item-link{
+        color:#fff
+    }
+    .league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item--hovered .megamenu-navbar-overflow__menu-item-link:hover,.league-mlb .megamenu-navbar-overflow__menu .megamenu-navbar-overflow__menu-item--visible .megamenu-navbar-overflow__menu-item-link:hover,.league-mlb .megamenu-navbar-overflow__menu .no-js .megamenu-navbar-overflow__menu-item:hover .megamenu-navbar-overflow__menu-item-link:hover{
+        color:#fff
+    }
+}
+.league-mlb .megamenu-navbar .megamenu-static-navbar__menu-item--is-active{
+    color:#fff
+}
+.league-mlb .megamenu-navbar-overflow__menu-item--hovered .megamenu-navbar-overflow__menu-item-link,.league-mlb .megamenu-navbar-overflow__menu-item--visible .megamenu-navbar-overflow__menu-item-link,.league-mlb .no-js .megamenu-navbar-overflow__menu-item:hover .megamenu-navbar-overflow__menu-item-link{
+    border-top-color:#057aff
+}
+.league-mlb .megamenu-static-navbar__menu-item--hovered,.league-mlb .megamenu-static-navbar__menu-item--is-active,.league-mlb .megamenu-static-navbar__menu-item--visible,.league-mlb .no-js .megamenu-static-navbar__menu-item:hover{
+    border-top-color:#057aff
+}
+.league-mlb .p-heading--themed{
+    background-color:#041e42;
+    border-left:solid .5rem #d50032;
+    padding-bottom:.5rem;
+    padding-left:.5rem;
+    padding-top:.5rem
+}
+.league-mlb .p-heading--themed .p-heading__text--themed{
+    font-weight:700;
+    color:#fff
+}
+.league-mlb .p-heading--themed .p-heading__text--h1{
+    font-size:1.50112363rem
+}
+@media (min-width:768px){
+    .league-mlb .p-heading--themed .p-heading__text--h1{
+        font-size:1.88365288rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-heading--themed .p-heading__text--h1{
+        font-size:1.88365288rem
+    }
+}
+.league-mlb .p-heading--themed .p-heading__text--h2{
+    font-size:1.311025rem
+}
+@media (min-width:768px){
+    .league-mlb .p-heading--themed .p-heading__text--h2{
+        font-size:1.525225rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-heading--themed .p-heading__text--h2{
+        font-size:1.525225rem
+    }
+}
+.league-mlb .p-heading--themed .p-heading__text--h3{
+    font-size:1.145rem
+}
+@media (min-width:768px){
+    .league-mlb .p-heading--themed .p-heading__text--h3{
+        font-size:1.235rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-heading--themed .p-heading__text--h3{
+        font-size:1.235rem
+    }
+}
+.league-mlb .p-heading--themed .p-icon{
+    color:#fff
+}
+.league-mlb .p-heading--themed.p-heading--center{
+    border-right:.5rem solid #d50032
+}
+.league-mlb .p-heading--lined::before{
+    background-color:#ececec
+}
+.league-mlb .p-heading__text--lined,.league-mlb .p-heading__text--none{
+    font-weight:700;
+    color:#333
+}
+.league-mlb .p-heading__text--lined{
+    background-color:#fff
+}
+.league-mlb .p-heading__text--h1{
+    font-size:1.71878655rem
+}
+@media (min-width:768px){
+    .league-mlb .p-heading__text--h1{
+        font-size:2.3263113rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-heading__text--h1{
+        font-size:2.3263113rem
+    }
+}
+.league-mlb .p-heading__text--h2{
+    font-size:1.50112363rem
+}
+@media (min-width:768px){
+    .league-mlb .p-heading__text--h2{
+        font-size:1.88365288rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-heading__text--h2{
+        font-size:1.88365288rem
+    }
+}
+.league-mlb .p-heading__text--h3{
+    font-size:1.311025rem
+}
+@media (min-width:768px){
+    .league-mlb .p-heading__text--h3{
+        font-size:1.525225rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-heading__text--h3{
+        font-size:1.525225rem
+    }
+}
+.league-mlb #react-header header.mlb-header .header__nav-top{
+    background-color:#041e42
+}
+.league-mlb #react-header header.mlb-header .header__nav-top [class$='__nav-item__text']{
+    color:#fff
+}
+.league-mlb #react-header header.mlb-header .header__nav-top .icon,.league-mlb #react-header header.mlb-header .header__nav-top .p-icon *{
+    fill:#fff
+}
+.league-mlb #react-header header.mlb-header .header__nav-top [class$=button-menu--icon] span{
+    background-color:#fff
+}
+.league-mlb #react-header header.mlb-header .header__subnav{
+    border-color:#057aff
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__main-nav{
+    background-color:#041e42
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__nav-items{
+    background-color:#041e42
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__nav-item{
+    border-color:rgba(255,255,255,.15);
+    background-color:#041e42
+}
+@media screen and (min-width:1024px){
+    .league-mlb #react-header header.mlb-header .header__nav-side__nav-item:hover{
+        background-color:#057aff
+    }
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--inner a,.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--inner span{
+    color:#fff
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--inner .icon *{
+    fill:#fff
+}
+@media screen and (min-width:1024px){
+    .league-mlb #react-header header.mlb-header .header__nav-side__nav-item--inner:hover a,.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--inner:hover span{
+        color:#fff
+    }
+    .league-mlb #react-header header.mlb-header .header__nav-side__nav-item--inner:hover .icon *{
+        fill:#fff
+    }
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--parent[aria-expanded=true]{
+    background-color:#057aff
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--parent[aria-expanded=true] .header__nav-side__nav-item--inner a,.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--parent[aria-expanded=true] .header__nav-side__nav-item--inner span{
+    color:#fff
+}
+.league-mlb #react-header header.mlb-header .header__nav-side__nav-item--parent[aria-expanded=true] .header__nav-side__nav-item--inner .icon *{
+    fill:#fff
+}
+.league-mlb #react-header header.mlb-header .header__subnav__item:hover{
+    background-color:#057aff;
+    color:#fff
+}
+.league-mlb #react-header header.mlb-header .account--logged-in.active::after{
+    background:#057aff
+}
+.league-mlb #react-header header.mlb-header .mlb-header__login-menu{
+    border-color:#057aff
+}
+.league-mlb #react-header header.mlb-header .mlb-header__login-menu__link:hover{
+    background-color:#057aff;
+    color:#fff
+}
+.league-mlb #react-header header.mlb-header[data-is-club] .header__nav-top .header__nav-top__tagline img,.league-mlb #react-header header.mlb-header[data-is-microsite] .header__nav-top .header__nav-top__tagline img{
+    height:56px;
+    max-width:512px;
+    margin-left:0;
+    margin-top:0;
+    line-height:56px
+}
+@media screen and (min-width:1024px){
+    .league-mlb #react-header header.mlb-header[data-is-club],.league-mlb #react-header header.mlb-header[data-is-microsite]{
+        background-image:linear-gradient(#002d72 50%,#041e42 50%)
+    }
+}
+.league-mlb #react-header header.mlb-header .header__nav-top__nav-item--spotlight{
+    background-color:#333
+}
+.league-mlb #react-header header.mlb-header .header__nav-top__nav-item--spotlight .header__nav-top__nav-item__text{
+    color:#fff
+}
+.league-mlb #react-header header.mlb-header .header__nav-top__nav-item--spotlight:hover{
+    background-color:lighten
+}
+.league-mlb #react-header header.mlb-header .header__nav-top__nav-item--spotlight:hover .header__nav-top__nav-item__text{
+    color:#fff
+}
+@media (min-width:1024px){
+    .league-mlb #react-header header.mlb-header[data-is-club] .header__nav-top{
+        background-image:linear-gradient(#002d72 50%,#041e42 50%)
+    }
+    .league-mlb #react-header .header__nav-top__nav-item--parent::after{
+        border-color:transparent transparent #057aff
+    }
+    .league-mlb #react-header .header__nav-top__nav-item--current{
+        border-color:#057aff
+    }
+}
+.league-mlb .p-hero__title{
+    font-size:1.50112363rem
+}
+@media (min-width:768px){
+    .league-mlb .p-hero__title{
+        font-size:1.88365288rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-hero__title{
+        font-size:1.88365288rem
+    }
+}
+.league-mlb .p-insider .l-grid__col{
+    background-color:#fff
+}
+.league-mlb .mediawall__article-preview.l-grid__col,.league-mlb .mediawall__related-links-container.l-grid__col,.league-mlb .mediawall__score-container.l-grid__col{
+    background-color:#fff
+}
+.league-mlb .mediawall__pagination-dot--active{
+    background-color:#489dff
+}
+.league-mlb .mediawall__pagination-dot:hover{
+    background-color:#489dff
+}
+.league-mlb .p-mig{
+    background-color:#fff
+}
+.league-mlb .p-navbar--mini .p-navbar__nav-item--active,.league-mlb .p-navbar--mini .p-navbar__nav-item:hover,.league-mlb .p-navbar__nav-item--active,.league-mlb .p-navbar__nav-item:hover{
+    border-color:#057aff
+}
+@media (max-width:568px){
+    .league-mlb .p-navbar--collapsible .p-navbar__nav-item{
+        background-color:#fff;
+        box-shadow:0 6px 5px 1px #f3f3f3
+    }
+}
+.league-mlb .p-navbar--collapsible .p-navbar__nav-item--active,.league-mlb .p-navbar--collapsible .p-navbar__nav-item:hover{
+    border-color:#057aff
+}
+.league-mlb .p-navbar--collapsible .p-navbar__nav-item--active{
+    box-shadow:none
+}
+.league-mlb .p-navbar-mini__nav-item--active{
+    border-color:#057aff
+}
+.league-mlb .p-upcoming-games h4{
+    font-weight:400;
+    color:#333
+}
+.league-mlb .p-page-banner__title{
+    font-size:1.71878655rem;
+    font-weight:400
+}
+@media (min-width:768px){
+    .league-mlb .p-page-banner__title{
+        font-size:2.3263113rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-page-banner__title{
+        font-size:2.3263113rem
+    }
+}
+.league-mlb .responsive-datatable .header-repeat td,.league-mlb .responsive-datatable th,.league-mlb .responsive-datatable__pinned th:first-child{
+    background-color:#041e42
+}
+.league-mlb .responsive-datatable .header-repeat td:first-child,.league-mlb .responsive-datatable th:first-child{
+    border-right:3px solid #041e42
+}
+.league-mlb .p-standings .g5-component--standings__mini-view .responsive-datatable thead{
+    border-left-color:#041e42;
+    border-right-color:#041e42
+}
+.league-mlb .responsive-datatable__scrollable tbody tr.tr--highlighted--persist.tr--highlighted{
+    background-color:rgba(4,30,66,.1)
+}
+.league-mlb .p-scrim{
+    background-color:rgba(51,51,51,.85);
+    color:#fff
+}
+.league-mlb .p-sidekick__scrim{
+    font-size:1.145rem
+}
+@media (min-width:768px){
+    .league-mlb .p-sidekick__scrim{
+        font-size:1.235rem
+    }
+}
+@media (min-width:768px){
+    .league-mlb .p-sidekick__scrim{
+        font-size:1.235rem
+    }
+}
+.league-mlb .token-table th{
+    background-color:#041e42
+}
+.league-mlb .token-table tbody tr{
+    background-color:#fff
+}
+.league-mlb .token-table tbody tr td{
+    color:#333
+}
+.league-mlb .ticket-grid__heading{
+    color:#333
+}
+.league-mlb .section-banner__category-headline,.league-mlb .section-banner__heading,.league-mlb .section-banner__subheading{
+    font-family:mlb-primary,"Helvetica Neue",Helvetica,Arial,sans-serif
+}
+.league-mlb .container .grid-mode .date-cell.future.home.postseason,.league-mlb .container .grid-mode .date-cell.future.home.regular-season,.league-mlb .container .grid-mode .date-cell.present.home.postseason,.league-mlb .container .grid-mode .date-cell.present.home.regular-season{
+    background-color:#333
+}
+.league-mlb .container .grid-mode .date-cell.future.home .day-of-month-label,.league-mlb .container .grid-mode .date-cell.present.home .day-of-month-label{
+    color:#fff
+}
+.league-mlb .container .grid-mode .date-cell.future.home .day-of-month-label.today,.league-mlb .container .grid-mode .date-cell.present.home .day-of-month-label.today{
+    border-color:#fff
+}
+.league-mlb .container .footer-notes .legend .symbol-label-pair .symbol .color-block.home{
+    background-color:#333!important
+}
+.league-mlb .grid-calendar-abs-pos-container .date-popover.future.home.postseason,.league-mlb .grid-calendar-abs-pos-container .date-popover.future.home.regular-season,.league-mlb .grid-calendar-abs-pos-container .date-popover.present.home.postseason,.league-mlb .grid-calendar-abs-pos-container .date-popover.present.home.regular-season{
+    background-color:#333
+}
+.league-mlb .grid-calendar-abs-pos-container .date-popover.future.home .day-of-month-label,.league-mlb .grid-calendar-abs-pos-container .date-popover.present.home .day-of-month-label{
+    color:#fff
+}
+.league-mlb .grid-calendar-abs-pos-container .date-popover.future.home .day-of-month-label.today,.league-mlb .grid-calendar-abs-pos-container .date-popover.present.home .day-of-month-label.today{
+    border-color:#fff
+}
+.league-mlb .l-grid--three-column-homepage__col--left,.league-mlb .l-grid--three-column-homepage__col--right{
+    background-color:transparent
+}
+.league-mlb .l-grid--three-column-homepage__col--left .l-grid__col,.league-mlb .l-grid--three-column-homepage__col--right .l-grid__col{
+    background-color:transparent
+}
+.league-mlb .l-grid--three-column-homepage-index .p-wysiwyg a{
+    font-weight:400
+}
+.league-mlb .article-navigation__item--highlighted,.league-mlb .article-navigation__item:hover{
+    background-color:#489dff
+}
+.league-mlb .article-navigation__item--highlighted .article-navigation__item__meta-headline,.league-mlb .article-navigation__item:hover .article-navigation__item__meta-headline{
+    color:#fff
+}
+.league-mlb .article-item__body p a,.league-mlb .article-item__preview p a{
+    color:#489dff
+}
+.league-mlb .l-grid--one-column .l-grid__col{
+    background-color:#fff
+}
+.league-mlb .l-grid--two-column__col--right{
+    background-color:transparent
+}
+.league-mlb .t-primary{
+    background-color:#333;
+    color:#fff
+}
+.league-mlb .t-primary a{
+    color:#ececec
+}
+.league-mlb .t-primary a:hover{
+    color:#008
+}
+.league-mlb .t-primary .p-heading--1,.league-mlb .t-primary .p-heading--2,.league-mlb .t-primary .p-heading--3,.league-mlb .t-primary .p-heading--4,.league-mlb .t-primary .p-heading--5,.league-mlb .t-primary .p-heading--6,.league-mlb .t-primary .u-text-h1,.league-mlb .t-primary .u-text-h2,.league-mlb .t-primary .u-text-h3,.league-mlb .t-primary .u-text-h4,.league-mlb .t-primary .u-text-h5,.league-mlb .t-primary .u-text-h6,.league-mlb .t-primary .u-text-h7,.league-mlb .t-primary h1,.league-mlb .t-primary h2,.league-mlb .t-primary h3,.league-mlb .t-primary h4,.league-mlb .t-primary h5,.league-mlb .t-primary h6{
+    color:#fff
+}
+.league-mlb .t-primary .l-grid__content--box,.league-mlb .t-primary .l-grid__content--card{
+    color:#333
+}
+.league-mlb .t-primary .l-grid__content--box a,.league-mlb .t-primary .l-grid__content--card a{
+    color:#333;
+    text-decoration:none
+}
+.league-mlb .t-primary .l-grid__content--box a:hover,.league-mlb .t-primary .l-grid__content--card a:hover{
+    color:#057aff
+}
+.league-mlb .t-primary .l-grid__content--box .p-heading--1,.league-mlb .t-primary .l-grid__content--box .p-heading--2,.league-mlb .t-primary .l-grid__content--box .p-heading--3,.league-mlb .t-primary .l-grid__content--box .p-heading--4,.league-mlb .t-primary .l-grid__content--box .p-heading--5,.league-mlb .t-primary .l-grid__content--box .p-heading--6,.league-mlb .t-primary .l-grid__content--box .u-text-h1,.league-mlb .t-primary .l-grid__content--box .u-text-h2,.league-mlb .t-primary .l-grid__content--box .u-text-h3,.league-mlb .t-primary .l-grid__content--box .u-text-h4,.league-mlb .t-primary .l-grid__content--box .u-text-h5,.league-mlb .t-primary .l-grid__content--box .u-text-h6,.league-mlb .t-primary .l-grid__content--box .u-text-h7,.league-mlb .t-primary .l-grid__content--box h1,.league-mlb .t-primary .l-grid__content--box h2,.league-mlb .t-primary .l-grid__content--box h3,.league-mlb .t-primary .l-grid__content--box h4,.league-mlb .t-primary .l-grid__content--box h5,.league-mlb .t-primary .l-grid__content--box h6,.league-mlb .t-primary .l-grid__content--card .p-heading--1,.league-mlb .t-primary .l-grid__content--card .p-heading--2,.league-mlb .t-primary .l-grid__content--card .p-heading--3,.league-mlb .t-primary .l-grid__content--card .p-heading--4,.league-mlb .t-primary .l-grid__content--card .p-heading--5,.league-mlb .t-primary .l-grid__content--card .p-heading--6,.league-mlb .t-primary .l-grid__content--card .u-text-h1,.league-mlb .t-primary .l-grid__content--card .u-text-h2,.league-mlb .t-primary .l-grid__content--card .u-text-h3,.league-mlb .t-primary .l-grid__content--card .u-text-h4,.league-mlb .t-primary .l-grid__content--card .u-text-h5,.league-mlb .t-primary .l-grid__content--card .u-text-h6,.league-mlb .t-primary .l-grid__content--card .u-text-h7,.league-mlb .t-primary .l-grid__content--card h1,.league-mlb .t-primary .l-grid__content--card h2,.league-mlb .t-primary .l-grid__content--card h3,.league-mlb .t-primary .l-grid__content--card h4,.league-mlb .t-primary .l-grid__content--card h5,.league-mlb .t-primary .l-grid__content--card h6{
+    color:#333
+}
+.league-mlb .t-latest-news a,.league-mlb .t-secondary a{
+    color:#333
+}
+.league-mlb .t-latest-news a:hover,.league-mlb .t-secondary a:hover{
+    color:#057aff
+}
+.league-mlb .t-latest-news .p-heading--1,.league-mlb .t-latest-news .p-heading--2,.league-mlb .t-latest-news .p-heading--3,.league-mlb .t-latest-news .p-heading--4,.league-mlb .t-latest-news .p-heading--5,.league-mlb .t-latest-news .p-heading--6,.league-mlb .t-latest-news .u-text-h1,.league-mlb .t-latest-news .u-text-h2,.league-mlb .t-latest-news .u-text-h3,.league-mlb .t-latest-news .u-text-h4,.league-mlb .t-latest-news .u-text-h5,.league-mlb .t-latest-news .u-text-h6,.league-mlb .t-latest-news .u-text-h7,.league-mlb .t-latest-news h1,.league-mlb .t-latest-news h2,.league-mlb .t-latest-news h3,.league-mlb .t-latest-news h4,.league-mlb .t-latest-news h5,.league-mlb .t-latest-news h6,.league-mlb .t-secondary .p-heading--1,.league-mlb .t-secondary .p-heading--2,.league-mlb .t-secondary .p-heading--3,.league-mlb .t-secondary .p-heading--4,.league-mlb .t-secondary .p-heading--5,.league-mlb .t-secondary .p-heading--6,.league-mlb .t-secondary .u-text-h1,.league-mlb .t-secondary .u-text-h2,.league-mlb .t-secondary .u-text-h3,.league-mlb .t-secondary .u-text-h4,.league-mlb .t-secondary .u-text-h5,.league-mlb .t-secondary .u-text-h6,.league-mlb .t-secondary .u-text-h7,.league-mlb .t-secondary h1,.league-mlb .t-secondary h2,.league-mlb .t-secondary h3,.league-mlb .t-secondary h4,.league-mlb .t-secondary h5,.league-mlb .t-secondary h6{
+    color:#333
+}
+.league-mlb .club-bg-skin{
+    background-position:top center;
+    background-repeat:no-repeat
+}
+.league-mlb .container{
+    background-color:#f3f3f3;
+    border-color:#f3f3f3
+}
+.league-mlb a{
+    color:#333;
+    text-decoration:none
+}
+.league-mlb a:hover{
+    color:#057aff
+}
+.league-mlb a:active{
+    color:#002d72
+}

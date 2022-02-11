@@ -1,0 +1,77 @@
+/* Global */
+[data-testid="top-story__tags-container"],
+[data-testid="feed-card__tags-container"] {
+    display: none !important;
+}
+
+/* Top Nav */
+[data-testid="search-widget-container"] {
+    display: none !important;
+}
+
+/* Control Bar & Container */
+.container--max-width {
+    max-width: 1440px !important;
+    padding: 0px !important;
+}
+
+div[class*="styles__ControlBarContainer"] {
+    display: none !important;
+}
+
+.container__control-bar-container {
+    padding-top: 0px !important;
+    padding-left: 0px !important;
+}
+
+/* /search page */
+
+div[class^="styles__SearchContainer"] {
+    display: none !important;
+}
+
+/* xNews Article */
+
+/* ===== LEVEL 2 CONTINGENCY ===== */
+
+/* .pre-cba .story-part.video,
+.pre-cba .story-part.photo,
+.pre-cba .story-part.oembed {
+    display: none !important;
+} */
+
+/* ===== LEVEL 2 CONTINGENCY END ===== */
+
+div[class*="Styles__TagsContainer"] {
+    display: none !important;
+}
+
+.story-part.related {
+    display: none !important;
+}
+
+section[class*="Styles__RelatedContentContainer"] {
+    display: none !important;
+}
+
+section[class*="Styles__RecommendedContentContainer"] {
+    display: none !important;
+}
+
+.editor-tv-wrapper {
+    display: none !important;
+}
+
+/* Prospects */
+div[class*="Styles__HeadlinesContainer"] {
+    display: none !important;
+}
+
+section[class*="Styles__HighlightsContainer"] {
+    display: none !important;
+}
+
+.prospect-rankings .drawer__body-container button[value="news"],
+.prospect-rankings .drawer__body-container button[value="video"] {
+    display: none !important;
+}
