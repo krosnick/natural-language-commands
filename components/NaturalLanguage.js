@@ -1759,10 +1759,10 @@ class NaturalLanguage extends React.Component {
                         </iframe> */}
                         {/* <ChipotleClone /> */}
                         {/* <OscarsClone /> */}
-                        {/* <MLBClone /> */}
-                        <Clone
+                        <MLBClone />
+                        {/* <Clone
                             websiteHTML={this.props.websiteHTML}
-                        />
+                        /> */}
                     </div>
                 </div>
                 {!this.props.viewOnlyMode ? (
