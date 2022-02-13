@@ -1511,6 +1511,16 @@ class NaturalLanguage extends React.Component {
 
         // For now only process "click" events
         if(e.type === "click"){
+            console.log("handleEmbeddedWebsiteEvent e.target", e.target);
+            const targetXPath = getXPathForElement(e.target, document);
+            console.log("targetXPath", targetXPath);
+            
+            // If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
+            const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+            console.log("clickedElement", clickedElement);
+
+            //debugger;
+            
             // Handle events here. Process them. Store in React state as part of the demonstration, etc
             const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
             const demonstrationIndex = 0; // later on this should be a variable value
@@ -1694,14 +1704,15 @@ class NaturalLanguage extends React.Component {
             //const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
             const events = demonstration.map((e, e_index) => {
                 // Should remove prefix before [clone]?
-                const targetXPath = getXPathForElement(e.target, document);
+                console.log("renderDemonstrations e.target", e.target);
+                //const targetXPath = getXPathForElement(e.target, document);
                 return (
                     <div
                         key = {e_index}
                         className={styles.event}
                     >
                         <div>Event type: {e.type}</div>
-                        <div>Target xPath: {targetXPath}</div>
+                        {/* <div>Target xPath: {targetXPath}</div> */}
                         <div>Element text: {e.target.textContent}</div>
                         <div>Element tag name: {e.target.tagName}</div>
                     </div>
