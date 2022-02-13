@@ -8,6 +8,33 @@ import ChipotleClone from './website_clones/ChipotleClone';
 // import MLBClone from './website_clones/MLBClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
+import WebsiteEventListener from './WebsiteEventListener';
+
+// Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
+function getXPathForElement(el, xml) {
+	var xpath = '';
+	var pos, tempitem2;
+
+	while(el !== xml.documentElement) {
+		pos = 0;
+		tempitem2 = el;
+		while(tempitem2) {
+			if (tempitem2.nodeType === 1 && tempitem2.nodeName === el.nodeName) { // If it is ELEMENT_NODE of the same name
+				pos += 1;
+			}
+			tempitem2 = tempitem2.previousSibling;
+		}
+
+		//xpath = "*[name()='"+el.nodeName+"' and namespace-uri()='"+(el.namespaceURI===null?'':el.namespaceURI)+"']["+pos+']'+'/'+xpath;
+        xpath = el.nodeName+"["+pos+']'+'/'+xpath;
+		el = el.parentNode;
+	}
+    //xpath = '/*'+"[name()='"+xml.documentElement.nodeName+"' and namespace-uri()='"+(el.namespaceURI===null?'':el.namespaceURI)+"']"+'/'+xpath;
+	xpath = "/"+xml.documentElement.nodeName+'/'+xpath;
+	xpath = xpath.replace(/\/$/, '');
+    xpath = xpath.toLowerCase();
+	return xpath;
+}
 
 function RegularTextItem(props){
     const textElement = useRef(null);
@@ -639,7 +666,8 @@ class NaturalLanguage extends React.Component {
             textEditable: props.textEditable,
             groupingSupported: props.groupingSupported,
             userFeedback: "",
-            incompleteFormParamIDs: []
+            incompleteFormParamIDs: [],
+            demonstrations: []
         }
     }
 
@@ -1478,6 +1506,26 @@ class NaturalLanguage extends React.Component {
         }
     }
 
+    handleEmbeddedWebsiteEvent(e){
+        console.log("handleEmbeddedWebsiteEvent", e);
+
+        // For now only process "click" events
+        if(e.type === "click"){
+            // Handle events here. Process them. Store in React state as part of the demonstration, etc
+            const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+            const demonstrationIndex = 0; // later on this should be a variable value
+            if(demonstrationsClone.length === demonstrationIndex){
+                // First event for this demonstration, so add a list for it
+                demonstrationsClone.push([]);
+            }
+            // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
+            demonstrationsClone[demonstrationIndex].push(e);
+            this.setState({
+                demonstrations: demonstrationsClone
+            });
+        }
+    }
+
     renderItemsList(itemIDs){
         
         function renderParamOrGroup(key, textItem){
@@ -1641,11 +1689,43 @@ class NaturalLanguage extends React.Component {
         return domTextItems;
     }
 
+    renderDemonstrations(demonstrations){
+        const demonstrationItems = demonstrations.map((demonstration, demo_index) => {
+            //const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
+            const events = demonstration.map((e, e_index) => {
+                // Should remove prefix before [clone]?
+                const targetXPath = getXPathForElement(e.target, document);
+                return (
+                    <div
+                        key = {e_index}
+                        className={styles.event}
+                    >
+                        <div>Event type: {e.type}</div>
+                        <div>Target xPath: {targetXPath}</div>
+                        <div>Element text: {e.target.textContent}</div>
+                        <div>Element tag name: {e.target.tagName}</div>
+                    </div>
+                );
+            });
+            return (
+                <div
+                    key={demo_index}
+                    className={styles.demonstration}
+                >
+                    <div>Demonstration {demo_index + 1}</div>
+                    {events}
+                </div>
+            );
+        });
+
+        return demonstrationItems; 
+    }
+
     render() {
         console.log("this.state.idToItem", this.state.idToItem);
         // Render each item as appropriate (using TextItem component)
         const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
-
+        const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
         return (
             <div
                 // className={(this.state.uuidInEditMode ? styles.editBackground : '')}
@@ -1743,6 +1823,12 @@ class NaturalLanguage extends React.Component {
                         {/* </span> */}
                     </div>
                     <div
+                        className={styles.demonstrations}
+                    >
+                        <p>Demonstrations</p>
+                        {demonstrationItems}
+                    </div>
+                    <div
                         className={styles.websiteIframe}
                     >
                         {/* <a
@@ -1757,12 +1843,16 @@ class NaturalLanguage extends React.Component {
                             src="/website_clones/chipotle_clone.html"
                         >
                         </iframe> */}
-                        {/* <ChipotleClone /> */}
-                        {/* <OscarsClone /> */}
-                        {/* <MLBClone /> */}
-                        <Clone
-                            websiteHTML={this.props.websiteHTML}
-                        />
+                        <WebsiteEventListener
+                            handleEmbeddedWebsiteEvent={(e) => this.handleEmbeddedWebsiteEvent(e)}
+                        >
+                            {/* <ChipotleClone /> */}
+                            {/* <OscarsClone /> */}
+                            {/* <MLBClone /> */}
+                            <Clone
+                                websiteHTML={this.props.websiteHTML}
+                            />
+                        </WebsiteEventListener>
                     </div>
                 </div>
                 {!this.props.viewOnlyMode ? (
