@@ -249,3 +249,15 @@
 .event {
     margin: 10px;
 }
+
+.startRecordingButton {
+    background-color: #82ff91;
+    font-size: large;
+    cursor: pointer;
+}
+
+.stopRecordingButton {
+    background-color: #ff8282;
+    font-size: large;
+    cursor: pointer;
+}

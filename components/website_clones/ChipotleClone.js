@@ -756,7 +756,10 @@ function createHTML() {
 
 export default function ChipotleClone() {
     return <div clone = "">
-        <InnerHTML html={createHTML()} />
+        <InnerHTML
+            html={createHTML()}
+            key={props.triggerWebsiteReload} // each time NaturalLanguage state.triggerWebsiteReload is updated, it'll cause this InnerHTML to re-render
+        />
     </div>;
     /*return <div clone = ""
     dangerouslySetInnerHTML = { createHTML() }

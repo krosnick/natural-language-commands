@@ -1671,7 +1671,10 @@ Krux('scrape', {user_attr_email_sha256: {cookie: 'kruxid'}});
 
 export default function MLBClone() {
     return <div clone = "">
-        <InnerHTML html={createHTML()} />
+        <InnerHTML
+            html={createHTML()}
+            key={props.triggerWebsiteReload} // each time NaturalLanguage state.triggerWebsiteReload is updated, it'll cause this InnerHTML to re-render
+        />
     </div>;
     /*return <div clone = ""
     dangerouslySetInnerHTML = { createHTML() }

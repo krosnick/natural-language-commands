@@ -667,7 +667,9 @@ class NaturalLanguage extends React.Component {
             groupingSupported: props.groupingSupported,
             userFeedback: "",
             incompleteFormParamIDs: [],
-            demonstrations: []
+            demonstrations: [],
+            inDemoMode: false,
+            triggerWebsiteReload: Math.random()
         }
     }
 
@@ -1507,33 +1509,57 @@ class NaturalLanguage extends React.Component {
     }
 
     handleEmbeddedWebsiteEvent(e){
-        console.log("handleEmbeddedWebsiteEvent", e);
+        //console.log("handleEmbeddedWebsiteEvent", e);
 
-        // For now only process "click" events
-        if(e.type === "click"){
-            console.log("handleEmbeddedWebsiteEvent e.target", e.target);
-            const targetXPath = getXPathForElement(e.target, document);
-            console.log("targetXPath", targetXPath);
-            
-            // If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
-            const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-            console.log("clickedElement", clickedElement);
+        // Only process/capture events if user is currently in demo mode
+        if(this.state.inDemoMode){
+            // For now only process "click" events
+            if(e.type === "click"){
+                console.log("handleEmbeddedWebsiteEvent e.target", e.target);
+                const targetXPath = getXPathForElement(e.target, document);
+                console.log("targetXPath", targetXPath);
+                
+                // If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
+                const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                console.log("clickedElement", clickedElement);
 
-            //debugger;
-            
-            // Handle events here. Process them. Store in React state as part of the demonstration, etc
-            const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-            const demonstrationIndex = 0; // later on this should be a variable value
-            if(demonstrationsClone.length === demonstrationIndex){
-                // First event for this demonstration, so add a list for it
-                demonstrationsClone.push([]);
+                //debugger;
+                
+                // Handle events here. Process them. Store in React state as part of the demonstration, etc
+                const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+                /*const demonstrationIndex = 0; // later on this should be a variable value
+                if(demonstrationsClone.length === demonstrationIndex){
+                    // First event for this demonstration, so add a list for it
+                    demonstrationsClone.push([]);
+                }*/
+                const demonstrationIndex = demonstrationsClone.length - 1;
+                // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
+                demonstrationsClone[demonstrationIndex].push(e);
+                this.setState({
+                    demonstrations: demonstrationsClone
+                });
             }
-            // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
-            demonstrationsClone[demonstrationIndex].push(e);
-            this.setState({
-                demonstrations: demonstrationsClone
-            });
         }
+    }
+
+    handleStartRecordingDemo(){
+        // Reload embedded website page, to ensure clean slate when user starts performing demo
+        this.forceReRenderEmbeddedWebsite();
+        
+        // Prepare for events getting captured by adding a new list to demonstrations (for the new demo)
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        demonstrationsClone.push([]);
+
+        this.setState({
+            demonstrations: demonstrationsClone,
+            inDemoMode: true
+        });
+    }
+
+    handleStopRecordingDemo(){
+        this.setState({
+            inDemoMode: false
+        });
     }
 
     renderItemsList(itemIDs){
@@ -1732,6 +1758,13 @@ class NaturalLanguage extends React.Component {
         return demonstrationItems; 
     }
 
+    forceReRenderEmbeddedWebsite(){
+        console.log("forceReRenderEmbeddedWebsite");
+        this.setState({
+            triggerWebsiteReload: Math.random()
+        });
+    }
+
     render() {
         console.log("this.state.idToItem", this.state.idToItem);
         // Render each item as appropriate (using TextItem component)
@@ -1838,6 +1871,17 @@ class NaturalLanguage extends React.Component {
                     >
                         <p>Demonstrations</p>
                         {demonstrationItems}
+                        {this.state.inDemoMode ? (
+                            <button
+                                className={styles.stopRecordingButton}
+                                onClick={() => this.handleStopRecordingDemo()}
+                            >Stop recording</button>
+                        ) : (
+                            <button
+                                className={styles.startRecordingButton}
+                                onClick={() => this.handleStartRecordingDemo()}
+                            >Record new demonstration</button>
+                        )}
                     </div>
                     <div
                         className={styles.websiteIframe}
@@ -1857,11 +1901,18 @@ class NaturalLanguage extends React.Component {
                         <WebsiteEventListener
                             handleEmbeddedWebsiteEvent={(e) => this.handleEmbeddedWebsiteEvent(e)}
                         >
-                            {/* <ChipotleClone /> */}
-                            {/* <OscarsClone /> */}
-                            {/* <MLBClone /> */}
+                            {/* <ChipotleClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
+                            {/* <OscarsClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
+                            {/* <MLBClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
                             <Clone
                                 websiteHTML={this.props.websiteHTML}
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
                             />
                         </WebsiteEventListener>
                     </div>
