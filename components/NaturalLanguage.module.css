@@ -254,10 +254,24 @@
     background-color: #82ff91;
     font-size: large;
     cursor: pointer;
+    margin: 10px;
 }
 
 .stopRecordingButton {
     background-color: #ff8282;
     font-size: large;
     cursor: pointer;
+    margin: 10px;
+}
+
+.createDemoButton {
+    font-size: large;
+    cursor: pointer;
+    margin: 10px;
+}
+
+.cancelButton {
+    font-size: large;
+    cursor: pointer;
+    margin: 10px;
 }

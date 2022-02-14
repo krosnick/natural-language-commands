@@ -668,7 +668,8 @@ class NaturalLanguage extends React.Component {
             userFeedback: "",
             incompleteFormParamIDs: [],
             demonstrations: [],
-            inDemoMode: false,
+            inCreateNewDemoMode: false,
+            inRecordingDemoMode: false,
             triggerWebsiteReload: Math.random()
         }
     }
@@ -1512,7 +1513,7 @@ class NaturalLanguage extends React.Component {
         //console.log("handleEmbeddedWebsiteEvent", e);
 
         // Only process/capture events if user is currently in demo mode
-        if(this.state.inDemoMode){
+        if(this.state.inCreateNewDemoMode && this.state.inRecordingDemoMode){
             // For now only process "click" events
             if(e.type === "click"){
                 console.log("handleEmbeddedWebsiteEvent e.target", e.target);
@@ -1542,6 +1543,18 @@ class NaturalLanguage extends React.Component {
         }
     }
 
+    handleCreateNewDemo(){
+        this.setState({
+            inCreateNewDemoMode: true
+        });
+    }
+
+    cancelNewDemo(){
+        this.setState({
+            inCreateNewDemoMode: false
+        });
+    }
+
     handleStartRecordingDemo(){
         // Reload embedded website page, to ensure clean slate when user starts performing demo
         this.forceReRenderEmbeddedWebsite();
@@ -1552,13 +1565,14 @@ class NaturalLanguage extends React.Component {
 
         this.setState({
             demonstrations: demonstrationsClone,
-            inDemoMode: true
+            inRecordingDemoMode: true
         });
     }
 
     handleStopRecordingDemo(){
         this.setState({
-            inDemoMode: false
+            inRecordingDemoMode: false,
+            inCreateNewDemoMode: false // for now, we'll also exit demo mode
         });
     }
 
@@ -1871,17 +1885,34 @@ class NaturalLanguage extends React.Component {
                     >
                         <p>Demonstrations</p>
                         {demonstrationItems}
-                        {this.state.inDemoMode ? (
-                            <button
-                                className={styles.stopRecordingButton}
-                                onClick={() => this.handleStopRecordingDemo()}
-                            >Stop recording</button>
-                        ) : (
-                            <button
-                                className={styles.startRecordingButton}
-                                onClick={() => this.handleStartRecordingDemo()}
-                            >Record new demonstration</button>
-                        )}
+                        {this.state.inCreateNewDemoMode
+                            ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
+                            <>
+                                {this.state.inRecordingDemoMode ? (
+                                    <button
+                                        className={styles.stopRecordingButton}
+                                        onClick={() => this.handleStopRecordingDemo()}
+                                    >Stop recording</button>
+                                ) : (
+                                    <>
+                                        <button
+                                            className={styles.startRecordingButton}
+                                            onClick={() => this.handleStartRecordingDemo()}
+                                        >Start recording</button>
+                                        <button
+                                            className={styles.cancelButton}
+                                            onClick={() => this.cancelNewDemo()}
+                                        >Cancel</button>
+                                    </>
+                                )}
+                            </>
+                            ):( // Currently not in demo mode; show user 'create demo' button in case they want to create a demo
+                                <button
+                                    className={styles.createDemoButton}
+                                    onClick={() => this.handleCreateNewDemo()}
+                                >Create a new demonstration</button>
+                            )
+                        }
                     </div>
                     <div
                         className={styles.websiteIframe}
