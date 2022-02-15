@@ -102,24 +102,27 @@ function ExtractedValueOptions(props){
         return null;
     }else{               
         const [selectedExtractedValueIndex, updateSelectedExtractedValueIndex] = useState(-1);
-        const radioButtonList = props.candidateLists.map((value, i) =>
-            <div
-                className={styles.extractedValueOptionText}
-            >
-                <input
-                    type="radio"
-                    log-this-element=""
-                    name={`extractedValueOption_${props.uuid}_${i}`}
-                    id={`extractedValueOption_${props.uuid}_${i}`}
-                    value={i}
-                    checked={selectedExtractedValueIndex === i}
-                    onChange={() => updateSelectedExtractedValueIndex(i)}
-                    disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
-                />
-                <label htmlFor={`extractedValueOption_${props.uuid}_${i}`}
-                >{value.toString()}</label>
-            </div>
-        );
+        const radioButtonList = props.candidateLists.map(function(candidate, i){
+            const valuesTextOnlyList = candidate.map((valueItem) => valueItem.textCandidate);
+            return (
+                <div
+                    className={styles.extractedValueOptionText}
+                >
+                    <input
+                        type="radio"
+                        log-this-element=""
+                        name={`extractedValueOption_${props.uuid}_${i}`}
+                        id={`extractedValueOption_${props.uuid}_${i}`}
+                        value={i}
+                        checked={selectedExtractedValueIndex === i}
+                        onChange={() => updateSelectedExtractedValueIndex(i)}
+                        disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
+                    />
+                    <label htmlFor={`extractedValueOption_${props.uuid}_${i}`}
+                    >{valuesTextOnlyList.toString()}</label>
+                </div>
+            );
+        });
 
         return (
             <div
@@ -159,7 +162,7 @@ class UserProvidedExamples extends React.Component {
     render(){
         console.log("this.props", this.props);
         console.log("this.props.possibleValues", this.props.possibleValues);
-        const possibleValues = this.props.possibleValues.map((value, i) =>
+        const possibleValues = this.props.possibleValues.map((valueObj, i) =>
             <li
                 // key={`${value}_${i}`}
                 //key={value}
@@ -168,7 +171,7 @@ class UserProvidedExamples extends React.Component {
                     className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
                     log-this-element=""
                     type="text"
-                    value={value}
+                    value={valueObj.textCandidate}
                     onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                     //onBlur={(e) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
                     disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
@@ -229,12 +232,12 @@ class TemplateFreeformParam extends React.Component {
 class TemplateEnumerationParam extends React.Component {
     render(){
         // Create list of <option> elements based on possibleValues
-        const optionItems = this.props.possibleValues.map((possibleValue, i) => {
+        const optionItems = this.props.possibleValues.map((possibleValueObj, i) => {
             return (
                 <option
-                    value={possibleValue}
+                    value={possibleValueObj.textCandidate}
                 >
-                    {possibleValue}
+                    {possibleValueObj.textCandidate}
                 </option>
             );
         });
@@ -913,7 +916,7 @@ class NaturalLanguage extends React.Component {
                                 paramMultipleValuesAllowed: false,
                                 paramTypeData: {
                                     type: "",
-                                    possibleValues: [selectedText],
+                                    possibleValues: [ { textCandidate: selectedText, xPath: null }],
                                     initialValuesSelected: undefined, // i.e., whether we're past the value extraction state
                                     candidateLists: undefined
                                 },
@@ -1087,7 +1090,8 @@ class NaturalLanguage extends React.Component {
             idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser.splice(curValueIndex, 1);
         }*/
 
-        idToItemClone[uuid].paramTypeData.possibleValues[i] = e.target.value;
+        // For now, keeping same xpath; should we get rid of it though?
+        idToItemClone[uuid].paramTypeData.possibleValues[i].textCandidate = e.target.value;
 
         /*// We don't want to run extraction algorithm after every keypress
             // That's going to be confusing and annoying (a copy of each intermediate string would appear as a new value)
@@ -1131,7 +1135,7 @@ class NaturalLanguage extends React.Component {
     handleAddBlankParamValue(uuid){
         console.log("handleAddBlankParamValue");
         const idToItemClone = _.cloneDeep(this.state.idToItem);
-        idToItemClone[uuid].paramTypeData.possibleValues.push("");
+        idToItemClone[uuid].paramTypeData.possibleValues.push({ textCandidate: "", xPath: null });
         this.setState({
             idToItem: idToItemClone
         });

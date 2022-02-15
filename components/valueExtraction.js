@@ -110,7 +110,7 @@ export function getCandidateLists(positiveExamplesList, exactStringBoolean, embe
     }
 }
 
-function chooseBestValueSet(candidateValueSets, positiveExamplesList, negativeExamplesList){
+/* function chooseBestValueSet(candidateValueSets, positiveExamplesList, negativeExamplesList){
     // candidateValueSets is in the format of matchingItemIndexToPossibleExtractions
     // Merge into a single list of lists
     
@@ -164,7 +164,7 @@ function chooseBestValueSet(candidateValueSets, positiveExamplesList, negativeEx
     }else{
         return {};
     }
-}
+} */
 
 // Get all possible parameter values, where positiveExamplesList is a list of example values the user has provided
 function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
@@ -212,7 +212,7 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
                             if(candidate.snapshotItem(0)){
                                 var textCandidate = candidate.snapshotItem(0).textContent;
                                 if(textCandidate !== ""){
-                                    values.push(textCandidate);
+                                    values.push({ textCandidate, xPath: xPathDownSiblingToQuery } );
                                 }else{
                                     numberXPathQueryUnsuccessful += 1;
                                 }
@@ -262,7 +262,7 @@ function getXPathForElement(el, xml) {
 	return xpath;
 }
 
-export function getValues(positiveExamplesList, negativeExamplesList, embeddedWebsitePrefix){
+/* export function getValues(positiveExamplesList, negativeExamplesList, embeddedWebsitePrefix){
     var candidates = getCandidateValueSets(positiveExamplesList, true, embeddedWebsitePrefix);
     var best = chooseBestValueSet(candidates, positiveExamplesList, negativeExamplesList);
     var valueSet = [];
@@ -292,4 +292,4 @@ export function getValues(positiveExamplesList, negativeExamplesList, embeddedWe
         }
     }
     return valueSet;
-}
+} */
