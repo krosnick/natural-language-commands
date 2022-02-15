@@ -72,6 +72,24 @@ function RegularTextItem(props){
     );
 }
 
+// When we're rendering the NL template (i.e., user has already parameterized the NL) for the user to fill in params' values for upcoming demo
+function TemplateRegularTextItem(props){
+
+    return (
+        <span
+            className={styles.relative}
+        >
+            <span
+                className={`${styles.inputNaturalLanguage} ${(props.uuidInEditMode === props.uuid ? styles.editBackground : '')} ${(props.uuidInEditMode && props.uuidInEditMode !== props.uuid || props.groupSelectionMode ? styles.grayedOut : '')}`}
+                uuid={props.uuid}
+                text-item-type="regular"
+            >
+                {props.text}
+            </span>
+        </span>
+    );
+}
+
 function ExtractedValueOptions(props){
 
     //const candidateLists = getCandidateLists([props.selectedText.trim()], false, '//*[@clone]');
@@ -185,6 +203,84 @@ class UserProvidedExamples extends React.Component {
                 </button>
             </div>
         )
+    }
+}
+
+class TemplateFreeformParam extends React.Component {
+    render(){
+        const defaultOption = `<${this.props.paramName}>`;
+        return (
+            // <input>
+            <input
+                //className={`${this.props.paramAnnotatorCreated ? styles.paramTextAnnotatorCreated : styles.paramText} ${styles.inputNaturalLanguage} ${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
+                log-this-element=""
+                uuid={this.props.uuid}
+                type="text"
+                size={Math.max(this.props.paramName.length, 20)}
+                value={this.props.paramValue || defaultOption}
+                onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+            >
+            </input>
+        );
+    }
+}
+
+class TemplateEnumerationParam extends React.Component {
+    render(){
+        // Create list of <option> elements based on possibleValues
+        const optionItems = this.props.possibleValues.map((possibleValue, i) => {
+            return (
+                <option
+                    value={possibleValue}
+                >
+                    {possibleValue}
+                </option>
+            );
+        });
+
+        const defaultOption = `<${this.props.paramName}>`;
+        return (
+            // <select>
+            <select
+                log-this-element=""
+                value={this.props.paramValue || defaultOption}
+                onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
+            >
+                <option
+                    value={defaultOption}
+                >
+                    {defaultOption}
+                </option>
+                {optionItems}
+            </select>
+        );
+    }
+}
+
+class TemplateFlagParam extends React.Component {
+    render(){
+        return (
+            <div>Implement TemplateFlagParam</div>
+        );
+    }
+}
+
+class TemplateDateParam extends React.Component {
+    render(){
+        return (
+            <div>Implement TemplateDateParam</div>
+        );
+    }
+}
+
+class TemplateNumberParam extends React.Component {
+    render(){
+        return (
+            <div>Implement TemplateNumberParam</div>
+        );
     }
 }
 
@@ -613,6 +709,90 @@ class ParamTextItem extends React.Component {
                 </div>
             </span>
         );
+    }
+}
+
+// When we're rendering the NL template (i.e., user has already parameterized the NL) for the user to fill in params' values for upcoming demo
+class TemplateParamTextItem extends React.Component {
+    render() {
+        // Based on what this.props.paramTypeData.type is, render appropriate type
+        let paramTemplate = ""; // empty unless there is a param type we should render
+        if(this.props.paramTypeData.type.length > 0){
+            if(this.props.paramTypeData.type === "freeform"){
+                paramTemplate = <TemplateFreeformParam
+                                            uuid={this.props.uuid}     
+                                            paramName={this.props.paramName}
+                                            paramValue={this.props.paramValue}
+                                            //selectedText={this.props.text}
+                                            possibleValues={this.props.paramTypeData.possibleValues}
+                                            initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
+                                            candidateLists={this.props.paramTypeData.candidateLists}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
+                                            demoIndex={this.props.demoIndex}
+                                            handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                        />;
+            }else if(this.props.paramTypeData.type === "enumeration"){
+                paramTemplate = <TemplateEnumerationParam
+                                            uuid={this.props.uuid}
+                                            paramName={this.props.paramName}
+                                            paramValue={this.props.paramValue}
+                                            //selectedText={this.props.text}
+                                            possibleValues={this.props.paramTypeData.possibleValues}
+                                            initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
+                                            candidateLists={this.props.paramTypeData.candidateLists}
+                                            paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
+                                            demoIndex={this.props.demoIndex}
+                                            handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                        />;
+            }else if(this.props.paramTypeData.type === "flag"){
+                paramTemplate = <TemplateFlagParam
+                                            uuid={this.props.uuid}           
+                                            paramName={this.props.paramName}
+                                            paramValue={this.props.paramValue}
+                                            //selectedText={this.props.text}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
+                                            demoIndex={this.props.demoIndex}
+                                            handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                        />;
+            }else if(this.props.paramTypeData.type === "date"){
+                paramTemplate = <TemplateDateParam
+                                            dateRestriction={this.props.paramTypeData.dateRestriction}
+                                            otherDataValue={this.props.paramTypeData.otherDataValue}
+                                            uuid={this.props.uuid}
+                                            paramName={this.props.paramName}
+                                            paramValue={this.props.paramValue}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
+                                            demoIndex={this.props.demoIndex}
+                                            handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                        />;
+            }else if(this.props.paramTypeData.type === "number"){
+                paramTemplate = <TemplateNumberParam
+                                            restrictedToIntegers={this.props.paramTypeData.restrictedToIntegers}
+                                            restrictedToRange={this.props.paramTypeData.restrictedToRange}
+                                            rangeStart={this.props.paramTypeData.rangeStart}
+                                            rangeEnd={this.props.paramTypeData.rangeEnd}
+                                            uuid={this.props.uuid}
+                                            paramName={this.props.paramName}
+                                            paramValue={this.props.paramValue}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
+                                            demoIndex={this.props.demoIndex}
+                                            handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                        />;
+            }
+        }
+
+        return paramTemplate;
     }
 }
 
@@ -1535,7 +1715,8 @@ class NaturalLanguage extends React.Component {
                 }*/
                 const demonstrationIndex = demonstrationsClone.length - 1;
                 // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
-                demonstrationsClone[demonstrationIndex].push(e);
+                //demonstrationsClone[demonstrationIndex].push(e);
+                demonstrationsClone[demonstrationIndex].eventSequence.push(e);
                 this.setState({
                     demonstrations: demonstrationsClone
                 });
@@ -1544,13 +1725,26 @@ class NaturalLanguage extends React.Component {
     }
 
     handleCreateNewDemo(){
+        // Add a new demo object
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        demonstrationsClone.push({
+            eventSequence: [],
+            paramValuePairs: {}
+        });
+
         this.setState({
+            demonstrations: demonstrationsClone,
             inCreateNewDemoMode: true
         });
     }
 
     cancelNewDemo(){
+        // User doesn't want to create this demo, so remove the last obj that was recently added to demonstrations
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        demonstrationsClone.splice(demonstrationsClone.length-1, 1);
+
         this.setState({
+            demonstrations: demonstrationsClone,
             inCreateNewDemoMode: false
         });
     }
@@ -1558,10 +1752,6 @@ class NaturalLanguage extends React.Component {
     handleStartRecordingDemo(){
         // Reload embedded website page, to ensure clean slate when user starts performing demo
         this.forceReRenderEmbeddedWebsite();
-        
-        // Prepare for events getting captured by adding a new list to demonstrations (for the new demo)
-        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        demonstrationsClone.push([]);
 
         this.setState({
             demonstrations: demonstrationsClone,
@@ -1574,6 +1764,115 @@ class NaturalLanguage extends React.Component {
             inRecordingDemoMode: false,
             inCreateNewDemoMode: false // for now, we'll also exit demo mode
         });
+    }
+
+    // For NL template associated with demoIndex, user has set a new value for this param
+    handleTemplateParamValueChange(e, paramUuid, demoIndex){
+        const newParamValue = e.target.value;
+        const paramName = this.state.idToItem[paramUuid].paramName;
+
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        const demoObj = demonstrationsClone[demoIndex];
+        demoObj.paramValuePairs[paramUuid] = {
+            paramName,
+            paramValue: newParamValue
+        };
+
+        this.setState({
+            demonstrations: demonstrationsClone
+        });
+    }
+
+    // For rendering the parameterized NL with widgets for the user to select param values for the upcoming demonstration
+    renderNLTemplateItemsList(itemIDs, demoIndex){
+        // should be of the form { paramUuid: { paramName:, paramValue: } }
+        function renderParamOrGroup(key, textItem){
+            let itemContents = null;
+            if(textItem.type === "param"){
+                // Fill in itemContents
+                itemContents = (
+                    <span
+                        key={key}
+                    >
+                        <TemplateParamTextItem
+                            //text={textItem.text}
+                            uuid={textItem.uuid}
+                            paramName={textItem.paramName}
+                            paramValue={this.state.demonstrations[demoIndex].paramValuePairs[textItem.uuid] ? this.state.demonstrations[demoIndex].paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
+                            paramTypeData={textItem.paramTypeData}
+                            paramAnnotatorCreated={textItem.paramAnnotatorCreated}
+                            paramIsOptional={textItem.paramIsOptional}
+                            paramMultipleValuesAllowed={textItem.paramMultipleValuesAllowed}
+                            hoveredID={this.state.hoveredID}
+                            groupSelectionMode={this.state.groupSelectionMode}
+                            currentlySelected={textItem.currentlySelected}
+                            uuidInEditMode={this.state.uuidInEditMode}
+                            groupSelectionMode={this.state.groupSelectionMode}
+                            viewOnlyMode={this.props.viewOnlyMode}
+                            demoIndex={demoIndex}
+                            handleTemplateParamValueChange={(e) => this.handleTemplateParamValueChange(e, textItem.uuid, demoIndex)}
+                        />
+                    </span>
+                );
+            }else if(textItem.type === "group"){
+                // Fill in itemContents
+                itemContents = (
+                    <span
+                        className={styles.group}
+                        uuid={textItem.uuid}
+                    >
+                        <span
+                            className={styles.groupNameContainer}
+                        >
+                            <div
+                                group-name=""
+                                className={`${styles.groupName} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')}`}
+                            >
+                                {textItem.groupName}
+                            </div>
+                        </span>
+                        {this.renderNLTemplateItemsList(textItem.itemIDs, demoIndex)}
+                    </span>
+                );
+            }
+
+            return (
+                <span
+                    container=""
+                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)} ${(textItem.currentlySelected ? styles.itemSelected : '')}`}
+                >
+                    { itemContents }
+                </span>
+            );
+        }
+        
+        const domTextItems = itemIDs.map((itemID, i) => {
+            //console.log("itemID", itemID);
+            const textItem = this.state.idToItem[itemID];
+            //const key = i + "_" + textItem.text;
+            const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
+            //console.log("textItem.type", textItem.type);
+            
+            if(textItem.type === "param" || textItem.type === "group"){
+                return renderParamOrGroup.call(this, key, textItem);
+            }else{
+                return(
+                    <span
+                        key={key}
+                    >
+                        <TemplateRegularTextItem
+                            text={textItem.text}
+                            uuid={textItem.uuid}
+                            uuidInEditMode={this.state.uuidInEditMode}
+                            groupSelectionMode={this.state.groupSelectionMode}
+                            viewOnlyMode={this.props.viewOnlyMode}
+                        />
+                    </span>
+                );
+            }
+        });
+    
+        return domTextItems;
     }
 
     renderItemsList(itemIDs){
@@ -1742,7 +2041,7 @@ class NaturalLanguage extends React.Component {
     renderDemonstrations(demonstrations){
         const demonstrationItems = demonstrations.map((demonstration, demo_index) => {
             //const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
-            const events = demonstration.map((e, e_index) => {
+            const events = demonstration.eventSequence.map((e, e_index) => {
                 // Should remove prefix before [clone]?
                 console.log("renderDemonstrations e.target", e.target);
                 //const targetXPath = getXPathForElement(e.target, document);
@@ -1784,6 +2083,11 @@ class NaturalLanguage extends React.Component {
         // Render each item as appropriate (using TextItem component)
         const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
         const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
+        let nlTemplateItems;
+        if(this.state.inCreateNewDemoMode){
+            const demoIndex = this.state.demonstrations.length-1; // for now, assuming we're rendering the current in-progress demo (which is the last in the list)
+            nlTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, demoIndex);
+        }
         return (
             <div
                 // className={(this.state.uuidInEditMode ? styles.editBackground : '')}
@@ -1888,13 +2192,14 @@ class NaturalLanguage extends React.Component {
                         {this.state.inCreateNewDemoMode
                             ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
                             <>
+                                {nlTemplateItems}
                                 {this.state.inRecordingDemoMode ? (
                                     <button
                                         className={styles.stopRecordingButton}
                                         onClick={() => this.handleStopRecordingDemo()}
                                     >Stop recording</button>
                                 ) : (
-                                    <>
+                                    <div>
                                         <button
                                             className={styles.startRecordingButton}
                                             onClick={() => this.handleStartRecordingDemo()}
@@ -1903,7 +2208,7 @@ class NaturalLanguage extends React.Component {
                                             className={styles.cancelButton}
                                             onClick={() => this.cancelNewDemo()}
                                         >Cancel</button>
-                                    </>
+                                    </div>
                                 )}
                             </>
                             ):( // Currently not in demo mode; show user 'create demo' button in case they want to create a demo
