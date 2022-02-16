@@ -1932,7 +1932,7 @@ class NaturalLanguage extends React.Component {
             return (
                 <span
                     container=""
-                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')} ${(this.state.hoveredID === textItem.uuid ? styles.hovered : styles.notHovered)} ${(textItem.currentlySelected ? styles.itemSelected : '')}`}
+                    className={`${styles.container} ${(this.state.uuidInEditMode && this.state.uuidInEditMode !== textItem.uuid || this.state.groupSelectionMode ? styles.grayedOut : '')}`}
                 >
                     { itemContents }
                 </span>
@@ -2324,6 +2324,7 @@ class NaturalLanguage extends React.Component {
                                 {runningProgramNLTemplateItems}
                                 <div>
                                     <button
+                                        className={styles.runProgramButton}
                                         onClick={() => this.handleRunProgram()}
                                     >Run program</button>
                                 </div>

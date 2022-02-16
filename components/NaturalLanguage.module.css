@@ -275,3 +275,9 @@
     cursor: pointer;
     margin: 10px;
 }
+
+.runProgramButton {
+    font-size: large;
+    cursor: pointer;
+    margin: 10px;
+}
