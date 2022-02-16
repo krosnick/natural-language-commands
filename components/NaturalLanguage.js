@@ -855,7 +855,8 @@ class NaturalLanguage extends React.Component {
             inCreateNewDemoMode: false,
             inRecordingDemoMode: false,
             triggerWebsiteReload: Math.random(),
-            generatedProgram: null
+            generatedProgram: null,
+            paramValuePairsForRunningProgram: {}
         }
     }
 
@@ -1823,16 +1824,47 @@ class NaturalLanguage extends React.Component {
         const newParamValue = e.target.value;
         const paramName = this.state.idToItem[paramUuid].paramName;
 
-        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        const demoObj = demonstrationsClone[demoIndex];
-        demoObj.paramValuePairs[paramUuid] = {
-            paramName,
-            paramValue: newParamValue
-        };
+        if(demoIndex === "runningProgram"){
+            // We're rendering this template not for a demo but for running the generated program
+            const paramValuePairsClone = _.cloneDeep(this.state.paramValuePairsForRunningProgram);
+            paramValuePairsClone[paramUuid] = {
+                paramName,
+                paramValue: newParamValue
+            };
+            this.setState({
+                paramValuePairsForRunningProgram: paramValuePairsClone
+            });
+        }else{
+            // Set paramValuePairs for demo object
+            const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+            const demoObj = demonstrationsClone[demoIndex];
+            demoObj.paramValuePairs[paramUuid] = {
+                paramName,
+                paramValue: newParamValue
+            };
 
-        this.setState({
-            demonstrations: demonstrationsClone
-        });
+            this.setState({
+                demonstrations: demonstrationsClone
+            });
+        }
+    }
+
+    handleRunProgram(){
+        // First, cause website to re-render so we have clean slate
+        this.forceReRenderEmbeddedWebsite();
+
+        // Wait a couple seconds to execute program
+        setTimeout(function(context){
+            // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
+            const paramToValueObj = {};
+            for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
+                const paramName = paramNameValueObj.paramName;
+                const paramValue = paramNameValueObj.paramValue;
+                paramToValueObj[paramName] = paramValue;
+            }
+
+            executeProgram(context.state.generatedProgram.program, paramToValueObj);
+        }, 2000, this);
     }
 
     // For rendering the parameterized NL with widgets for the user to select param values for the upcoming demonstration
@@ -1841,6 +1873,15 @@ class NaturalLanguage extends React.Component {
         function renderParamOrGroup(key, textItem){
             let itemContents = null;
             if(textItem.type === "param"){
+                let paramValuePairs;
+                // Populate paramValuePairs based on if this is for a demo or not
+                if(demoIndex === "runningProgram"){
+                    // We're rendering this template not for a demo but for running the generated program
+                    paramValuePairs = this.state.paramValuePairsForRunningProgram;
+                }else{
+                    // Get paramValuePairs from demo object
+                    paramValuePairs = this.state.demonstrations[demoIndex].paramValuePairs;
+                }
                 // Fill in itemContents
                 itemContents = (
                     <span
@@ -1850,7 +1891,7 @@ class NaturalLanguage extends React.Component {
                             //text={textItem.text}
                             uuid={textItem.uuid}
                             paramName={textItem.paramName}
-                            paramValue={this.state.demonstrations[demoIndex].paramValuePairs[textItem.uuid] ? this.state.demonstrations[demoIndex].paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
+                            paramValue={paramValuePairs[textItem.uuid] ? paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
                             paramTypeData={textItem.paramTypeData}
                             paramAnnotatorCreated={textItem.paramAnnotatorCreated}
                             paramIsOptional={textItem.paramIsOptional}
@@ -2134,10 +2175,16 @@ class NaturalLanguage extends React.Component {
         // Render each item as appropriate (using TextItem component)
         const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
         const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
-        let nlTemplateItems;
+        let currentDemoNLTemplateItems;
         if(this.state.inCreateNewDemoMode){
+            // In create new demo mode, so show the NL template for setting param/value pairs for this demo
             const demoIndex = this.state.demonstrations.length-1; // for now, assuming we're rendering the current in-progress demo (which is the last in the list)
-            nlTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, demoIndex);
+            currentDemoNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, demoIndex);
+        }
+        let runningProgramNLTemplateItems;
+        if(this.state.generatedProgram){
+            // A generated program exists, so show the NL template for setting param/value pairs for running this program
+            runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram");
         }
         return (
             <div
@@ -2243,12 +2290,14 @@ class NaturalLanguage extends React.Component {
                         {this.state.inCreateNewDemoMode
                             ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
                             <>
-                                {nlTemplateItems}
+                                {currentDemoNLTemplateItems}
                                 {this.state.inRecordingDemoMode ? (
-                                    <button
-                                        className={styles.stopRecordingButton}
-                                        onClick={() => this.handleStopRecordingDemo()}
-                                    >Stop recording</button>
+                                    <div>
+                                        <button
+                                            className={styles.stopRecordingButton}
+                                            onClick={() => this.handleStopRecordingDemo()}
+                                        >Stop recording</button>
+                                    </div>
                                 ) : (
                                     <div>
                                         <button
@@ -2269,6 +2318,19 @@ class NaturalLanguage extends React.Component {
                                 >Create a new demonstration</button>
                             )
                         }
+                        {this.state.generatedProgram ? (
+                            <div>
+                                <p>Set values to run program on:</p>
+                                {runningProgramNLTemplateItems}
+                                <div>
+                                    <button
+                                        onClick={() => this.handleRunProgram()}
+                                    >Run program</button>
+                                </div>
+                            </div>
+                        ) : (
+                            ""
+                        )}
                     </div>
                     <div
                         className={styles.websiteIframe}
