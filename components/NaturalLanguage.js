@@ -856,7 +856,8 @@ class NaturalLanguage extends React.Component {
             inRecordingDemoMode: false,
             triggerWebsiteReload: Math.random(),
             generatedProgram: null,
-            paramValuePairsForRunningProgram: {}
+            paramValuePairsForRunningProgram: {},
+            websiteSelectedTextObject: null
         }
     }
 
@@ -1697,43 +1698,82 @@ class NaturalLanguage extends React.Component {
     }
 
     handleEmbeddedWebsiteEvent(e){
-        //console.log("handleEmbeddedWebsiteEvent", e);
+        console.log("handleEmbeddedWebsiteEvent", e);
+        console.log("window.getSelection()", window.getSelection());
 
         // Only process/capture events if user is currently in demo mode
         if(this.state.inCreateNewDemoMode && this.state.inRecordingDemoMode){
             // For now only process "click" events
             if(e.type === "click"){
                 console.log("handleEmbeddedWebsiteEvent e.target", e.target);
-                const targetXPath = getXPathForElement(e.target, document);
-                console.log("targetXPath", targetXPath);
-                
-                /*// If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
-                const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                console.log("clickedElement", clickedElement);*/
 
-                //debugger;
-                
-                // Handle events here. Process them. Store in React state as part of the demonstration, etc
-                const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-                /*const demonstrationIndex = 0; // later on this should be a variable value
-                if(demonstrationsClone.length === demonstrationIndex){
-                    // First event for this demonstration, so add a list for it
-                    demonstrationsClone.push([]);
-                }*/
-                const demonstrationIndex = demonstrationsClone.length - 1;
-                // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
-                //demonstrationsClone[demonstrationIndex].push(e);
-                //demonstrationsClone[demonstrationIndex].eventSequence.push(e);
-                demonstrationsClone[demonstrationIndex].eventSequence.push({
-                    originalEventObj: e,
-                    targetXPath,
-                    eventType: e.type
-                });
-                this.setState({
-                    demonstrations: demonstrationsClone
-                });
+                // Check if there is a text selection on the page
+                if(window.getSelection() && window.getSelection().type === "Range"){
+                    // There is text selected on the page
+                    // We won't actually capture this as a demo event for now, but we'll give the user the option to extract that text (to add an 'print' event to the event sequence)
+                    
+                    // Let's calculate where "Extract" button should be placed based on this target element's position relative to [clone] sibling
+                    const targetElementBoundingRect = e.target.getBoundingClientRect();
+                    const websiteCloneBoundingRect = document.querySelector("[clone]").getBoundingClientRect();
+                    const extractButtonX = targetElementBoundingRect.right - websiteCloneBoundingRect.left;
+                    const extractButtonY = targetElementBoundingRect.top - websiteCloneBoundingRect.top;
+                    this.setState({
+                        websiteSelectedTextObject: {
+                            event: e,
+                            x: extractButtonX,
+                            y: extractButtonY
+                        }
+                    });
+                }else{
+                    // Only a single Caret selection or no selection at all, so just add this event to demo event sequence
+                    const targetXPath = getXPathForElement(e.target, document);
+                    //console.log("targetXPath", targetXPath);
+                    
+                    /*// If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
+                    const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    console.log("clickedElement", clickedElement);*/
+
+                    //debugger;
+                    
+                    // Handle events here. Process them. Store in React state as part of the demonstration, etc
+                    const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+                    /*const demonstrationIndex = 0; // later on this should be a variable value
+                    if(demonstrationsClone.length === demonstrationIndex){
+                        // First event for this demonstration, so add a list for it
+                        demonstrationsClone.push([]);
+                    }*/
+                    const demonstrationIndex = demonstrationsClone.length - 1;
+                    // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
+                    //demonstrationsClone[demonstrationIndex].push(e);
+                    //demonstrationsClone[demonstrationIndex].eventSequence.push(e);
+                    demonstrationsClone[demonstrationIndex].eventSequence.push({
+                        originalEventObj: e,
+                        targetXPath,
+                        eventType: e.type
+                    });
+                    this.setState({
+                        demonstrations: demonstrationsClone,
+                        websiteSelectedTextObject: null
+                    });
+                }
             }
         }
+    }
+
+    handleExtractText(){
+        // Add event associated with this.state.websiteSelectedTextObject to current demo event sequence
+        const targetXPath = getXPathForElement(this.state.websiteSelectedTextObject.event.target, document);
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        const demonstrationIndex = demonstrationsClone.length - 1;
+        demonstrationsClone[demonstrationIndex].eventSequence.push({
+            originalEventObj: this.state.websiteSelectedTextObject.event,
+            targetXPath,
+            eventType: "print"
+        });
+        this.setState({
+            demonstrations: demonstrationsClone,
+            websiteSelectedTextObject: null
+        });
     }
 
     handleCreateNewDemo(){
@@ -1815,7 +1855,8 @@ class NaturalLanguage extends React.Component {
         this.setState({
             generatedProgram,
             inRecordingDemoMode: false,
-            inCreateNewDemoMode: false // for now, we'll also exit demo mode
+            inCreateNewDemoMode: false, // for now, we'll also exit demo mode
+            websiteSelectedTextObject: null
         });
     }
 
@@ -2142,7 +2183,7 @@ class NaturalLanguage extends React.Component {
                         key = {e_index}
                         className={styles.event}
                     >
-                        <div>Event type: {e.originalEventObj.type}</div>
+                        <div>Event type: {e.eventType}</div>
                         {/* <div>Target xPath: {targetXPath}</div> */}
                         <div>Element text: {e.originalEventObj.target.textContent}</div>
                         <div>Element tag name: {e.originalEventObj.target.tagName}</div>
@@ -2365,6 +2406,26 @@ class NaturalLanguage extends React.Component {
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             />
                         </WebsiteEventListener>
+                        {this.state.websiteSelectedTextObject ?
+                            <button
+                                style={
+                                    {
+                                        position: 'absolute',
+                                        left: this.state.websiteSelectedTextObject.x,
+                                        top: this.state.websiteSelectedTextObject.y,
+                                        backgroundColor: "lightblue",
+                                        fontSize: "medium",
+                                        cursor: "pointer",
+                                        zIndex: 10
+                                    }
+                                }
+                                onClick={()=>this.handleExtractText()}
+                            >
+                                Extract
+                            </button>
+                        : 
+                            ""
+                        }
                     </div>
                 </div>
                 {!this.props.viewOnlyMode ? (
