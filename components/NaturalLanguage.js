@@ -8,6 +8,7 @@ import ChipotleClone from './website_clones/ChipotleClone';
 // import MLBClone from './website_clones/MLBClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
+import { generateProgramAndIdentifyNeededDemos, executeProgram } from './generateProgram';
 import WebsiteEventListener from './WebsiteEventListener';
 
 // Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
@@ -853,7 +854,8 @@ class NaturalLanguage extends React.Component {
             demonstrations: [],
             inCreateNewDemoMode: false,
             inRecordingDemoMode: false,
-            triggerWebsiteReload: Math.random()
+            triggerWebsiteReload: Math.random(),
+            generatedProgram: null
         }
     }
 
@@ -1704,9 +1706,9 @@ class NaturalLanguage extends React.Component {
                 const targetXPath = getXPathForElement(e.target, document);
                 console.log("targetXPath", targetXPath);
                 
-                // If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
+                /*// If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
                 const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                console.log("clickedElement", clickedElement);
+                console.log("clickedElement", clickedElement);*/
 
                 //debugger;
                 
@@ -1720,7 +1722,12 @@ class NaturalLanguage extends React.Component {
                 const demonstrationIndex = demonstrationsClone.length - 1;
                 // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
                 //demonstrationsClone[demonstrationIndex].push(e);
-                demonstrationsClone[demonstrationIndex].eventSequence.push(e);
+                //demonstrationsClone[demonstrationIndex].eventSequence.push(e);
+                demonstrationsClone[demonstrationIndex].eventSequence.push({
+                    originalEventObj: e,
+                    targetXPath,
+                    eventType: e.type
+                });
                 this.setState({
                     demonstrations: demonstrationsClone
                 });
@@ -1758,13 +1765,54 @@ class NaturalLanguage extends React.Component {
         this.forceReRenderEmbeddedWebsite();
 
         this.setState({
-            demonstrations: demonstrationsClone,
             inRecordingDemoMode: true
         });
     }
 
     handleStopRecordingDemo(){
+        // Update mode state variables, and also generate program or update existing program
+        let generatedProgram = this.state.generatedProgram;
+        if(this.state.demonstrations.length === 1){
+            // Only 1 demo so far. Let's use this 1 demo to generate a program
+            const demoIndex = 0;
+            const demoObj = this.state.demonstrations[demoIndex];
+            
+            let demoEventSequence = demoObj.eventSequence;
+            
+            let currentParamValuePairings = {};
+            for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
+                const paramName = paramNameValueObj.paramName;
+                const paramValue = paramNameValueObj.paramValue;
+                currentParamValuePairings[paramName] = paramValue;
+            }
+            console.log("currentParamValuePairings", currentParamValuePairings);
+
+            let paramValueObj = {};
+            for(let item of Object.values(this.state.idToItem)){
+                if(item.paramTypeData){
+                    // This item is a param. Add this param name and its param values/xpaths to paramValueObj
+                    const thisParam = {};
+                    for(let valueObj of item.paramTypeData.possibleValues){
+                        const paramValue = valueObj.textCandidate;
+                        const xPath = valueObj.xPath;
+                        thisParam[paramValue] = xPath;
+                    }
+                    const paramName = item.paramName;
+                    paramValueObj[paramName] = thisParam;
+                }
+            }
+            console.log("paramValueObj", paramValueObj);
+
+            generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj);
+            console.log("generatedProgram", generatedProgram);
+        }else{
+            // Multiple demos. Currently we don't know how to generalize from multiple demos,
+                // so for now we just won't update the program
+        }
+
+
         this.setState({
+            generatedProgram,
             inRecordingDemoMode: false,
             inCreateNewDemoMode: false // for now, we'll also exit demo mode
         });
@@ -2047,17 +2095,16 @@ class NaturalLanguage extends React.Component {
             //const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
             const events = demonstration.eventSequence.map((e, e_index) => {
                 // Should remove prefix before [clone]?
-                console.log("renderDemonstrations e.target", e.target);
                 //const targetXPath = getXPathForElement(e.target, document);
                 return (
                     <div
                         key = {e_index}
                         className={styles.event}
                     >
-                        <div>Event type: {e.type}</div>
+                        <div>Event type: {e.originalEventObj.type}</div>
                         {/* <div>Target xPath: {targetXPath}</div> */}
-                        <div>Element text: {e.target.textContent}</div>
-                        <div>Element tag name: {e.target.tagName}</div>
+                        <div>Element text: {e.originalEventObj.target.textContent}</div>
+                        <div>Element tag name: {e.originalEventObj.target.tagName}</div>
                     </div>
                 );
             });
