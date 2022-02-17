@@ -188,7 +188,7 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
         if(!exactStringBoolean || parentNodesContainingKeyword.snapshotItem(matchingItemIndex).textContent.toLowerCase() === positiveExamplesList[0].toLowerCase()){
             var parentNodeOfTextNodeXPath = getXPathForElement(parentNodesContainingKeyword.snapshotItem(matchingItemIndex), document);
             
-            if(!parentNodeOfTextNodeXPath.includes("script")){ // We don't want to include text that's within a <script> node
+            if(!parentNodeOfTextNodeXPath.includes("script") && !parentNodeOfTextNodeXPath.includes("style")){ // We don't want to include text that's within a <script> node
                 // Use parentNodeOfTextNodeXPath as the full xpath (and then we can call textContent on the result)
                 
                 // Now, traverse up through the DOM
@@ -205,7 +205,7 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
                     for(var siblingNode of siblingNodes){
                         var siblingNodeXPath = getXPathForElement(siblingNode, document);
 
-                        if(!siblingNodeXPath.includes("script")){ // We don't want to include text that's within a <script> node
+                        if(!siblingNodeXPath.includes("script") && !siblingNodeXPath.includes("style")){ // We don't want to include text that's within a <script> node
                             var xPathDownSiblingToQuery = siblingNodeXPath + xPathDiff;
 
                             var candidate = document.evaluate(xPathDownSiblingToQuery, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
