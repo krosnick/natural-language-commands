@@ -223,6 +223,7 @@ class TemplateFreeformParam extends React.Component {
                 size={Math.max(this.props.paramName.length, 20)}
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                disabled={!this.props.valuesEditable}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
             >
             </input>
@@ -250,6 +251,7 @@ class TemplateEnumerationParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                disabled={!this.props.valuesEditable}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -736,6 +738,7 @@ class TemplateParamTextItem extends React.Component {
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             demoIndex={this.props.demoIndex}
                                             handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                            valuesEditable={this.props.valuesEditable}
                                         />;
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTemplate = <TemplateEnumerationParam
@@ -752,6 +755,7 @@ class TemplateParamTextItem extends React.Component {
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             demoIndex={this.props.demoIndex}
                                             handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                            valuesEditable={this.props.valuesEditable}
                                         />;
             }else if(this.props.paramTypeData.type === "flag"){
                 paramTemplate = <TemplateFlagParam
@@ -764,6 +768,7 @@ class TemplateParamTextItem extends React.Component {
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             demoIndex={this.props.demoIndex}
                                             handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                            valuesEditable={this.props.valuesEditable}
                                         />;
             }else if(this.props.paramTypeData.type === "date"){
                 paramTemplate = <TemplateDateParam
@@ -777,6 +782,7 @@ class TemplateParamTextItem extends React.Component {
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             demoIndex={this.props.demoIndex}
                                             handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                            valuesEditable={this.props.valuesEditable}
                                         />;
             }else if(this.props.paramTypeData.type === "number"){
                 paramTemplate = <TemplateNumberParam
@@ -792,6 +798,7 @@ class TemplateParamTextItem extends React.Component {
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             demoIndex={this.props.demoIndex}
                                             handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                            valuesEditable={this.props.valuesEditable}
                                         />;
             }
         }
@@ -1918,7 +1925,7 @@ class NaturalLanguage extends React.Component {
     }
 
     // For rendering the parameterized NL with widgets for the user to select param values for the upcoming demonstration
-    renderNLTemplateItemsList(itemIDs, demoIndex){
+    renderNLTemplateItemsList(itemIDs, demoIndex, valuesEditable){
         // should be of the form { paramUuid: { paramName:, paramValue: } }
         function renderParamOrGroup(key, textItem){
             let itemContents = null;
@@ -1954,6 +1961,7 @@ class NaturalLanguage extends React.Component {
                             viewOnlyMode={this.props.viewOnlyMode}
                             demoIndex={demoIndex}
                             handleTemplateParamValueChange={(e) => this.handleTemplateParamValueChange(e, textItem.uuid, demoIndex)}
+                            valuesEditable={valuesEditable}
                         />
                     </span>
                 );
@@ -1974,7 +1982,7 @@ class NaturalLanguage extends React.Component {
                                 {textItem.groupName}
                             </div>
                         </span>
-                        {this.renderNLTemplateItemsList(textItem.itemIDs, demoIndex)}
+                        {this.renderNLTemplateItemsList(textItem.itemIDs, demoIndex, valuesEditable)}
                     </span>
                 );
             }
@@ -2199,13 +2207,24 @@ class NaturalLanguage extends React.Component {
                     </div>
                 );
             });
+            const nlTemplateEditable = demo_index === (demonstrations.length - 1) && this.state.inCreateNewDemoMode;
+            const demoNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, demo_index, nlTemplateEditable);
             return (
                 <div
                     key={demo_index}
                     className={styles.demonstration}
                 >
-                    <div>Demonstration {demo_index + 1}</div>
-                    {events}
+                    <div
+                        className={styles.demonstrationName}
+                    >
+                        Demonstration {demo_index + 1}
+                    </div>
+                    <div>
+                        {demoNLTemplateItems}
+                    </div>
+                    <div>
+                        {events}
+                    </div>
                 </div>
             );
         });
@@ -2225,16 +2244,10 @@ class NaturalLanguage extends React.Component {
         // Render each item as appropriate (using TextItem component)
         const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
         const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
-        let currentDemoNLTemplateItems;
-        if(this.state.inCreateNewDemoMode){
-            // In create new demo mode, so show the NL template for setting param/value pairs for this demo
-            const demoIndex = this.state.demonstrations.length-1; // for now, assuming we're rendering the current in-progress demo (which is the last in the list)
-            currentDemoNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, demoIndex);
-        }
         let runningProgramNLTemplateItems;
         if(this.state.generatedProgram){
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
-            runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram");
+            runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
         }
         return (
             <div
@@ -2333,14 +2346,17 @@ class NaturalLanguage extends React.Component {
                         {/* </span> */}
                     </div>
                     <div
-                        className={styles.demonstrations}
+                        className={styles.section}
                     >
-                        <p>Demonstrations</p>
+                        <p
+                            className={styles.sectionHeader}
+                        >
+                            Demonstrations
+                        </p>
                         {demonstrationItems}
                         {this.state.inCreateNewDemoMode
                             ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
                             <>
-                                {currentDemoNLTemplateItems}
                                 {this.state.inRecordingDemoMode ? (
                                     <div>
                                         <button
@@ -2365,34 +2381,41 @@ class NaturalLanguage extends React.Component {
                                 <button
                                     className={styles.createDemoButton}
                                     onClick={() => this.handleCreateNewDemo()}
-                                >Create a new demonstration</button>
+                                >Add a new demonstration</button>
                             )
                         }
-                        {this.state.generatedProgram ? (
-                            <div>
-                                <p>Set values to run program on:</p>
-                                {runningProgramNLTemplateItems}
-                                <div>
-                                    <button
-                                        className={styles.runProgramButton}
-                                        onClick={() => this.handleRunProgram()}
-                                    >Run program</button>
-                                </div>
-                                {this.state.programOutput ? (
-                                    <div
-                                        className={styles.programOutput}
-                                    >
-                                        <div>Program output</div>
-                                        {this.state.programOutput.map((value) => <div>{value}</div>)}
-                                    </div>
-                                ):(
-                                    ""
-                                )}
-                            </div>
-                        ) : (
-                            ""
-                        )}
                     </div>
+                    {this.state.generatedProgram ? (
+                        <div
+                            className={styles.section}
+                        >
+                            <p
+                                className={styles.sectionHeader}
+                            >
+                                Generated program
+                            </p>
+                            <p>Set values to run program on:</p>
+                            {runningProgramNLTemplateItems}
+                            <div>
+                                <button
+                                    className={styles.runProgramButton}
+                                    onClick={() => this.handleRunProgram()}
+                                >Run program</button>
+                            </div>
+                            {this.state.programOutput ? (
+                                <div
+                                    className={styles.programOutput}
+                                >
+                                    <div>Program output</div>
+                                    {this.state.programOutput.map((value) => <div>{value}</div>)}
+                                </div>
+                            ):(
+                                ""
+                            )}
+                        </div>
+                    ) : (
+                        ""
+                    )}
                     <div
                         className={styles.websiteIframe}
                     >

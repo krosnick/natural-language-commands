@@ -245,10 +245,20 @@
 
 .demonstration {
     margin: 20px;
+    padding: 10px;
+    border: 1px dotted gray;
+}
+
+.demonstrationName {
+    font-size: x-large;
+    font-style: italic;
 }
 
 .event {
     margin: 10px;
+    padding: 10px;
+    border: 1px dotted gray;
+    display: inline-block;
 }
 
 .startRecordingButton {
@@ -285,4 +295,15 @@
 
 .programOutput {
     margin: 10px;
+}
+
+.sectionHeader {
+    font-size: x-large;
+    font-weight: bold;
+}
+
+.section {
+    margin: 10px;
+    padding: 10px;
+    border-bottom: 3px solid gray;
 }
