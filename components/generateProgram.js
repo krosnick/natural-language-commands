@@ -1,13 +1,14 @@
 var operations = {
     click: function(xPath){
         const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-        console.log("domElement", domElement);
         domElement.click();
+        return;
     },
     print: function(xPath){
         const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
         const text = domElement.textContent;
         console.log("printed value", text);
+        return text;
     }
 }
 
@@ -25,6 +26,7 @@ function delayFor(delay) {
     // program - result from generateProgramAndIdentifyNeededDemos
     // paramValuePairings - { param: value } to plug into program
 export async function executeProgram(program, paramValuePairings){
+    const valuesToReturn = [];
     for(let programStep of program){
         let xPath;
         if(programStep.targetXPath){
@@ -45,9 +47,13 @@ export async function executeProgram(program, paramValuePairings){
         // Perform operation on xPath
         if(operations[programStep.eventType]){
             await delayFor(3000); // Let's wait 1000ms between each click
-            operations[programStep.eventType](xPath);
+            const returnValue = operations[programStep.eventType](xPath);
+            if(returnValue){ // because some operations won't return anything
+                valuesToReturn.push(returnValue);
+            }
         }
     }
+    return valuesToReturn;
 }
 
 function getTagClassesAttributes(element){

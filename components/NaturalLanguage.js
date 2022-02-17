@@ -857,7 +857,8 @@ class NaturalLanguage extends React.Component {
             triggerWebsiteReload: Math.random(),
             generatedProgram: null,
             paramValuePairsForRunningProgram: {},
-            websiteSelectedTextObject: null
+            websiteSelectedTextObject: null,
+            programOutput: null
         }
     }
 
@@ -1894,8 +1895,13 @@ class NaturalLanguage extends React.Component {
         // First, cause website to re-render so we have clean slate
         this.forceReRenderEmbeddedWebsite();
 
+        // Clear current program output
+        this.setState({
+            programOutput: null
+        });
+
         // Wait a couple seconds to execute program
-        setTimeout(function(context){
+        setTimeout(async function(context){
             // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
             const paramToValueObj = {};
             for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
@@ -1904,7 +1910,10 @@ class NaturalLanguage extends React.Component {
                 paramToValueObj[paramName] = paramValue;
             }
 
-            executeProgram(context.state.generatedProgram.program, paramToValueObj);
+            const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
+            context.setState({
+                programOutput
+            });
         }, 2000, this);
     }
 
@@ -2369,6 +2378,16 @@ class NaturalLanguage extends React.Component {
                                         onClick={() => this.handleRunProgram()}
                                     >Run program</button>
                                 </div>
+                                {this.state.programOutput ? (
+                                    <div
+                                        className={styles.programOutput}
+                                    >
+                                        <div>Program output</div>
+                                        {this.state.programOutput.map((value) => <div>{value}</div>)}
+                                    </div>
+                                ):(
+                                    ""
+                                )}
                             </div>
                         ) : (
                             ""
