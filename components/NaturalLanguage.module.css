@@ -316,3 +316,9 @@
     padding: 10px;
     border-bottom: 3px solid gray;
 }
+
+.replayDemoButton {
+    font-size: large;
+    cursor: pointer;
+    margin: 10px;
+}

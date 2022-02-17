@@ -56,6 +56,27 @@ export async function executeProgram(program, paramValuePairings){
     return valuesToReturn;
 }
 
+export async function replayDemo(demoObj){
+    const valuesToReturn = [];
+    for(let step of demoObj){
+        const xPath = step.targetXPath;
+        //console.log("replayDemo xPath", xPath);
+
+        // Should throw an error if no xpath found, etc
+
+        // Perform operation on xPath
+        if(operations[step.eventType]){
+            await delayFor(3000); // Let's wait 1000ms between each click
+            const returnValue = operations[step.eventType](xPath);
+            if(returnValue){ // because some operations won't return anything
+                valuesToReturn.push(returnValue);
+            }
+        }
+    }
+    //console.log("valuesToReturn", valuesToReturn);
+    return valuesToReturn;
+}
+
 function getTagClassesAttributes(element){
     const classes = element.classList;
 

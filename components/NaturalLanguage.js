@@ -8,7 +8,7 @@ import ChipotleClone from './website_clones/ChipotleClone';
 // import MLBClone from './website_clones/MLBClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
-import { generateProgramAndIdentifyNeededDemos, executeProgram } from './generateProgram';
+import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo } from './generateProgram';
 import WebsiteEventListener from './WebsiteEventListener';
 
 // Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
@@ -1854,7 +1854,7 @@ class NaturalLanguage extends React.Component {
                 currentParamValuePairings[paramName] = paramValue;
             }
             console.log("currentParamValuePairings", currentParamValuePairings);
-            
+
             const paramValueObj = this.getParamValueObj();
 
             generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj);
@@ -1926,6 +1926,24 @@ class NaturalLanguage extends React.Component {
             context.setState({
                 programOutput
             });
+        }, 2000, this);
+    }
+
+    handleDemoReplay(demo_index){
+        // First, cause website to re-render so we have clean slate
+        this.forceReRenderEmbeddedWebsite();
+
+        /*// Clear current program output
+        this.setState({
+            programOutput: null
+        });*/
+
+        // Wait a couple seconds to execute program
+        setTimeout(async function(context){
+            const demoOutput = await replayDemo(context.state.demonstrations[demo_index].eventSequence);
+            /*context.setState({
+                programOutput
+            });*/
         }, 2000, this);
     }
 
@@ -2241,6 +2259,15 @@ class NaturalLanguage extends React.Component {
                     >
                         Demonstration {demo_index + 1}
                     </div>
+                    {!nlTemplateEditable ?
+                        <button
+                            className={styles.replayDemoButton}
+                            onClick={()=>this.handleDemoReplay(demo_index)}
+                        >
+                            Replay
+                        </button>
+                        : ""
+                    }
                     <div>
                         {demoNLTemplateItems}
                     </div>
@@ -2443,81 +2470,88 @@ class NaturalLanguage extends React.Component {
                         {/* </span> */}
                     </div>
                     <div
-                        className={styles.section}
+                        className={styles.demoAndProgramArea}
+                        /* Need to put demos and program within this single div because
+                        they're dynamic content (e.g., program area not shown until a program exists),
+                        and so they'll cause previously captured xpaths (e.g., related to demo replay) to no longer work */
                     >
-                        <p
-                            className={styles.sectionHeader}
-                        >
-                            Demonstrations
-                        </p>
-                        {demonstrationItems}
-                        {this.state.inCreateNewDemoMode
-                            ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
-                            <>
-                                {this.state.inRecordingDemoMode ? (
-                                    <div>
-                                        <button
-                                            className={styles.stopRecordingButton}
-                                            onClick={() => this.handleStopRecordingDemo()}
-                                        >Stop recording</button>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <button
-                                            className={styles.startRecordingButton}
-                                            onClick={() => this.handleStartRecordingDemo()}
-                                        >Start recording</button>
-                                        <button
-                                            className={styles.cancelButton}
-                                            onClick={() => this.cancelNewDemo()}
-                                        >Cancel</button>
-                                    </div>
-                                )}
-                            </>
-                            ):( // Currently not in demo mode; show user 'create demo' button in case they want to create a demo
-                                <button
-                                    className={styles.createDemoButton}
-                                    onClick={() => this.handleCreateNewDemo()}
-                                >Add a new demonstration</button>
-                            )
-                        }
-                    </div>
-                    {this.state.generatedProgram ? (
                         <div
                             className={styles.section}
                         >
                             <p
                                 className={styles.sectionHeader}
                             >
-                                Generated program
+                                Demonstrations
                             </p>
-                            <div>
-                                {programSteps}
-                            </div>
-                            <p>Set values to run program on:</p>
-                            <div>
-                                {runningProgramNLTemplateItems}
-                            </div>
-                            <div>
-                                <button
-                                    className={styles.runProgramButton}
-                                    onClick={() => this.handleRunProgram()}
-                                >Run program</button>
-                            </div>
-                            {this.state.programOutput ? (
-                                <div
-                                    className={styles.programOutput}
-                                >
-                                    <div>Program output</div>
-                                    {this.state.programOutput.map((value) => <div>{value}</div>)}
-                                </div>
-                            ):(
-                                ""
-                            )}
+                            {demonstrationItems}
+                            {this.state.inCreateNewDemoMode
+                                ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
+                                <>
+                                    {this.state.inRecordingDemoMode ? (
+                                        <div>
+                                            <button
+                                                className={styles.stopRecordingButton}
+                                                onClick={() => this.handleStopRecordingDemo()}
+                                            >Stop recording</button>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <button
+                                                className={styles.startRecordingButton}
+                                                onClick={() => this.handleStartRecordingDemo()}
+                                            >Start recording</button>
+                                            <button
+                                                className={styles.cancelButton}
+                                                onClick={() => this.cancelNewDemo()}
+                                            >Cancel</button>
+                                        </div>
+                                    )}
+                                </>
+                                ):( // Currently not in demo mode; show user 'create demo' button in case they want to create a demo
+                                    <button
+                                        className={styles.createDemoButton}
+                                        onClick={() => this.handleCreateNewDemo()}
+                                    >Add a new demonstration</button>
+                                )
+                            }
                         </div>
-                    ) : (
-                        ""
-                    )}
+                        {this.state.generatedProgram ? (
+                            <div
+                                className={styles.section}
+                            >
+                                <p
+                                    className={styles.sectionHeader}
+                                >
+                                    Generated program
+                                </p>
+                                <div>
+                                    {programSteps}
+                                </div>
+                                <p>Set values to run program on:</p>
+                                <div>
+                                    {runningProgramNLTemplateItems}
+                                </div>
+                                <div>
+                                    <button
+                                        className={styles.runProgramButton}
+                                        onClick={() => this.handleRunProgram()}
+                                    >Run program</button>
+                                </div>
+                                {this.state.programOutput ? (
+                                    <div
+                                        className={styles.programOutput}
+                                    >
+                                        <div>Program output</div>
+                                        {this.state.programOutput.map((value) => <div>{value}</div>)}
+                                    </div>
+                                ):(
+                                    ""
+                                )}
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
                     <div
                         className={styles.websiteIframe}
                     >
