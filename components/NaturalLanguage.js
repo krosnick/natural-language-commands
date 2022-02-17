@@ -1818,6 +1818,25 @@ class NaturalLanguage extends React.Component {
         });
     }
 
+    getParamValueObj(){
+        let paramValueObj = {};
+        for(let item of Object.values(this.state.idToItem)){
+            if(item.paramTypeData){
+                // This item is a param. Add this param name and its param values/xpaths to paramValueObj
+                const thisParam = {};
+                for(let valueObj of item.paramTypeData.possibleValues){
+                    const paramValue = valueObj.textCandidate;
+                    const xPath = valueObj.xPath;
+                    thisParam[paramValue] = xPath;
+                }
+                const paramName = item.paramName;
+                paramValueObj[paramName] = thisParam;
+            }
+        }
+        console.log("paramValueObj", paramValueObj);
+        return paramValueObj;
+    }
+
     handleStopRecordingDemo(){
         // Update mode state variables, and also generate program or update existing program
         let generatedProgram = this.state.generatedProgram;
@@ -1835,22 +1854,8 @@ class NaturalLanguage extends React.Component {
                 currentParamValuePairings[paramName] = paramValue;
             }
             console.log("currentParamValuePairings", currentParamValuePairings);
-
-            let paramValueObj = {};
-            for(let item of Object.values(this.state.idToItem)){
-                if(item.paramTypeData){
-                    // This item is a param. Add this param name and its param values/xpaths to paramValueObj
-                    const thisParam = {};
-                    for(let valueObj of item.paramTypeData.possibleValues){
-                        const paramValue = valueObj.textCandidate;
-                        const xPath = valueObj.xPath;
-                        thisParam[paramValue] = xPath;
-                    }
-                    const paramName = item.paramName;
-                    paramValueObj[paramName] = thisParam;
-                }
-            }
-            console.log("paramValueObj", paramValueObj);
+            
+            const paramValueObj = this.getParamValueObj();
 
             generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj);
             console.log("generatedProgram", generatedProgram);
@@ -2267,10 +2272,30 @@ class NaturalLanguage extends React.Component {
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
             runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
 
+            const paramValueObj = this.getParamValueObj();
             // Show a representation of the program
             programSteps = this.state.generatedProgram.program.map((step, step_index) => {
                 // Should remove prefix before [clone]?
                 //const targetXPath = getXPathForElement(e.target, document);
+
+                const paramCheckboxes = Object.keys(paramValueObj).map((paramName, paramIndex) => {
+                    return (
+                        <div>
+                            <input
+                                type="checkbox"
+                                log-this-element=""
+                                name={`programStep_${step_index}_paramIndex_${paramIndex}`}
+                                id={`programStep_${step_index}_paramIndex_${paramIndex}`}
+                                value={paramName}
+                                checked={step.relevantParam === paramName || step.relevantParamForRow === paramName || step.relevantParamForCol === paramName}
+                                //onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)}
+                                //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                            />
+                            <label htmlFor={`programStep_${step_index}_paramIndex_${paramIndex}`}>{paramName}</label>
+                        </div>
+                    );
+                });
+
                 return (
                     <div
                         key = {step_index}
@@ -2287,7 +2312,19 @@ class NaturalLanguage extends React.Component {
                             </span>
                         </div>
                         {/* <div>Target xPath: {targetXPath}</div> */}
-                        { step.relevantParam || step.relevantParamForRow || step.relevantParamForCol ?  (
+                        <div
+                            className={styles.stepPieceOfInfo}
+                        >
+                            <div>
+                                Influenced by the following parameters:
+                            </div>
+                            <div
+                                //className={styles.importantPieceOfInfo}
+                            >
+                                {paramCheckboxes}
+                            </div>
+                        </div>
+                        {/* { step.relevantParam || step.relevantParamForRow || step.relevantParamForCol ?  (
                             <div
                                 className={styles.stepPieceOfInfo}
                             >
@@ -2304,7 +2341,7 @@ class NaturalLanguage extends React.Component {
                             </div>
                         ) : (
                             ""
-                        )}
+                        )} */}
                     </div>
                 );
             });
@@ -2454,12 +2491,12 @@ class NaturalLanguage extends React.Component {
                             >
                                 Generated program
                             </p>
+                            <div>
+                                {programSteps}
+                            </div>
                             <p>Set values to run program on:</p>
                             <div>
                                 {runningProgramNLTemplateItems}
-                            </div>
-                            <div>
-                                {programSteps}
                             </div>
                             <div>
                                 <button
