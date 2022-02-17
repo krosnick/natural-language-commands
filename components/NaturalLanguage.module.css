@@ -254,11 +254,20 @@
     font-style: italic;
 }
 
-.event {
+.step {
     margin: 10px;
     padding: 10px;
     border: 1px dotted gray;
     display: inline-block;
+}
+
+.stepPieceOfInfo {
+    margin: 10px;
+}
+
+.importantPieceOfInfo {
+    font-weight: bold;
+    padding-left: 10px;
 }
 
 .startRecordingButton {

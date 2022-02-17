@@ -2198,12 +2198,29 @@ class NaturalLanguage extends React.Component {
                 return (
                     <div
                         key = {e_index}
-                        className={styles.event}
+                        className={styles.step}
                     >
-                        <div>Event type: {e.eventType}</div>
+                        <div
+                            className={styles.stepPieceOfInfo}
+                        >
+                            Event type: 
+                            <span
+                                className={styles.importantPieceOfInfo}
+                            >
+                                {e.eventType}
+                            </span>
+                        </div>
                         {/* <div>Target xPath: {targetXPath}</div> */}
-                        <div>Element text: {e.originalEventObj.target.textContent}</div>
-                        <div>Element tag name: {e.originalEventObj.target.tagName}</div>
+                        <div
+                            className={styles.stepPieceOfInfo}
+                        >
+                            Element text: {e.originalEventObj.target.textContent}
+                        </div>
+                        <div
+                            className={styles.stepPieceOfInfo}
+                        >
+                            Element tag name: {e.originalEventObj.target.tagName}
+                        </div>
                     </div>
                 );
             });
@@ -2245,9 +2262,52 @@ class NaturalLanguage extends React.Component {
         const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
         const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
         let runningProgramNLTemplateItems;
+        let programSteps;
         if(this.state.generatedProgram){
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
             runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
+
+            // Show a representation of the program
+            programSteps = this.state.generatedProgram.program.map((step, step_index) => {
+                // Should remove prefix before [clone]?
+                //const targetXPath = getXPathForElement(e.target, document);
+                return (
+                    <div
+                        key = {step_index}
+                        className={styles.step}
+                    >
+                        <div
+                            className={styles.stepPieceOfInfo}
+                        >
+                            Program step type: 
+                            <span
+                                className={styles.importantPieceOfInfo}
+                            >
+                                {step.eventType}
+                            </span>
+                        </div>
+                        {/* <div>Target xPath: {targetXPath}</div> */}
+                        { step.relevantParam || step.relevantParamForRow || step.relevantParamForCol ?  (
+                            <div
+                                className={styles.stepPieceOfInfo}
+                            >
+                                <div>
+                                    Influenced by the following parameters:
+                                </div>
+                                <div
+                                    className={styles.importantPieceOfInfo}
+                                >
+                                    { step.relevantParam ? <div> {step.relevantParam} </div> : "" }
+                                    { step.relevantParamForRow ? <div> {step.relevantParamForRow} </div> : "" }
+                                    { step.relevantParamForCol ? <div> {step.relevantParamForCol} </div> : "" }
+                                </div>
+                            </div>
+                        ) : (
+                            ""
+                        )}
+                    </div>
+                );
+            });
         }
         return (
             <div
@@ -2395,7 +2455,12 @@ class NaturalLanguage extends React.Component {
                                 Generated program
                             </p>
                             <p>Set values to run program on:</p>
-                            {runningProgramNLTemplateItems}
+                            <div>
+                                {runningProgramNLTemplateItems}
+                            </div>
+                            <div>
+                                {programSteps}
+                            </div>
                             <div>
                                 <button
                                     className={styles.runProgramButton}
