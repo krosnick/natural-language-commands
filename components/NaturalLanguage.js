@@ -10,6 +10,7 @@ import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
 import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo } from './generateProgram';
 import WebsiteEventListener from './WebsiteEventListener';
+import MonacoEditor from "@monaco-editor/react";
 
 // Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
 function getXPathForElement(el, xml) {
@@ -866,7 +867,8 @@ class NaturalLanguage extends React.Component {
             paramValuePairsForRunningProgram: {},
             websiteSelectedTextObject: null,
             programOutput: null,
-            showCodeEditor: false
+            showCodeEditor: false,
+            currentProgramCode: null
         }
     }
 
@@ -1868,6 +1870,7 @@ class NaturalLanguage extends React.Component {
 
         this.setState({
             generatedProgram,
+            currentProgramCode: "var x = 1; // sample code",
             inRecordingDemoMode: false,
             inCreateNewDemoMode: false, // for now, we'll also exit demo mode
             websiteSelectedTextObject: null
@@ -2288,6 +2291,13 @@ class NaturalLanguage extends React.Component {
         return demonstrationItems; 
     }
 
+    handleEditorChange(value, event) {
+        console.log("handleEditorChange");
+        this.setState({
+            currentProgramCode: value
+        });
+    }
+
     forceReRenderEmbeddedWebsite(){
         console.log("forceReRenderEmbeddedWebsite");
         this.setState({
@@ -2541,7 +2551,17 @@ class NaturalLanguage extends React.Component {
                                                 className={styles.codeEditorButton}
                                                 onClick={()=>this.toggleShowCodeEditor()}
                                             >Hide code editor</button>
-                                            <div>Code editor</div>
+                                            <div
+                                                className={styles.codeEditor}
+                                            >
+                                                <MonacoEditor
+                                                    height="90vh"
+                                                    defaultLanguage="javascript"
+                                                    defaultValue="// some comment"
+                                                    value={this.state.currentProgramCode}
+                                                    onChange={(value, event)=>this.handleEditorChange(value, event)}
+                                                />
+                                            </div>
                                         </>
                                     ):(
                                         <button

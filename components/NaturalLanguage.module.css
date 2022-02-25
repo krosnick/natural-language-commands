@@ -328,3 +328,8 @@
     cursor: pointer;
     margin: 10px;
 }
+
+.codeEditor {
+    border: 1px solid gray;
+    padding: 5px;
+}
