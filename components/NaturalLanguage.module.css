@@ -322,3 +322,9 @@
     cursor: pointer;
     margin: 10px;
 }
+
+.codeEditorButton {
+    font-size: large;
+    cursor: pointer;
+    margin: 10px;
+}

@@ -865,7 +865,8 @@ class NaturalLanguage extends React.Component {
             generatedProgram: null,
             paramValuePairsForRunningProgram: {},
             websiteSelectedTextObject: null,
-            programOutput: null
+            programOutput: null,
+            showCodeEditor: false
         }
     }
 
@@ -1947,6 +1948,12 @@ class NaturalLanguage extends React.Component {
         }, 2000, this);
     }
 
+    toggleShowCodeEditor(){
+        this.setState({
+            showCodeEditor: !this.state.showCodeEditor
+        });
+    }
+
     // For rendering the parameterized NL with widgets for the user to select param values for the upcoming demonstration
     renderNLTemplateItemsList(itemIDs, demoIndex, valuesEditable){
         // should be of the form { paramUuid: { paramName:, paramValue: } }
@@ -2526,6 +2533,23 @@ class NaturalLanguage extends React.Component {
                                 </p>
                                 <div>
                                     {programSteps}
+                                </div>
+                                <div>
+                                    {this.state.showCodeEditor ? (
+                                        <>
+                                            <button
+                                                className={styles.codeEditorButton}
+                                                onClick={()=>this.toggleShowCodeEditor()}
+                                            >Hide code editor</button>
+                                            <div>Code editor</div>
+                                        </>
+                                    ):(
+                                        <button
+                                            className={styles.codeEditorButton}
+                                            onClick={()=>this.toggleShowCodeEditor()}
+                                        >Show code editor</button>
+                                    )}
+                                    
                                 </div>
                                 <p>Set values to run program on:</p>
                                 <div>
