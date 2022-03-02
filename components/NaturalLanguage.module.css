@@ -311,10 +311,20 @@
     font-weight: bold;
 }
 
+.subSectionHeader {
+    font-size: large;
+    font-weight: bold;
+}
+
 .section {
     margin: 10px;
     padding: 10px;
     border-bottom: 3px solid gray;
+}
+
+.subSection {
+    margin: 10px;
+    padding: 10px;
 }
 
 .replayDemoButton {
@@ -332,4 +342,14 @@
 .codeEditor {
     border: 1px solid gray;
     padding: 5px;
+}
+
+.freeformNLQuery {
+    width: 100%;
+}
+
+.getRelevantQueryButton {
+    font-size: large;
+    cursor: pointer;
+    margin: 10px;   
 }

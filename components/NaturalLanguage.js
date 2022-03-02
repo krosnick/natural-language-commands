@@ -14,70 +14,6 @@ import MonacoEditor from "@monaco-editor/react";
 import tfjs from '@tensorflow/tfjs';
 import { load } from '@tensorflow-models/universal-sentence-encoder';
 
-// Load the model.
-load().then(model => {
-    // Embed an array of sentences.
-    /*const sentences = [
-        'Hello.',
-        'How are you?'
-    ];*/
-    const possibleFilledInTemplates = [
-        'For the MLB player who had the most home runs this year, how many stolen bases did they have?',
-        'For the MLB player who had the most hits this year, how many stolen bases did they have?',
-        'For the MLB player who had the most home runs this year, how many triples did they have?',
-        'For the MLB player who had the most hits this year, how many triples did they have?',
-    ];
-    const freeformNLQuery = [
-        'Which player had the most home runs and how many triples did they have?'
-    ];
-     model.embed(freeformNLQuery).then(freeformNLQueryEmbedding => {
-        //console.log("freeformNLQueryEmbedding", freeformNLQueryEmbedding);
-        //freeformNLQueryEmbedding.print(true);
-        model.embed(possibleFilledInTemplates).then(embeddings => {
-            // `embeddings` is a 2D tensor consisting of the 512-dimensional embeddings for each sentence.
-            // So in this example `embeddings` has the shape [2, 512].
-            //embeddings.print(true /* verbose */);
-            const embed_freeformNLQuery = freeformNLQueryEmbedding.arraySync();
-            console.log("embed_freeformNLQuery", embed_freeformNLQuery);
-
-            const embed_filledInTemplates = embeddings.arraySync();
-            console.log("embed_filledInTemplates", embed_filledInTemplates);
-
-            let largestDotProdSoFar = 0;
-            let largestDotProdSoFarIndex = -1;
-            // Dot product
-            for(let i = 0; i < possibleFilledInTemplates.length; i++){
-                const dotProd = dotProduct(embed_freeformNLQuery[0], embed_filledInTemplates[i]);
-                console.log(possibleFilledInTemplates[i], dotProd);
-
-                if(dotProd > largestDotProdSoFar){
-                    largestDotProdSoFar = dotProd;
-                    largestDotProdSoFarIndex = i;
-                }
-            }
-
-            console.log("largestDotProdSoFar", largestDotProdSoFar);
-            console.log("Best sentence match:", possibleFilledInTemplates[largestDotProdSoFarIndex]);
-        });
-    });
-});
-
-const dotProduct = (xs, ys) => {
-    const sum = xs => xs ? xs.reduce((a, b) => a + b, 0) : undefined;
-  
-    return xs.length === ys.length ?
-        sum(zipWith((a, b) => a * b, xs, ys))
-        : undefined;
-}
-  
-// zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
-const zipWith =
-    (f, xs, ys) => {
-        const ny = ys.length;
-        return (xs.length <= ny ? xs : xs.slice(0, ny))
-            .map((x, i) => f(x, ys[i]));
-    }
-
 // Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
 function getXPathForElement(el, xml) {
 	var xpath = '';
@@ -934,7 +870,9 @@ class NaturalLanguage extends React.Component {
             websiteSelectedTextObject: null,
             programOutput: null,
             showCodeEditor: false,
-            currentProgramCode: null
+            currentProgramCode: null,
+            freeformNLQuery: "",
+            mostRelevantQueries: null
         }
     }
 
@@ -1973,6 +1911,116 @@ class NaturalLanguage extends React.Component {
         }
     }
 
+    handleUpdateFreeformNLQuery(e){
+        this.setState({
+            freeformNLQuery: e.target.value
+        });
+    }
+
+    getRelevantQuery(){
+        // get filled-in template string that best matches this.state.freeformNLQuery
+
+        // Load the model.
+        load().then(model => {
+            
+            const templateObj = this.generateTemplateString(this.state.idToItem["root"].itemIDs);
+            //console.log("templateObj", templateObj);
+            const templateString = "".concat(...templateObj.templateItems);
+            
+
+            //let possibleFilledInTemplates = [];
+            let currentTemplates = [ templateString ];
+
+            for(let [ paramID, valueList ] of Object.entries(templateObj.paramValueOptions)){
+                let tempTemplates = [];
+                for(let value of valueList){
+                    for(let partialTemplate of currentTemplates){
+                        const newString = partialTemplate.replace(`[param-${paramID}]`, value);
+                        tempTemplates.push(newString);
+                    }
+                }
+                //console.log("tempTemplates", tempTemplates);
+                currentTemplates = tempTemplates;
+            }
+            console.log("currentTemplates", currentTemplates);
+
+            /*let lowerCaseCurrentTemplates = [];
+            for(let template of currentTemplates){
+                lowerCaseCurrentTemplates.push(template.toLowerCase());
+            }*/
+
+            /*const possibleFilledInTemplates = [
+                'For the MLB player who had the most home runs this year, how many stolen bases did they have?',
+                'For the MLB player who had the most hits this year, how many stolen bases did they have?',
+                'For the MLB player who had the most home runs this year, how many triples did they have?',
+                'For the MLB player who had the most hits this year, how many triples did they have?',
+            ];*/
+            const freeformNLQuery = [
+                //'Which player had the most home runs and how many triples did they have?'
+                this.state.freeformNLQuery
+            ];
+            /*const lowerCaseFreeformNLQuery = [
+                this.state.freeformNLQuery.toLowerCase()
+            ];*/
+            //model.embed(lowerCaseFreeformNLQuery).then(freeformNLQueryEmbedding => {
+            model.embed(freeformNLQuery).then(freeformNLQueryEmbedding => {
+                model.embed(currentTemplates).then(embeddings => {
+                    // `embeddings` is a 2D tensor consisting of the 512-dimensional embeddings for each sentence.
+                    // So in this example `embeddings` has the shape [2, 512].
+                    const embed_freeformNLQuery = freeformNLQueryEmbedding.arraySync();
+                    //console.log("embed_freeformNLQuery", embed_freeformNLQuery);
+
+                    const embed_filledInTemplates = embeddings.arraySync();
+                    //console.log("embed_filledInTemplates", embed_filledInTemplates);
+
+                    /*let largestDotProdSoFar = 0;
+                    let largestDotProdSoFarIndex = -1;*/
+                    const comparisons = [];
+                    // Dot product
+                    for(let i = 0; i < currentTemplates.length; i++){
+                        const dotProd = dotProduct(embed_freeformNLQuery[0], embed_filledInTemplates[i]);
+                        //console.log(lowerCaseCurrentTemplates[i], dotProd);
+
+                        /*if(dotProd > largestDotProdSoFar){
+                            largestDotProdSoFar = dotProd;
+                            largestDotProdSoFarIndex = i;
+                        }*/
+                        comparisons.push({
+                            dotProd,
+                            index: i,
+                            sentence: currentTemplates[i]
+                        });
+                    }
+
+                    comparisons.sort(function(a, b){
+                        return b.dotProd - a.dotProd
+                    });
+                    
+                    console.log("comparisons", comparisons);
+                    
+                    this.setState({
+                        mostRelevantQueries: comparisons.slice(0, 3).map(function(obj){ return obj.sentence })
+                    });
+                });
+            });
+        });
+
+        const dotProduct = (xs, ys) => {
+            const sum = xs => xs ? xs.reduce((a, b) => a + b, 0) : undefined;
+
+            return xs.length === ys.length ?
+                sum(zipWith((a, b) => a * b, xs, ys))
+                : undefined;
+        }
+
+        // zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+        const zipWith = (f, xs, ys) => {
+            const ny = ys.length;
+            return (xs.length <= ny ? xs : xs.slice(0, ny))
+                .map((x, i) => f(x, ys[i]));
+        }
+    }
+
     handleRunProgram(){
         // First, cause website to re-render so we have clean slate
         this.forceReRenderEmbeddedWebsite();
@@ -2021,6 +2069,44 @@ class NaturalLanguage extends React.Component {
         this.setState({
             showCodeEditor: !this.state.showCodeEditor
         });
+    }
+
+    generateTemplateString(itemIDs){
+        console.log("generateTemplateString");
+        const paramValueOptions = {}; // { paramUuid: [val1, val2, val3, ...]}
+        function generateParamOrGroup(key, textItem){
+            let itemContents = null;
+            if(textItem.type === "param"){
+                // Fill in itemContents
+                itemContents = `[param-${textItem.uuid}]`;
+                paramValueOptions[textItem.uuid] = textItem.paramTypeData.possibleValues.map((valueObj, i) => {
+                    return valueObj.textCandidate;
+                });
+            }else if(textItem.type === "group"){
+                itemContents = this.generateTemplateString(textItem.itemIDs);
+            }
+
+            return itemContents;
+        }
+        
+        const templateItems = itemIDs.map((itemID, i) => {
+            const textItem = this.state.idToItem[itemID];
+            const key = i + "_" + textItem.type + "_" + (textItem.text? textItem.text : "");
+            
+            if(textItem.type === "param" || textItem.type === "group"){
+                return generateParamOrGroup.call(this, key, textItem);
+            }else{
+                return textItem.text;
+            }
+        });
+    
+        //console.log("templateItems list", templateItems);
+        //console.log("paramValueOptions", paramValueOptions);
+
+        return {
+            templateItems,
+            paramValueOptions
+        };
     }
 
     // For rendering the parameterized NL with widgets for the user to select param values for the upcoming demonstration
@@ -2381,7 +2467,6 @@ class NaturalLanguage extends React.Component {
         if(this.state.generatedProgram){
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
             runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
-
             const paramValueObj = this.getParamValueObj();
             // Show a representation of the program
             programSteps = this.state.generatedProgram.program.map((step, step_index) => {
@@ -2607,56 +2692,113 @@ class NaturalLanguage extends React.Component {
                                 >
                                     Generated program
                                 </p>
-                                <div>
-                                    {programSteps}
-                                </div>
-                                <div>
-                                    {this.state.showCodeEditor ? (
-                                        <>
+                                <div
+                                    className={styles.subSection}
+                                >
+                                    <p
+                                        className={styles.subSectionHeader}
+                                    >
+                                        Partial program representation
+                                    </p>
+                                    <div>
+                                        {programSteps}
+                                    </div>
+                                    <div>
+                                        {this.state.showCodeEditor ? (
+                                            <>
+                                                <button
+                                                    className={styles.codeEditorButton}
+                                                    onClick={()=>this.toggleShowCodeEditor()}
+                                                >Hide code editor</button>
+                                                <div
+                                                    className={styles.codeEditor}
+                                                >
+                                                    <MonacoEditor
+                                                        height="90vh"
+                                                        defaultLanguage="javascript"
+                                                        defaultValue="// some comment"
+                                                        value={this.state.currentProgramCode}
+                                                        onChange={(value, event)=>this.handleEditorChange(value, event)}
+                                                    />
+                                                </div>
+                                            </>
+                                        ):(
                                             <button
                                                 className={styles.codeEditorButton}
                                                 onClick={()=>this.toggleShowCodeEditor()}
-                                            >Hide code editor</button>
-                                            <div
-                                                className={styles.codeEditor}
-                                            >
-                                                <MonacoEditor
-                                                    height="90vh"
-                                                    defaultLanguage="javascript"
-                                                    defaultValue="// some comment"
-                                                    value={this.state.currentProgramCode}
-                                                    onChange={(value, event)=>this.handleEditorChange(value, event)}
-                                                />
-                                            </div>
-                                        </>
-                                    ):(
-                                        <button
-                                            className={styles.codeEditorButton}
-                                            onClick={()=>this.toggleShowCodeEditor()}
-                                        >Show code editor</button>
-                                    )}
-                                    
-                                </div>
-                                <p>Set values to run program on:</p>
-                                <div>
-                                    {runningProgramNLTemplateItems}
-                                </div>
-                                <div>
-                                    <button
-                                        className={styles.runProgramButton}
-                                        onClick={() => this.handleRunProgram()}
-                                    >Run program</button>
-                                </div>
-                                {this.state.programOutput ? (
-                                    <div
-                                        className={styles.programOutput}
-                                    >
-                                        <div>Program output</div>
-                                        {this.state.programOutput.map((value) => <div>{value}</div>)}
+                                            >Show code editor</button>
+                                        )}
+                                        
                                     </div>
-                                ):(
-                                    ""
-                                )}
+                                </div>
+                                <div
+                                    className={styles.subSection}
+                                >
+                                    <p
+                                        className={styles.subSectionHeader}
+                                    >
+                                        Run program
+                                    </p>
+                                    <p>Set values to run program on:</p>
+                                    <div>
+                                        <input
+                                            className={styles.freeformNLQuery}
+                                            log-this-element=""
+                                            type="text"
+                                            value={this.state.freeformNLQuery}
+                                            onChange={(e) => this.handleUpdateFreeformNLQuery(e)}
+                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                        >
+                                        </input>
+                                        <button
+                                            className={styles.getRelevantQueryButton}
+                                            onClick={() => this.getRelevantQuery()}
+                                        >
+                                            Get relevant query
+                                        </button>
+                                        { this.state.mostRelevantQueries ? (
+                                            <div>
+                                                <p>Did you mean one of these?</p>
+                                                <div>
+                                                    {this.state.mostRelevantQueries.map(function(query, index){
+                                                        return <>
+                                                            <div>{index+1}. {query}</div>
+                                                        </>
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ):(
+                                            ""
+                                        )}
+                                        {/* { this.state.relevantQuery ? (
+                                            <div>
+                                                <p>Did you mean this?</p>
+                                                <div>{this.state.relevantQuery}</div>
+                                            </div>
+                                        ):(
+                                            ""
+                                        )} */}
+                                    </div>
+                                    <div>
+                                        {runningProgramNLTemplateItems}
+                                    </div>
+                                    <div>
+                                        <button
+                                            className={styles.runProgramButton}
+                                            onClick={() => this.handleRunProgram()}
+                                        >Run program</button>
+                                    </div>
+                                    {this.state.programOutput ? (
+                                        <div
+                                            className={styles.programOutput}
+                                        >
+                                            <div>Program output</div>
+                                            {this.state.programOutput.map((value) => <div>{value}</div>)}
+                                        </div>
+                                    ):(
+                                        ""
+                                    )}
+                                </div>
                             </div>
                         ) : (
                             ""
