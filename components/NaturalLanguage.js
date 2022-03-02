@@ -11,6 +11,72 @@ import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valu
 import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo } from './generateProgram';
 import WebsiteEventListener from './WebsiteEventListener';
 import MonacoEditor from "@monaco-editor/react";
+import tfjs from '@tensorflow/tfjs';
+import { load } from '@tensorflow-models/universal-sentence-encoder';
+
+// Load the model.
+load().then(model => {
+    // Embed an array of sentences.
+    /*const sentences = [
+        'Hello.',
+        'How are you?'
+    ];*/
+    const possibleFilledInTemplates = [
+        'For the MLB player who had the most home runs this year, how many stolen bases did they have?',
+        'For the MLB player who had the most hits this year, how many stolen bases did they have?',
+        'For the MLB player who had the most home runs this year, how many triples did they have?',
+        'For the MLB player who had the most hits this year, how many triples did they have?',
+    ];
+    const freeformNLQuery = [
+        'Which player had the most home runs and how many triples did they have?'
+    ];
+     model.embed(freeformNLQuery).then(freeformNLQueryEmbedding => {
+        //console.log("freeformNLQueryEmbedding", freeformNLQueryEmbedding);
+        //freeformNLQueryEmbedding.print(true);
+        model.embed(possibleFilledInTemplates).then(embeddings => {
+            // `embeddings` is a 2D tensor consisting of the 512-dimensional embeddings for each sentence.
+            // So in this example `embeddings` has the shape [2, 512].
+            //embeddings.print(true /* verbose */);
+            const embed_freeformNLQuery = freeformNLQueryEmbedding.arraySync();
+            console.log("embed_freeformNLQuery", embed_freeformNLQuery);
+
+            const embed_filledInTemplates = embeddings.arraySync();
+            console.log("embed_filledInTemplates", embed_filledInTemplates);
+
+            let largestDotProdSoFar = 0;
+            let largestDotProdSoFarIndex = -1;
+            // Dot product
+            for(let i = 0; i < possibleFilledInTemplates.length; i++){
+                const dotProd = dotProduct(embed_freeformNLQuery[0], embed_filledInTemplates[i]);
+                console.log(possibleFilledInTemplates[i], dotProd);
+
+                if(dotProd > largestDotProdSoFar){
+                    largestDotProdSoFar = dotProd;
+                    largestDotProdSoFarIndex = i;
+                }
+            }
+
+            console.log("largestDotProdSoFar", largestDotProdSoFar);
+            console.log("Best sentence match:", possibleFilledInTemplates[largestDotProdSoFarIndex]);
+        });
+    });
+});
+
+const dotProduct = (xs, ys) => {
+    const sum = xs => xs ? xs.reduce((a, b) => a + b, 0) : undefined;
+  
+    return xs.length === ys.length ?
+        sum(zipWith((a, b) => a * b, xs, ys))
+        : undefined;
+}
+  
+// zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+const zipWith =
+    (f, xs, ys) => {
+        const ny = ys.length;
+        return (xs.length <= ny ? xs : xs.slice(0, ny))
+            .map((x, i) => f(x, ys[i]));
+    }
 
 // Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
 function getXPathForElement(el, xml) {
