@@ -1869,19 +1869,19 @@ class NaturalLanguage extends React.Component {
             generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj);
             console.log("generatedProgram", generatedProgram);
 
-            let programString = "[";
+            let programString = "[\n";
             for(let programStep of generatedProgram.program){
-                let programStepString = "{";
+                let programStepString = "{\n";
                 for(let [key, value] of Object.entries(programStep)){
                     if(typeof(value) === "string"){
-                        programStepString += key + ": '" + value + "', ";
+                        programStepString += key + ": '" + value + "',\n";
                     }else{
-                        programStepString += key + ": " + value + ", ";
+                        programStepString += key + ": " + value + ",\n";
                     }
                     //programStepString += key + ": " + value + ", ";
                 }
                 programStepString += "}";
-                programString += programStepString + ", ";
+                programString += programStepString + ",\n";
             }
             programString += "]";
 
@@ -1896,10 +1896,8 @@ class NaturalLanguage extends React.Component {
             }
             operationsString += "}";*/
 
-            currentProgramCode = `
-            const program = ${programString};
-            const paramValueObj = ${JSON.stringify(paramValueObj)};
-            `;
+            currentProgramCode = `const program = ${programString};\n
+            const paramValueObj = ${JSON.stringify(paramValueObj)};`;
         }else{
             // Multiple demos. Currently we don't know how to generalize from multiple demos,
                 // so for now we just won't update the program

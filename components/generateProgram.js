@@ -431,12 +431,12 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
 
             program.push({
                 eventType: eventObj.eventType,
-                generalizedXPathFunction,
                 relevantParam: matchingParam,
                 getElement: function(paramValuePairings, inputValue){
                     const domElement = document.evaluate(generalizedXPathFunction(inputValue), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                     return domElement;
-                }
+                },
+                generalizedXPathFunction
             });
 
             // Check which values in paramValueObj[matchingParam] don't have an xPath, and add those to neededDemos
@@ -811,15 +811,15 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
         
                     program.push({
                         eventType: eventObj.eventType,
-                        generalizedXPathFunction,
+                        relevantParamForRow,
+                        relevantParamForCol,
                         getElement: function(paramValuePairings, paramValueForRow, paramValueForCol){
                             const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                             return domElement;
                         },
+                        generalizedXPathFunction,
                         generateRowXPathPrefix,
-                        generateColXPathSuffix,
-                        relevantParamForRow,
-                        relevantParamForCol
+                        generateColXPathSuffix
                     });
 
                 }else{
