@@ -810,6 +810,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     program.push({
                         eventType: eventObj.eventType,
                         generalizedXPathFunction,
+                        generateRowXPathPrefix,
+                        generateColXPathSuffix,
                         relevantParamForRow,
                         relevantParamForCol
                     });
@@ -866,6 +868,9 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
     
     return {
         program,
-        neededDemos
+        neededDemos,
+        //executeProgramString: executeProgram.toString(),
+        //delayFor,
+        operations
     };
 }

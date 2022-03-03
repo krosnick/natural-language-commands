@@ -813,6 +813,7 @@ class TemplateParamTextItem extends React.Component {
 class NaturalLanguage extends React.Component {
     constructor(props){
         super(props);
+        this.editorRef = React.createRef();
 
         const initialTextItems = {};
         const firstUuid = uuidv4();
@@ -1847,6 +1848,7 @@ class NaturalLanguage extends React.Component {
     handleStopRecordingDemo(){
         // Update mode state variables, and also generate program or update existing program
         let generatedProgram = this.state.generatedProgram;
+        let currentProgramCode;
         if(this.state.demonstrations.length === 1){
             // Only 1 demo so far. Let's use this 1 demo to generate a program
             const demoIndex = 0;
@@ -1866,19 +1868,70 @@ class NaturalLanguage extends React.Component {
 
             generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj);
             console.log("generatedProgram", generatedProgram);
+
+            let programString = "[";
+            for(let programStep of generatedProgram.program){
+                let programStepString = "{";
+                for(let [key, value] of Object.entries(programStep)){
+                    if(typeof(value) === "string"){
+                        programStepString += key + ": '" + value + "', ";
+                    }else{
+                        programStepString += key + ": " + value + ", ";
+                    }
+                    //programStepString += key + ": " + value + ", ";
+                }
+                programStepString += "}";
+                programString += programStepString + ", ";
+            }
+            programString += "]";
+
+
+            /*let operationsString = "const operations = {";
+            for(let [key, value] of Object.entries(generatedProgram.operations)){
+                if(typeof(value) === "string"){
+                    operationsString += key + ": '" + value + "', ";
+                }else{
+                    operationsString += key + ": " + value + ", ";
+                }
+            }
+            operationsString += "}";*/
+
+            currentProgramCode = `
+            const program = ${programString};
+            const paramValueObj = ${JSON.stringify(paramValueObj)};
+            `;
         }else{
             // Multiple demos. Currently we don't know how to generalize from multiple demos,
                 // so for now we just won't update the program
         }
 
-
         this.setState({
             generatedProgram,
-            currentProgramCode: "var x = 1; // sample code",
+            //currentProgramCode: "var x = 1; // sample code",
+            currentProgramCode,
             inRecordingDemoMode: false,
             inCreateNewDemoMode: false, // for now, we'll also exit demo mode
             websiteSelectedTextObject: null
         });
+
+        // only if an editor instance already, format code
+        if(this.editorRef && this.editorRef.current){
+            setTimeout(function(context){
+                //console.log("context.editorRef.current", context.editorRef.current);
+                context.editorRef.current.getAction('editor.action.formatDocument').run();
+            }, 1000, this);
+        }
+    }
+
+    handleEditorDidMount(editor, monaco) {
+        console.log("handleEditorDidMount");
+        console.log("editor", editor);
+        this.editorRef.current = editor; 
+
+        setTimeout(function(context){
+            //console.log("context.editorRef.current", context.editorRef.current);
+            context.editorRef.current.getAction('editor.action.formatDocument').run();
+        }, 1000, this);
     }
 
     // For NL template associated with demoIndex, user has set a new value for this param
@@ -2719,6 +2772,7 @@ class NaturalLanguage extends React.Component {
                                                         defaultValue="// some comment"
                                                         value={this.state.currentProgramCode}
                                                         onChange={(value, event)=>this.handleEditorChange(value, event)}
+                                                        onMount={(editor, monaco) => this.handleEditorDidMount(editor, monaco)}
                                                     />
                                                 </div>
                                             </>
