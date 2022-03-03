@@ -1,11 +1,9 @@
 var operations = {
-    click: function(xPath){
-        const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+    click: function(domElement){
         domElement.click();
         return;
     },
-    print: function(xPath){
-        const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+    print: function(domElement){
         const text = domElement.textContent;
         console.log("printed value", text);
         return text;
@@ -28,18 +26,18 @@ function delayFor(delay) {
 export async function executeProgram(program, paramValuePairings){
     const valuesToReturn = [];
     for(let programStep of program){
-        let xPath;
+        let element;
         if(programStep.targetXPath){
             // Concrete xPath to perform operation on
-            xPath = programStep.targetXPath;
+            element = programStep.getElement(paramValuePairings, programStep.targetXPath);
         }else if(programStep.relevantParam){
             // Need to execute function with param value to get xPath
             let relevantParam = programStep.relevantParam;
-            xPath = programStep.generalizedXPathFunction(paramValuePairings[relevantParam]);
+            element = programStep.getElement(paramValuePairings, paramValuePairings[relevantParam]);
         }else{
             let paramValueForRow = paramValuePairings[programStep.relevantParamForRow];
             let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
-            xPath = programStep.generalizedXPathFunction(paramValueForRow, paramValueForCol);
+            element = programStep.getElement(paramValuePairings, paramValueForRow, paramValueForCol);
         }
 
         // Should throw an error if no xpath found, etc
@@ -47,7 +45,7 @@ export async function executeProgram(program, paramValuePairings){
         // Perform operation on xPath
         if(operations[programStep.eventType]){
             await delayFor(3000); // Let's wait 1000ms between each click
-            const returnValue = operations[programStep.eventType](xPath);
+            const returnValue = operations[programStep.eventType](element);
             if(returnValue){ // because some operations won't return anything
                 valuesToReturn.push(returnValue);
             }
@@ -434,7 +432,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             program.push({
                 eventType: eventObj.eventType,
                 generalizedXPathFunction,
-                relevantParam: matchingParam
+                relevantParam: matchingParam,
+                getElement: function(paramValuePairings, inputValue){
+                    const domElement = document.evaluate(generalizedXPathFunction(inputValue), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    return domElement;
+                }
             });
 
             // Check which values in paramValueObj[matchingParam] don't have an xPath, and add those to neededDemos
@@ -810,6 +812,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     program.push({
                         eventType: eventObj.eventType,
                         generalizedXPathFunction,
+                        getElement: function(paramValuePairings, paramValueForRow, paramValueForCol){
+                            const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            return domElement;
+                        },
                         generateRowXPathPrefix,
                         generateColXPathSuffix,
                         relevantParamForRow,
@@ -817,6 +823,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     });
 
                 }else{
+                    eventObj.getElement = function(paramValuePairings, xPath){
+                        const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                        return domElement;
+                    }
                     program.push(eventObj);
                 }
                 
