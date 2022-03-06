@@ -13,6 +13,7 @@ import WebsiteEventListener from './WebsiteEventListener';
 import MonacoEditor from "@monaco-editor/react";
 import tfjs from '@tensorflow/tfjs';
 import { load } from '@tensorflow-models/universal-sentence-encoder';
+import * as acorn from 'acorn';
 
 // Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
 function getXPathForElement(el, xml) {
@@ -1874,9 +1875,9 @@ class NaturalLanguage extends React.Component {
                 let programStepString = "{\n";
                 for(let [key, value] of Object.entries(programStep)){
                     if(typeof(value) === "string"){
-                        programStepString += key + ": '" + value + "',\n";
+                        programStepString += `"${key}": "${value}",\n`;
                     }else{
-                        programStepString += key + ": " + value + ",\n";
+                        programStepString += `"${key}": ${value},\n`;
                     }
                     //programStepString += key + ": " + value + ", ";
                 }
@@ -2496,9 +2497,75 @@ class NaturalLanguage extends React.Component {
 
     handleEditorChange(value, event) {
         console.log("handleEditorChange");
-        this.setState({
-            currentProgramCode: value
-        });
+
+        // Try/catch, for handling syntax error in code (e.g., if user is in middle of typing)
+        try {
+            const codeAST = acorn.parse(value, {
+                ecmaVersion: 2020,
+                locations: true
+            });
+
+            //console.log("codeAST", codeAST);
+            
+            // Reconstruct "program" list
+            const program = [];
+
+            let programVarNode;
+            let programListNode;
+            for(let node of codeAST.body){
+                if(node.type === "VariableDeclaration" && node.declarations[0].id.name === "program"){
+                    programVarNode = node;
+                    programListNode = node.declarations[0].init;
+                }
+            }
+
+            if(programListNode){
+                // Loop through program steps
+                for(let stepObj of programListNode.elements){
+                    const programStep = {};
+                    
+                    console.log("stepObj", stepObj);
+                    // Loop through properties
+                    for(let propertyObj of stepObj.properties){
+                        console.log("propertyObj", propertyObj);
+
+                        const keyObj = propertyObj.key;
+                        const valueObj = propertyObj.value;
+
+                        if(valueObj.type === "FunctionExpression"){
+                            const body = valueObj.body;
+                            const bodyString = value.substring(body.start, body.end);
+
+                            const params = valueObj.params;
+                            let paramString = "";
+                            for(let param of params){
+                                paramString += param.name + ", ";
+                            }
+
+                            const func = new Function(paramString, bodyString);
+                            programStep[keyObj.value] = func;
+                        }else{
+                            // it's a string, undefined, etc; literal or similar
+                            programStep[keyObj.value] = valueObj.value;
+                        }
+                    }
+                    
+                    program.push(programStep);
+                }
+                console.log("updated program obj", program);
+
+            }
+
+            const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+            generatedProgramClone.program = program;
+
+            this.setState({
+                currentProgramCode: value,
+                generatedProgram: generatedProgramClone
+            });   
+        } catch (error) {
+
+        }
     }
 
     forceReRenderEmbeddedWebsite(){

@@ -33,11 +33,11 @@ export async function executeProgram(program, paramValuePairings){
         }else if(programStep.relevantParam){
             // Need to execute function with param value to get xPath
             let relevantParam = programStep.relevantParam;
-            element = programStep.getElement(paramValuePairings, paramValuePairings[relevantParam]);
+            element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
         }else{
             let paramValueForRow = paramValuePairings[programStep.relevantParamForRow];
             let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
-            element = programStep.getElement(paramValuePairings, paramValueForRow, paramValueForCol);
+            element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValueForRow, paramValueForCol);
         }
 
         // Should throw an error if no xpath found, etc
@@ -432,10 +432,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             program.push({
                 eventType: eventObj.eventType,
                 relevantParam: matchingParam,
-                getElement: function(paramValuePairings, inputValue){
+                getElement: function(paramValuePairings, originalTargetXPath, inputValue){
                     const domElement = document.evaluate(generalizedXPathFunction(inputValue), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                     return domElement;
                 },
+                originalTargetXPath: eventObj.targetXPath,
                 generalizedXPathFunction
             });
 
@@ -813,10 +814,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         eventType: eventObj.eventType,
                         relevantParamForRow,
                         relevantParamForCol,
-                        getElement: function(paramValuePairings, paramValueForRow, paramValueForCol){
+                        getElement: function(paramValuePairings, originalTargetXPath, paramValueForRow, paramValueForCol){
                             const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                             return domElement;
                         },
+                        originalTargetXPath: eventObj.targetXPath,
                         generalizedXPathFunction,
                         generateRowXPathPrefix,
                         generateColXPathSuffix
