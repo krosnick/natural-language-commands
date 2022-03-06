@@ -2665,14 +2665,20 @@ class NaturalLanguage extends React.Component {
                         <div
                             className={styles.stepPieceOfInfo}
                         >
-                            <div>
-                                Influenced by the following parameters:
-                            </div>
-                            <div
-                                //className={styles.importantPieceOfInfo}
-                            >
-                                {paramCheckboxes}
-                            </div>
+                            { step.customGetElement ? (
+                                <div>Custom logic (see code)</div>
+                            ):(
+                                <>
+                                    <div>
+                                        Influenced by the following parameters:
+                                    </div>
+                                    <div
+                                        //className={styles.importantPieceOfInfo}
+                                    >
+                                        {paramCheckboxes}
+                                    </div>
+                                </>
+                            )}
                         </div>
                         {/* { step.relevantParam || step.relevantParamForRow || step.relevantParamForCol ?  (
                             <div
