@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 var operations = {
     click: function(domElement){
         domElement.click();
@@ -437,7 +439,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     return domElement;
                 },
                 originalTargetXPath: eventObj.targetXPath,
-                generalizedXPathFunction
+                //generalizedXPathFunction,
+                uuid: uuidv4()
             });
 
             // Check which values in paramValueObj[matchingParam] don't have an xPath, and add those to neededDemos
@@ -819,9 +822,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             return domElement;
                         },
                         originalTargetXPath: eventObj.targetXPath,
-                        generalizedXPathFunction,
-                        generateRowXPathPrefix,
-                        generateColXPathSuffix
+                        //generalizedXPathFunction,
+                        //generateRowXPathPrefix,
+                        //generateColXPathSuffix,
+                        uuid: uuidv4()
                     });
 
                 }else{
@@ -829,6 +833,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                         return domElement;
                     }
+                    eventObj.uuid = uuidv4();
                     program.push(eventObj);
                 }
                 
@@ -870,6 +875,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             }else{
                 // There isn't a matching param/value. For now, assume this is an event that should be performed regardless of input values
                 // TODO - consider if there are any other heuristics we should use here
+                eventObj.getElement = function(paramValuePairings, xPath){
+                    const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    return domElement;
+                }
+                eventObj.uuid = uuidv4();
                 program.push(eventObj);
             }
         }

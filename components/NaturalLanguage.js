@@ -2556,8 +2556,45 @@ class NaturalLanguage extends React.Component {
 
             }
 
+            // Shouldn't just replace generatedProgram; instead, need to update all attributes except "getElement" (unless customGetElement is true)
+
+            // For each step in program, find the corresponding step in this.state.generatedProgram.program and reuse "getElement" unless customGetElement is true
+            // update program
+            
+            const updatedProgram = [];
+
+            for(let programStep of program){
+                if(programStep.uuid){
+                    // find programStep.uuid in this.state.generatedProgram.program
+                    let correspondingOldProgramStep;
+                    for(let oldProgramStep of this.state.generatedProgram.program){
+                        if(oldProgramStep.uuid === programStep.uuid){
+                            correspondingOldProgramStep = oldProgramStep;
+                            break;
+                        }
+                    }
+                    if(correspondingOldProgramStep){
+                        // Potentially reuse parts of correspondingOldProgramStep
+                        // Want to keep all literal values from programStep
+                        // If customGetElement is true, then want to use new getElement from programStep; otherwise, use getElement from correspondingOldProgramStep
+                            // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
+                        if(!programStep.customGetElement){
+                            programStep.getElement = correspondingOldProgramStep.getElement;
+                            console.log("set a new getElement");
+                        }
+                        updatedProgram.push(programStep);
+                    }else{
+                        // There isn't a corresponding program step from last version of program, so just include this new program step as is
+                        updatedProgram.push(programStep);
+                    }
+                }else{
+                    // no uuid for this program step, so we'll just include this program step as is (i.e., use the new getElement func that was just created)
+                    updatedProgram.push(programStep);
+                }
+            }
+
             const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-            generatedProgramClone.program = program;
+            generatedProgramClone.program = updatedProgram;
 
             this.setState({
                 currentProgramCode: value,
