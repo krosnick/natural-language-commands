@@ -2580,7 +2580,7 @@ class NaturalLanguage extends React.Component {
                             // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
                         if(!programStep.customGetElement){
                             programStep.getElement = correspondingOldProgramStep.getElement;
-                            console.log("set a new getElement");
+                            console.log("using existing getElement");
                         }
                         updatedProgram.push(programStep);
                     }else{

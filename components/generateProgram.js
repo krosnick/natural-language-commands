@@ -434,7 +434,9 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             program.push({
                 eventType: eventObj.eventType,
                 relevantParam: matchingParam,
+                customGetElement: false,
                 getElement: function(paramValuePairings, originalTargetXPath, inputValue){
+                    // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
                     const domElement = document.evaluate(generalizedXPathFunction(inputValue), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                     return domElement;
                 },
@@ -817,7 +819,9 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         eventType: eventObj.eventType,
                         relevantParamForRow,
                         relevantParamForCol,
+                        customGetElement: false,
                         getElement: function(paramValuePairings, originalTargetXPath, paramValueForRow, paramValueForCol){
+                            // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
                             const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                             return domElement;
                         },
@@ -829,7 +833,9 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     });
 
                 }else{
+                    eventObj.customGetElement = false;
                     eventObj.getElement = function(paramValuePairings, xPath){
+                        // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
                         const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                         return domElement;
                     }
@@ -875,7 +881,9 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             }else{
                 // There isn't a matching param/value. For now, assume this is an event that should be performed regardless of input values
                 // TODO - consider if there are any other heuristics we should use here
+                eventObj.customGetElement = false;
                 eventObj.getElement = function(paramValuePairings, xPath){
+                    // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
                     const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                     return domElement;
                 }
