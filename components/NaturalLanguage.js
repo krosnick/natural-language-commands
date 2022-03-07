@@ -1951,10 +1951,13 @@ class NaturalLanguage extends React.Component {
             generatedProgram: generatedProgramClone
         });
 
-        // We've programmatically updated the code in the editor, so we need to format it again
-        setTimeout(function(context){
-            context.editorRef.current.getAction('editor.action.formatDocument').run();
-        }, 1000, this);
+        // We've programmatically updated the code, so we need to format it again
+        // only if an editor instance already, format code
+        if(this.editorRef && this.editorRef.current){
+            setTimeout(function(context){
+                context.editorRef.current.getAction('editor.action.formatDocument').run();
+            }, 1000, this);
+        }
     }
 
 
