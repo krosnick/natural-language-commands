@@ -1793,17 +1793,21 @@ class NaturalLanguage extends React.Component {
         });
     }
 
-    handleCreateNewDemo(){
-        // Add a new demo object
-        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        demonstrationsClone.push({
-            eventSequence: [],
-            paramValuePairs: {}
-        });
-
+    handleCreateDemo(){
+        // Create new demo object. Currently only allowing 1 demo per program,
+            // so user will either be creating it for the first time, or overwriting their existing one
+        
+        // Want to clear program too, in case this is a redo (and program existed already)
         this.setState({
-            demonstrations: demonstrationsClone,
-            inCreateNewDemoMode: true
+            demonstrations: [
+                {
+                    eventSequence: [],
+                    paramValuePairs: {}
+                }
+            ],
+            inCreateNewDemoMode: true,
+            generatedProgram: null,
+            currentProgramCode: null,
         });
     }
 
@@ -1914,13 +1918,13 @@ class NaturalLanguage extends React.Component {
             websiteSelectedTextObject: null
         });
 
-        // only if an editor instance already, format code
-        if(this.editorRef && this.editorRef.current){
-            setTimeout(function(context){
-                //console.log("context.editorRef.current", context.editorRef.current);
+        setTimeout(function(context){
+            //console.log("context.editorRef.current", context.editorRef.current);
+            // only if an editor instance already, format code
+            if(context.editorRef && context.editorRef.current){
                 context.editorRef.current.getAction('editor.action.formatDocument').run();
-            }, 1000, this);
-        }
+            }
+        }, 1000, this);
     }
 
     handleEditorDidMount(editor, monaco) {
@@ -1947,12 +1951,13 @@ class NaturalLanguage extends React.Component {
         });
 
         // We've programmatically updated the code, so we need to format it again
-        // only if an editor instance already, format code
-        if(this.editorRef && this.editorRef.current){
-            setTimeout(function(context){
+        setTimeout(function(context){
+            //console.log("context.editorRef.current", context.editorRef.current);
+            // only if an editor instance already, format code
+            if(context.editorRef && context.editorRef.current){
                 context.editorRef.current.getAction('editor.action.formatDocument').run();
-            }, 1000, this);
-        }
+            }
+        }, 1000, this);
     }
 
     removeDemoStep(demo_index){
@@ -1982,12 +1987,13 @@ class NaturalLanguage extends React.Component {
         });
 
         // We've programmatically updated the code, so we need to format it again
-        // only if an editor instance already, format code
-        if(this.editorRef && this.editorRef.current){
-            setTimeout(function(context){
+        setTimeout(function(context){
+            //console.log("context.editorRef.current", context.editorRef.current);
+            // only if an editor instance already, format code
+            if(context.editorRef && context.editorRef.current){
                 context.editorRef.current.getAction('editor.action.formatDocument').run();
-            }, 1000, this);
-        }
+            }
+        }, 1000, this);
     }
 
 
@@ -2252,7 +2258,6 @@ class NaturalLanguage extends React.Component {
                             groupSelectionMode={this.state.groupSelectionMode}
                             currentlySelected={textItem.currentlySelected}
                             uuidInEditMode={this.state.uuidInEditMode}
-                            groupSelectionMode={this.state.groupSelectionMode}
                             viewOnlyMode={this.props.viewOnlyMode}
                             demoIndex={demoIndex}
                             handleTemplateParamValueChange={(e) => this.handleTemplateParamValueChange(e, textItem.uuid, demoIndex)}
@@ -2350,7 +2355,6 @@ class NaturalLanguage extends React.Component {
                             groupSelectionMode={this.state.groupSelectionMode}
                             currentlySelected={textItem.currentlySelected}
                             uuidInEditMode={this.state.uuidInEditMode}
-                            groupSelectionMode={this.state.groupSelectionMode}
                             viewOnlyMode={this.props.viewOnlyMode}
                             incompleteFormParamIDs={this.state.incompleteFormParamIDs}
                             paramIsOptional={textItem.paramIsOptional}
@@ -2533,11 +2537,11 @@ class NaturalLanguage extends React.Component {
                     key={demo_index}
                     className={styles.demonstration}
                 >
-                    <div
+                    {/* <div
                         className={styles.demonstrationName}
                     >
                         Demonstration {demo_index + 1}
-                    </div>
+                    </div> */}
                     {!nlTemplateEditable ?
                         <button
                             className={styles.replayDemoButton}
@@ -2923,7 +2927,8 @@ class NaturalLanguage extends React.Component {
                             <p
                                 className={styles.sectionHeader}
                             >
-                                Demonstrations
+                                {/* Demonstrations */}
+                                Demonstration
                             </p>
                             {demonstrationItems}
                             {this.state.inCreateNewDemoMode
@@ -2950,10 +2955,21 @@ class NaturalLanguage extends React.Component {
                                     )}
                                 </>
                                 ):( // Currently not in demo mode; show user 'create demo' button in case they want to create a demo
-                                    <button
-                                        className={styles.createDemoButton}
-                                        onClick={() => this.handleCreateNewDemo()}
-                                    >Add a new demonstration</button>
+                                    <>
+                                        {this.state.demonstrations.length === 0 ? (
+                                            // No demo exists yet, user is creating for the first time
+                                            <button
+                                                className={styles.createDemoButton}
+                                                onClick={() => this.handleCreateDemo()}
+                                            >Create demonstration</button>
+                                        ):(
+                                            // A demo already exists; "redo" will overwrite it
+                                            <button
+                                                className={styles.createDemoButton}
+                                                onClick={() => this.handleCreateDemo()}
+                                            >Redo demonstration</button>
+                                        )}
+                                    </>
                                 )
                             }
                         </div>
