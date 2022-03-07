@@ -28,32 +28,39 @@ function delayFor(delay) {
 export async function executeProgram(program, paramValuePairings){
     const valuesToReturn = [];
     for(let programStep of program){
-        let element;
-        if(programStep.targetXPath){
-            // Concrete xPath to perform operation on
-            element = programStep.getElement(paramValuePairings, programStep.targetXPath);
-        }else if(programStep.static){
-            // Make sure to use original xpath
-            element = document.evaluate(programStep.originalTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-        }else if(programStep.relevantParam){
-            // Need to execute function with param value to get xPath
-            let relevantParam = programStep.relevantParam;
-            element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
-        }else{
-            let paramValueForRow = paramValuePairings[programStep.relevantParamForRow];
-            let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
-            element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValueForRow, paramValueForCol);
-        }
-
-        // Should throw an error if no xpath found, etc
-
-        // Perform operation on xPath
-        if(operations[programStep.eventType]){
-            await delayFor(3000); // Let's wait 1000ms between each click
-            const returnValue = operations[programStep.eventType](element);
-            if(returnValue){ // because some operations won't return anything
-                valuesToReturn.push(returnValue);
+        try {
+            let element;
+            if(programStep.targetXPath){
+                // Concrete xPath to perform operation on
+                element = programStep.getElement(paramValuePairings, programStep.targetXPath);
+            }else if(programStep.static){
+                // Make sure to use original xpath
+                element = document.evaluate(programStep.originalTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+            }else if(programStep.relevantParam){
+                // Need to execute function with param value to get xPath
+                let relevantParam = programStep.relevantParam;
+                element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
+            }else{
+                let paramValueForRow = paramValuePairings[programStep.relevantParamForRow];
+                let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
+                element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValueForRow, paramValueForCol);
             }
+
+            // Should throw an error if no xpath found, etc
+
+            // Perform operation on xPath
+            if(operations[programStep.eventType]){
+                await delayFor(3000); // Let's wait 1000ms between each click
+                const returnValue = operations[programStep.eventType](element);
+                if(returnValue){ // because some operations won't return anything
+                    valuesToReturn.push(returnValue);
+                }
+            }
+        } catch (error) {
+            // An error happened, let's return it
+            return [
+                error
+            ];
         }
     }
     return valuesToReturn;
