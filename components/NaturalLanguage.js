@@ -1934,6 +1934,27 @@ class NaturalLanguage extends React.Component {
         }, 1000, this);
     }
 
+    removeProgramStep(step_index){
+        const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+        generatedProgramClone.program.splice(step_index, 1);
+
+        // Need to update code string to reflect program change we just made
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program);
+
+        this.setState({
+            currentProgramCode,
+            generatedProgram: generatedProgramClone
+        });
+
+        // We've programmatically updated the code, so we need to format it again
+        // only if an editor instance already, format code
+        if(this.editorRef && this.editorRef.current){
+            setTimeout(function(context){
+                context.editorRef.current.getAction('editor.action.formatDocument').run();
+            }, 1000, this);
+        }
+    }
+
     handleProgramStepInfluencedByChange(staticOrInferred, step_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
         if(staticOrInferred === "static"){
@@ -1944,7 +1965,7 @@ class NaturalLanguage extends React.Component {
         }
 
         // Need to update code string to reflect program change we just made
-        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program)
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program);
 
         this.setState({
             currentProgramCode,
@@ -2677,6 +2698,13 @@ class NaturalLanguage extends React.Component {
                         key = {step_index}
                         className={styles.step}
                     >
+                        <button
+                            onClick={() => this.removeProgramStep(step_index)}
+                            className={styles.removeValueButton}
+                            title="Delete"
+                        >
+                            x
+                        </button>
                         <div
                             className={styles.stepPieceOfInfo}
                         >
