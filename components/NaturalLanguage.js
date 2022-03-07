@@ -1955,6 +1955,15 @@ class NaturalLanguage extends React.Component {
         }
     }
 
+    removeDemoStep(demo_index){
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        demonstrationsClone[0].eventSequence.splice(demo_index, 1);
+
+        this.setState({
+            demonstrations: demonstrationsClone
+        });
+    }
+
     handleProgramStepInfluencedByChange(staticOrInferred, step_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
         if(staticOrInferred === "static"){
@@ -2486,6 +2495,13 @@ class NaturalLanguage extends React.Component {
                         key = {e_index}
                         className={styles.step}
                     >
+                        <button
+                            onClick={() => this.removeDemoStep(e_index)}
+                            className={styles.removeValueButton}
+                            title="Delete"
+                        >
+                            x
+                        </button>
                         <div
                             className={styles.stepPieceOfInfo}
                         >
