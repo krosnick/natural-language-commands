@@ -819,34 +819,53 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         return rowXPathPrefix + generateColXPathSuffix(paramValueForCol, rowXPathPrefix);
                     };
         
-                    program.push({
-                        eventType: eventObj.eventType,
-                        relevantParamForRow,
-                        relevantParamForCol,
-                        customGetElement: false,
-                        static: false,
-                        getElement: function(paramValuePairings, originalTargetXPath, paramValueForRow, paramValueForCol){
-                            // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                            const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                            return domElement;
-                        },
-                        originalTargetXPath: eventObj.targetXPath,
-                        //generalizedXPathFunction,
-                        //generateRowXPathPrefix,
-                        //generateColXPathSuffix,
-                        uuid: uuidv4()
-                    });
+                    if(!relevantParamForRow && !relevantParamForCol){
+                        // No pattern found, so just do static replay
+                        program.push({
+                            eventType: eventObj.eventType,
+                            targetXPath: eventObj.targetXPath,
+                            customGetElement: false,
+                            static: true,
+                            getElement: function(paramValuePairings, xPath){
+                                // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
+                                const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                return domElement;
+                            },
+                            uuid: uuidv4()
+                        });
+                    }else{
+                        program.push({
+                            eventType: eventObj.eventType,
+                            relevantParamForRow,
+                            relevantParamForCol,
+                            customGetElement: false,
+                            static: false,
+                            getElement: function(paramValuePairings, originalTargetXPath, paramValueForRow, paramValueForCol){
+                                // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
+                                const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                return domElement;
+                            },
+                            originalTargetXPath: eventObj.targetXPath,
+                            //generalizedXPathFunction,
+                            //generateRowXPathPrefix,
+                            //generateColXPathSuffix,
+                            uuid: uuidv4()
+                        });
+                    }
 
                 }else{
-                    eventObj.customGetElement = false;
-                    eventObj.static = true;
-                    eventObj.getElement = function(paramValuePairings, xPath){
-                        // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                        const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                        return domElement;
-                    }
-                    eventObj.uuid = uuidv4();
-                    program.push(eventObj);
+                    program.push({
+                        eventType: eventObj.eventType,
+                        targetXPath: eventObj.targetXPath,
+                        customGetElement: false,
+                        static: true,
+                        getElement: function(paramValuePairings, xPath){
+                            // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
+                            const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            return domElement;
+                        },
+                        uuid: uuidv4()
+                    });
                 }
                 
 
@@ -887,15 +906,18 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             }else{
                 // There isn't a matching param/value. For now, assume this is an event that should be performed regardless of input values
                 // TODO - consider if there are any other heuristics we should use here
-                eventObj.customGetElement = false;
-                eventObj.static = true;
-                eventObj.getElement = function(paramValuePairings, xPath){
-                    // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                    const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                    return domElement;
-                }
-                eventObj.uuid = uuidv4();
-                program.push(eventObj);
+                program.push({
+                    eventType: eventObj.eventType,
+                    targetXPath: eventObj.targetXPath,
+                    customGetElement: false,
+                    static: true,
+                    getElement: function(paramValuePairings, xPath){
+                        // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
+                        const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                        return domElement;
+                    },
+                    uuid: uuidv4()
+                });
             }
         }
 
