@@ -1846,8 +1846,37 @@ class NaturalLanguage extends React.Component {
         return paramValueObj;
     }
 
+    generateCodeStringFromProgramObj(program){
+        let currentProgramCode;
+            
+        const paramValueObj = this.getParamValueObj();
+
+        let programString = "[\n";
+        for(let programStep of program){
+            let programStepString = "{\n";
+            for(let [key, value] of Object.entries(programStep)){
+                if(typeof(value) === "string"){
+                    programStepString += `"${key}": "${value}",\n`;
+                }else{
+                    programStepString += `"${key}": ${value},\n`;
+                }
+                //programStepString += key + ": " + value + ", ";
+            }
+            programStepString += "}";
+            programString += programStepString + ",\n";
+        }
+        programString += "]";
+
+        currentProgramCode = `const program = ${programString};\n
+        const paramValueObj = ${JSON.stringify(paramValueObj)};`;
+    
+
+        return currentProgramCode;
+    }
+
     handleStopRecordingDemo(){
         // Update mode state variables, and also generate program or update existing program
+        
         let generatedProgram = this.state.generatedProgram;
         let currentProgramCode;
         if(this.state.demonstrations.length === 1){
@@ -1870,35 +1899,7 @@ class NaturalLanguage extends React.Component {
             generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj);
             console.log("generatedProgram", generatedProgram);
 
-            let programString = "[\n";
-            for(let programStep of generatedProgram.program){
-                let programStepString = "{\n";
-                for(let [key, value] of Object.entries(programStep)){
-                    if(typeof(value) === "string"){
-                        programStepString += `"${key}": "${value}",\n`;
-                    }else{
-                        programStepString += `"${key}": ${value},\n`;
-                    }
-                    //programStepString += key + ": " + value + ", ";
-                }
-                programStepString += "}";
-                programString += programStepString + ",\n";
-            }
-            programString += "]";
-
-
-            /*let operationsString = "const operations = {";
-            for(let [key, value] of Object.entries(generatedProgram.operations)){
-                if(typeof(value) === "string"){
-                    operationsString += key + ": '" + value + "', ";
-                }else{
-                    operationsString += key + ": " + value + ", ";
-                }
-            }
-            operationsString += "}";*/
-
-            currentProgramCode = `const program = ${programString};\n
-            const paramValueObj = ${JSON.stringify(paramValueObj)};`;
+            currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgram.program);
         }else{
             // Multiple demos. Currently we don't know how to generalize from multiple demos,
                 // so for now we just won't update the program
@@ -1932,6 +1933,30 @@ class NaturalLanguage extends React.Component {
             context.editorRef.current.getAction('editor.action.formatDocument').run();
         }, 1000, this);
     }
+
+    handleProgramStepInfluencedByChange(staticOrInferred, step_index){
+        const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+        if(staticOrInferred === "static"){
+            generatedProgramClone.program[step_index].static = true;
+        }else{
+            // inferred
+            generatedProgramClone.program[step_index].static = false;
+        }
+
+        // Need to update code string to reflect program change we just made
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program)
+
+        this.setState({
+            currentProgramCode,
+            generatedProgram: generatedProgramClone
+        });
+
+        // We've programmatically updated the code in the editor, so we need to format it again
+        setTimeout(function(context){
+            context.editorRef.current.getAction('editor.action.formatDocument').run();
+        }, 1000, this);
+    }
+
 
     // For NL template associated with demoIndex, user has set a new value for this param
     handleTemplateParamValueChange(e, paramUuid, demoIndex){
@@ -2628,7 +2653,7 @@ class NaturalLanguage extends React.Component {
                 // Should remove prefix before [clone]?
                 //const targetXPath = getXPathForElement(e.target, document);
 
-                const paramCheckboxes = Object.keys(paramValueObj).map((paramName, paramIndex) => {
+                /* const paramCheckboxes = Object.keys(paramValueObj).map((paramName, paramIndex) => {
                     return (
                         <div>
                             <input
@@ -2638,13 +2663,11 @@ class NaturalLanguage extends React.Component {
                                 id={`programStep_${step_index}_paramIndex_${paramIndex}`}
                                 value={paramName}
                                 checked={step.relevantParam === paramName || step.relevantParamForRow === paramName || step.relevantParamForCol === paramName}
-                                //onChange={(e) => this.props.handleParamNumberRestrictionChange(e, "restrictedToIntegers", this.props.uuid)}
-                                //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                             />
                             <label htmlFor={`programStep_${step_index}_paramIndex_${paramIndex}`}>{paramName}</label>
                         </div>
                     );
-                });
+                }); */
 
                 return (
                     <div
@@ -2666,38 +2689,81 @@ class NaturalLanguage extends React.Component {
                             className={styles.stepPieceOfInfo}
                         >
                             { step.customGetElement ? (
-                                <div>Custom logic (see code)</div>
+                                <div
+                                    className={styles.importantPieceOfInfo}
+                                >
+                                    Custom logic (see code)
+                                </div>
                             ):(
                                 <>
-                                    <div>
+                                    {/* <div>
                                         Influenced by the following parameters:
                                     </div>
                                     <div
                                         //className={styles.importantPieceOfInfo}
                                     >
                                         {paramCheckboxes}
+                                    </div> */}
+                                    <div>
+                                        Influenced by the following parameters:
                                     </div>
+                                    { step.relevantParam || step.relevantParamForRow || step.relevantParamForCol ?  (
+                                        <div>
+                                            <div>
+                                                <input
+                                                    type="radio"
+                                                    log-this-element=""
+                                                    name={`inferred_influencedBy_${step_index}`}
+                                                    id={`inferred_influencedBy_${step_index}`}
+                                                    value="inferred"
+                                                    checked={!step.static}
+                                                    onChange={() => this.handleProgramStepInfluencedByChange("inferred", step_index)}
+                                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                />
+                                                <label htmlFor={`inferred_influencedBy_${step_index}`}>
+                                                    <span
+                                                        className={styles.importantPieceOfInfo}
+                                                    >
+                                                        { step.relevantParam ? <span> {step.relevantParam} &nbsp;&nbsp;&nbsp; </span> : "" }
+                                                        { step.relevantParamForRow ? <span> {step.relevantParamForRow} &nbsp;&nbsp;&nbsp; </span> : "" }
+                                                        { step.relevantParamForCol ? <span> {step.relevantParamForCol} &nbsp;&nbsp;&nbsp; </span> : "" }
+                                                    </span>
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="radio"
+                                                    log-this-element=""
+                                                    name={`static_influencedBy_${step_index}`}
+                                                    id={`static_influencedBy_${step_index}`}
+                                                    value="static"
+                                                    checked={step.static}
+                                                    onChange={() => this.handleProgramStepInfluencedByChange("static", step_index)}
+                                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                />
+                                                <label htmlFor={`static_influencedBy_${step_index}`}>
+                                                    <span
+                                                        className={styles.importantPieceOfInfo}
+                                                    >
+                                                        None
+                                                    </span>
+                                                    &nbsp; (static - simply replays recording)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <span
+                                                className={styles.importantPieceOfInfo}
+                                            >
+                                                None
+                                            </span>
+                                            &nbsp; (static - simply replays recording)
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
-                        {/* { step.relevantParam || step.relevantParamForRow || step.relevantParamForCol ?  (
-                            <div
-                                className={styles.stepPieceOfInfo}
-                            >
-                                <div>
-                                    Influenced by the following parameters:
-                                </div>
-                                <div
-                                    className={styles.importantPieceOfInfo}
-                                >
-                                    { step.relevantParam ? <div> {step.relevantParam} </div> : "" }
-                                    { step.relevantParamForRow ? <div> {step.relevantParamForRow} </div> : "" }
-                                    { step.relevantParamForCol ? <div> {step.relevantParamForCol} </div> : "" }
-                                </div>
-                            </div>
-                        ) : (
-                            ""
-                        )} */}
                     </div>
                 );
             });
