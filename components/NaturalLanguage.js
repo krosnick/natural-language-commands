@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import styles from './NaturalLanguage.module.css';
 import ChipotleClone from './website_clones/ChipotleClone';
 import OscarsClone from './website_clones/OscarsClone';
+import ForbesClone from './website_clones/ForbesClone';
 // import MLBClone from './website_clones/MLBClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
@@ -3120,6 +3121,9 @@ class NaturalLanguage extends React.Component {
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             {/* <MLBClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
+                            {/* <ForbesClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             <Clone
