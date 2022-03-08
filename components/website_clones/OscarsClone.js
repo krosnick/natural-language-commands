@@ -1,17 +1,20 @@
+import InnerHTML from 'dangerously-set-html-content';
+
 function createHTML() {
-    return { __html: `<html class="js js flexbox canvas canvastext webgl no-touch geolocation postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients no-cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths"
+    return (
+        `<html class="js js flexbox canvas canvastext webgl no-touch geolocation postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients no-cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths"
     dir="ltr" prefix="og: http://ogp.me/ns#" style="" lang="en">
 <!--<![endif]-->
 
 <head>
-    <script type="text/javascript" src="https://bam-cell.nr-data.net/1/e156b2cbb6?a=70689900&amp;v=1212.e95d35c&amp;to=YlNUYUVZWRFRWhAICVsZd1ZDUVgMH08NBBFGaUZUUF0%3D&amp;rst=2671&amp;ck=1&amp;ref=https://www.oscars.org/oscars/ceremonies/2021&amp;ap=1086&amp;be=665&amp;fe=2252&amp;dc=1130&amp;perf=%7B%22timing%22:%7B%22of%22:1642479501304,%22n%22:0,%22u%22:613,%22ue%22:616,%22f%22:3,%22dn%22:88,%22dne%22:407,%22c%22:407,%22s%22:439,%22ce%22:493,%22rq%22:494,%22rp%22:541,%22rpe%22:571,%22dl%22:612,%22di%22:1066,%22ds%22:1129,%22de%22:1228,%22dc%22:2248,%22l%22:2248,%22le%22:2252%7D,%22navigation%22:%7B%7D%7D&amp;fcp=1117&amp;at=ThRXFw1DSh8%3D&amp;jsonp=NREUM.setToken"></script>
+    <!--<script type="text/javascript" src="https://bam-cell.nr-data.net/1/e156b2cbb6?a=70689900&amp;v=1212.e95d35c&amp;to=YlNUYUVZWRFRWhAICVsZd1ZDUVgMH08NBBFGaUZUUF0%3D&amp;rst=2671&amp;ck=1&amp;ref=https://www.oscars.org/oscars/ceremonies/2021&amp;ap=1086&amp;be=665&amp;fe=2252&amp;dc=1130&amp;perf=%7B%22timing%22:%7B%22of%22:1642479501304,%22n%22:0,%22u%22:613,%22ue%22:616,%22f%22:3,%22dn%22:88,%22dne%22:407,%22c%22:407,%22s%22:439,%22ce%22:493,%22rq%22:494,%22rp%22:541,%22rpe%22:571,%22dl%22:612,%22di%22:1066,%22ds%22:1129,%22de%22:1228,%22dc%22:2248,%22l%22:2248,%22le%22:2252%7D,%22navigation%22:%7B%7D%7D&amp;fcp=1117&amp;at=ThRXFw1DSh8%3D&amp;jsonp=NREUM.setToken"></script>
     <script src="https://js-agent.newrelic.com/nr-1212.min.js"></script>
     <script type="text/javascript" charset="UTF-8" async="" src="https://consentcdn.cookiebot.com/consentconfig/ddfc85dd-9751-4c1f-866f-ebb32688ad41/state.js"></script>
     <script type="text/javascript" async="" src="https://www.google-analytics.com/plugins/ua/linkid.js"></script>
     <script async="" src="//connect.facebook.net/en_US/fbevents.js"></script>
-    <script async="" src="https://www.google-analytics.com/analytics.js"></script>
+    <script async="" src="https://www.google-analytics.com/analytics.js"></script>-->
     <meta charset="utf-8">
-    <script type="text/javascript" src="https://www.googletagmanager.com/gtm.js?id=GTM-W3KXNCL" async=""></script>
+    <!--<script type="text/javascript" src="https://www.googletagmanager.com/gtm.js?id=GTM-W3KXNCL" async=""></script>
     <script type="text/javascript">
         (window.NREUM || (NREUM = {})).init = {
             ajax: {
@@ -570,12 +573,12 @@ function createHTML() {
                 e.exports = r, e.exports.wrapFunction = c, e.exports.wrapInPlace = f, e.exports.argsToArray = u
             }, {}]
         }, {}, ["loader"]);
-    </script>
+    </script>-->
     <meta http-equiv="cleartype" content="on">
-    <link rel="apple-touch-icon-precomposed" href="https://www.oscars.org/sites/all/themes/guide/apple-touch-icon-precomposed-114x114.png" sizes="114x114">
-    <link rel="apple-touch-icon-precomposed" href="https://www.oscars.org/sites/all/themes/guide/apple-touch-icon-precomposed-144x144.png" sizes="144x144">
-    <link rel="apple-touch-icon-precomposed" href="https://www.oscars.org/sites/all/themes/guide/apple-touch-icon-precomposed-72x72.png" sizes="72x72">
-    <link rel="apple-touch-icon-precomposed" href="https://www.oscars.org/sites/all/themes/guide/apple-touch-icon-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="/website_clones/oscars/sites/all/themes/guide/apple-touch-icon-precomposed-114x114.png" sizes="114x114">
+    <link rel="apple-touch-icon-precomposed" href="/website_clones/oscars/sites/all/themes/guide/apple-touch-icon-precomposed-144x144.png" sizes="144x144">
+    <link rel="apple-touch-icon-precomposed" href="/website_clones/oscars/sites/all/themes/guide/apple-touch-icon-precomposed-72x72.png" sizes="72x72">
+    <link rel="apple-touch-icon-precomposed" href="/website_clones/oscars/sites/all/themes/guide/apple-touch-icon-precomposed.png">
     <link rel="profile" href="http://www.w3.org/1999/xhtml/vocab">
     <meta name="generator" content="Drupal 7 (http://drupal.org)">
     <link rel="canonical" href="https://www.oscars.org/oscars/ceremonies/2021">
@@ -605,7 +608,7 @@ function createHTML() {
     <!--[if lte IE 8]>
 <link type="text/css" rel="stylesheet" href="https://www.oscars.org/sites/oscars/files/css/css_47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU.css" media="all" />
 <![endif]-->
-    <script src="https://www.oscars.org/sites/oscars/files/js/js_aBoHqw3osaBJ3cNY9Skord7cW2BmXQdZbTkLB_TRJZg.js"></script>
+    <!--<script src="https://www.oscars.org/sites/oscars/files/js/js_aBoHqw3osaBJ3cNY9Skord7cW2BmXQdZbTkLB_TRJZg.js"></script>
     <script src="https://www.oscars.org/sites/oscars/files/js/js_kPTgsHRiF8DXUOW0QYwc172AS5HCpoPIlvsepJYL4rQ.js"></script>
     <script src="https://www.oscars.org/sites/oscars/files/js/js_THcwq4G882w3Eb1HklHrvzGAKa_-1g_0QbuBqjMhaV4.js"></script>
     <script src="https://www.oscars.org/sites/all/libraries/mediaelement/build/mediaelement-and-player.min.js?v=4"></script>
@@ -903,7 +906,7 @@ function createHTML() {
                 "height": "600px"
             }
         });
-    </script>
+    </script>-->
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=814559158582616&ev=PageView&noscript=1" /></noscript>
     <style type="text/css" id="CookieConsentStateDisplayStyles">
         .cookieconsent-optin,
@@ -953,7 +956,7 @@ function createHTML() {
                                             <label class="element-invisible" for="edit-search-block-form--2">Search this site </label>
                                             <input title="" class="custom-search-box form-text" placeholder="" type="text" id="edit-search-block-form--2" name="search_block_form" value="" size="10" maxlength="128">
                                         </div>
-                                        <div class="form-actions form-wrapper" id="edit-actions"><input alt="Search" class="custom-search-button form-submit" type="image" id="edit-submit" name="op" src="https://www.oscars.org/sites/all/themes/guide/images/icon.search.png"></div><input type="hidden" name="form_build_id" value="form-pY0PaLPZlarsNoP8lXYvdH6R0QFnP9V8KKV-RxGJT9U">
+                                        <div class="form-actions form-wrapper" id="edit-actions"><input alt="Search" class="custom-search-button form-submit" type="image" id="edit-submit" name="op" src="/website_clones/oscars/sites/all/themes/guide/images/icon.search.png"></div><input type="hidden" name="form_build_id" value="form-pY0PaLPZlarsNoP8lXYvdH6R0QFnP9V8KKV-RxGJT9U">
                                         <input type="hidden" name="form_id" value="search_block_form">
                                     </div>
                                 </div>
@@ -3876,7 +3879,7 @@ function createHTML() {
     </footer>
     </div>
     <div id="fb-root"></div>
-    <script src="https://www.oscars.org/sites/oscars/files/js/js_YSGstXW1gbXbhRHr1vQVqnilmPq_VP6gtylpwKGa2js.js"></script>
+    <!--<script src="https://www.oscars.org/sites/oscars/files/js/js_YSGstXW1gbXbhRHr1vQVqnilmPq_VP6gtylpwKGa2js.js"></script>
     <script type="text/javascript">
         window.NREUM || (NREUM = {});
         NREUM.info = {
@@ -3890,7 +3893,7 @@ function createHTML() {
             "errorBeacon": "bam-cell.nr-data.net",
             "agent": ""
         }
-    </script>
+    </script>-->
 
     <div id="cboxOverlay" style="display: none;"></div>
     <div id="colorbox" class="" role="dialog" tabindex="-1" style="display: none;">
@@ -3919,21 +3922,25 @@ function createHTML() {
         <div style="position: absolute; width: 9999px; visibility: hidden; display: none; max-width: none;"></div>
     </div><iframe style="display: none; position: absolute; width: 1px; height: 1px; top: -9999px;" name="__uspapiLocator" tabindex="-1" role="presentation" aria-hidden="true" title="Blank"></iframe><iframe style="position: absolute; width: 1px; height: 1px; top: -9999px;"
         tabindex="-1" role="presentation" aria-hidden="true" title="Blank" src="https://consentcdn.cookiebot.com/sdk/bc-v3.min.html"></iframe>
-    <script type="text/javascript" id="" src="https://110005633.collect.igodigital.com/collect.js"></script>
+    <!--<script type="text/javascript" id="" src="https://110005633.collect.igodigital.com/collect.js"></script>
     <script type="text/javascript" id="">
         _etmc.push(["setOrgId", "110005633"]);
         _etmc.push(["trackPageView"]);
-    </script>
+    </script>-->
     <div style="display: none;"><img src="https://nova.collect.igodigital.com/c2/110005633/track_page_view?payload=%7B%22title%22%3A%222021%20%7C%20Oscars.org%20%7C%20Academy%20of%20Motion%20Picture%20Arts%20and%20Sciences%22%2C%22url%22%3A%22https%3A%2F%2Fwww.oscars.org%2Foscars%2Fceremonies%2F2021%22%2C%22referrer%22%3A%22%22%7D"
             style="display: none;" title="blank image" alt="" aria-hidden="true" width="0" height="0"></div>
 </body>
 
-</html>` };
+</html>
+`);
+
 }
 
-
-export default function OscarsClone() {
-    return <div clone = ""
-    dangerouslySetInnerHTML = { createHTML() }
-    />;
+export default function OscarsClone(props) {
+    return <div clone = "">
+        <InnerHTML
+            html={createHTML()}
+            key={props.triggerWebsiteReload} // each time NaturalLanguage state.triggerWebsiteReload is updated, it'll cause this InnerHTML to re-render
+        />
+    </div>;
 }
