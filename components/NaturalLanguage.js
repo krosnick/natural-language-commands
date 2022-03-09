@@ -130,32 +130,94 @@ function ExtractedValueOptions(props){
             );
         });
 
+        // Get list of values, which will be shown in UserProvidedExamples view
+        function getListOfValues(){
+            if(selectedExtractedValueIndex===props.candidateLists.length){
+                // User chose the last radio button
+                if(props.isSuperlative){
+                    // user chose "most, least ____"
+                    console.log("props.mostLeastAdjective", props.mostLeastAdjective);
+                    return [
+                        {
+                            textCandidate: `most ${props.mostLeastAdjective || ""}`,
+                            xPath: null
+                        },
+                        {
+                            textCandidate: `least ${props.mostLeastAdjective || ""}`,
+                            xPath: null
+                        }
+                    ]
+                }else{
+                    // User chose "none of these", so list should be length zero
+                    return [];
+                }
+            }else{
+                return props.candidateLists[selectedExtractedValueIndex];
+            }
+        }
+
         return (
             <div
                 className={styles.extractedValueForm}
             >
-                Select the set of possible values that is <b>most correct</b>. After you click "Select", you will be able to edit, add to, and delete from the list.
+                Select the set of possible values that is <b>most correct</b>.
+                {props.isSuperlative ? (
+                    ""
+                ):(
+                    'After you click "Select", you will be able to edit, add to, and delete from the list.'
+                )}
                 {radioButtonList}
-                <div
-                    className={styles.extractedValueOptionText}
-                >
-                    <input
-                        type="radio"
-                        log-this-element=""
-                        name={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
-                        id={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
-                        value={props.candidateLists.length}
-                        checked={selectedExtractedValueIndex === props.candidateLists.length}
-                        onChange={() => updateSelectedExtractedValueIndex(props.candidateLists.length)}
-                        disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
-                    />
-                    <label htmlFor={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
-                    >None of these</label>
-                </div>
+                {props.isSuperlative ? (
+                    // for superlative, the alternative to 'none of these' will be "most ____, least ____" which the user can fill in
+                    <div
+                        className={styles.extractedValueOptionText}
+                    >
+                        <input
+                            type="radio"
+                            log-this-element=""
+                            name={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                            id={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                            value={props.candidateLists.length}
+                            checked={selectedExtractedValueIndex === props.candidateLists.length}
+                            onChange={() => updateSelectedExtractedValueIndex(props.candidateLists.length)}
+                            disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
+                        />
+                        <label htmlFor={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                        >
+                            most, least
+                            <input
+                                className={`${(props.uuidInEditMode && props.uuidInEditMode !== props.uuid || props.groupSelectionMode ? styles.grayedOut : '')}`}
+                                log-this-element=""
+                                type="text"
+                                value={props.mostLeastAdjective}
+                                onChange={(e) => props.handleMostLeastAdjectiveChange(e, props.uuid)}
+                                //onBlur={(e) => props.handleParamValueBlurred(e, i, props.uuid)}
+                                disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
+                            />
+                        </label>
+                    </div>
+                ):(
+                    <div
+                        className={styles.extractedValueOptionText}
+                    >
+                        <input
+                            type="radio"
+                            log-this-element=""
+                            name={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                            id={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                            value={props.candidateLists.length}
+                            checked={selectedExtractedValueIndex === props.candidateLists.length}
+                            onChange={() => updateSelectedExtractedValueIndex(props.candidateLists.length)}
+                            disabled={props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
+                        />
+                        <label htmlFor={`extractedValueOption_${props.uuid}_${props.candidateLists.length}`}
+                        >None of these</label>
+                    </div>
+                )}
                 <button
                     className={styles.selectInitialValuesButton}
                     disabled={selectedExtractedValueIndex === -1 || props.uuidInEditMode || props.groupSelectionMode || props.viewOnlyMode}
-                    onClick={() => props.handleInitialValuesSelected(selectedExtractedValueIndex===props.candidateLists.length ? ([]):(props.candidateLists[selectedExtractedValueIndex]), props.uuid)} // Empty list if "None of these" is selected
+                    onClick={() => props.handleInitialValuesSelected(getListOfValues(), props.uuid)} // Empty list if "None of these" is selected
                 >
                     Select
                 </button>
@@ -173,22 +235,29 @@ class UserProvidedExamples extends React.Component {
                 // key={`${value}_${i}`}
                 //key={value}
             >
-                <input
-                    className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
-                    log-this-element=""
-                    type="text"
-                    value={valueObj.textCandidate}
-                    onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
-                    //onBlur={(e) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
-                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
-                >
-                </input>
-                <button
-                    onClick={() => this.props.removeValue(i, this.props.uuid)}
-                    className={styles.removeValueButton}
-                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
-                    title="Delete"
-                >x</button>
+                {this.props.isSuperlative ? (
+                    // for superlative, don't want it to be editable
+                    valueObj.textCandidate
+                ):(
+                    <>
+                        <input
+                            className={`${(this.props.uuidInEditMode && this.props.uuidInEditMode !== this.props.uuid || this.props.groupSelectionMode ? styles.grayedOut : '')}`}
+                            log-this-element=""
+                            type="text"
+                            value={valueObj.textCandidate}
+                            onChange={(e) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                            //onBlur={(e) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                        >
+                        </input>
+                        <button
+                            onClick={() => this.props.removeValue(i, this.props.uuid)}
+                            className={styles.removeValueButton}
+                            disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                            title="Delete"
+                        >x</button>
+                    </>
+                )}
             </li>
         );
         return (
@@ -197,19 +266,27 @@ class UserProvidedExamples extends React.Component {
                 examples-area=""
             >
                 {this.props.examplesText}
-                <div
-                    className={styles.importantMessage}
-                >
-                    Please check the auto-populated values, and make corrections as needed.
-                </div>
+                {this.props.isSuperlative ? (
+                    ""
+                ):(
+                    <div
+                        className={styles.importantMessage}
+                    >
+                        Please check the auto-populated values, and make corrections as needed.
+                    </div>
+                )}
                 <ul>{possibleValues}</ul>
-                <button
-                    onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
-                    className={styles.addValuesButton}
-                    disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
-                >
-                    Add another value
-                </button>
+                {this.props.isSuperlative ? (
+                    ""
+                ):(
+                    <button
+                        onClick={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                        className={styles.addValuesButton}
+                        disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                    >
+                        Add another value
+                    </button>
+                )}
             </div>
         )
     }
@@ -237,6 +314,42 @@ class TemplateFreeformParam extends React.Component {
 }
 
 class TemplateEnumerationParam extends React.Component {
+    render(){
+        // Create list of <option> elements based on possibleValues
+        const optionItems = this.props.possibleValues.map((possibleValueObj, i) => {
+            return (
+                <option
+                    value={possibleValueObj.textCandidate}
+                >
+                    {possibleValueObj.textCandidate}
+                </option>
+            );
+        });
+
+        const defaultOption = `<${this.props.paramName}>`;
+        return (
+            // <select>
+            <select
+                log-this-element=""
+                value={this.props.paramValue || defaultOption}
+                onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                disabled={!this.props.valuesEditable}
+                //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
+                //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
+            >
+                <option
+                    value={defaultOption}
+                >
+                    {defaultOption}
+                </option>
+                {optionItems}
+            </select>
+        );
+    }
+}
+
+// Currently identical to TemplateEnumerationParam
+class TemplateSuperlativeParam extends React.Component {
     render(){
         // Create list of <option> elements based on possibleValues
         const optionItems = this.props.possibleValues.map((possibleValueObj, i) => {
@@ -302,6 +415,7 @@ class FreeformParam extends React.Component {
                 {this.props.initialValuesSelected ? (
                     <UserProvidedExamples
                         possibleValues={this.props.possibleValues}
+                        isSuperlative={false}
                         handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                         handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                         handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
@@ -314,12 +428,15 @@ class FreeformParam extends React.Component {
                 ):(
                     <ExtractedValueOptions
                         candidateLists={this.props.candidateLists}
+                        isSuperlative={false}
+                        mostLeastAdjective={this.props.mostLeastAdjective}
                         selectedText={this.props.selectedText}
                         uuidInEditMode={this.props.uuidInEditMode}
                         groupSelectionMode={this.props.groupSelectionMode}
                         viewOnlyMode={this.props.viewOnlyMode}
                         uuid={this.props.uuid}
                         handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
+                        handleMostLeastAdjectiveChange={(e) => this.props.handleMostLeastAdjectiveChange(e, this.props.uuid)}
                     />
                 )}
             </div>
@@ -334,6 +451,7 @@ class EnumerationParam extends React.Component {
                     <div>
                         <UserProvidedExamples
                             possibleValues={this.props.possibleValues}
+                            isSuperlative={false}
                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
                             handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
                             handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
@@ -379,12 +497,84 @@ class EnumerationParam extends React.Component {
                 ):(
                     <ExtractedValueOptions
                         candidateLists={this.props.candidateLists}
+                        isSuperlative={false}
+                        mostLeastAdjective={this.props.mostLeastAdjective}
                         selectedText={this.props.selectedText}
                         uuidInEditMode={this.props.uuidInEditMode}
                         groupSelectionMode={this.props.groupSelectionMode}
                         viewOnlyMode={this.props.viewOnlyMode}
                         uuid={this.props.uuid}
                         handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
+                        handleMostLeastAdjectiveChange={(e) => this.props.handleMostLeastAdjectiveChange(e, this.props.uuid)}
+                    />
+                )}
+            </div>
+        );
+    }
+}
+const superlativeCandidateLists = [
+    [ { textCandidate: "most" }, { textCandidate: "least" } ],
+    [ { textCandidate: "largest" }, { textCandidate: "smallest" } ],
+    [ { textCandidate: "oldest" }, { textCandidate: "youngest" } ],
+    //[ { textCandidate: "earliest" }, { textCandidate: "latest" } ]
+];
+const superlativeRules = {
+    "most": function(valuesList){
+        return Math.max(valuesList);
+    },
+    "least": function(valuesList){
+        return Math.min(valuesList);
+    },
+    "largest": function(valuesList){
+        return Math.max(valuesList);
+    },
+    "smallest": function(valuesList){
+        return Math.min(valuesList);
+    },
+    "oldest": function(valuesList){
+        return Math.max(valuesList);
+    },
+    "youngest": function(valuesList){
+        return Math.min(valuesList);
+    },
+    /*"earliest": function(valuesList){
+
+    },
+    "latest": function(valuesList){
+        
+    },*/
+};
+class SuperlativeParam extends React.Component {
+    render(){
+        return (
+            <div>
+                {this.props.initialValuesSelected ? (
+                    <div>
+                        <UserProvidedExamples
+                            possibleValues={this.props.possibleValues}
+                            isSuperlative={true}
+                            handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                            handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                            handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                            uuidInEditMode={this.props.uuidInEditMode}
+                            groupSelectionMode={this.props.groupSelectionMode}
+                            viewOnlyMode={this.props.viewOnlyMode}
+                            removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                            examplesText="What are some values the user can choose?"
+                        />
+                    </div>
+                ):(
+                    <ExtractedValueOptions
+                        candidateLists={superlativeCandidateLists}
+                        isSuperlative={true}
+                        mostLeastAdjective={this.props.mostLeastAdjective}
+                        selectedText={this.props.selectedText}
+                        uuidInEditMode={this.props.uuidInEditMode}
+                        groupSelectionMode={this.props.groupSelectionMode}
+                        viewOnlyMode={this.props.viewOnlyMode}
+                        uuid={this.props.uuid}
+                        handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
+                        handleMostLeastAdjectiveChange={(e) => this.props.handleMostLeastAdjectiveChange(e, this.props.uuid)}
                     />
                 )}
             </div>
@@ -557,6 +747,7 @@ class ParamTextItem extends React.Component {
                                             uuid={this.props.uuid}           
                                             selectedText={this.props.text}
                                             possibleValues={this.props.paramTypeData.possibleValues}
+                                            mostLeastAdjective={this.props.paramTypeData.mostLeastAdjective}
                                             initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
                                             candidateLists={this.props.paramTypeData.candidateLists}
                                             handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
@@ -573,6 +764,7 @@ class ParamTextItem extends React.Component {
                                             uuid={this.props.uuid}
                                             selectedText={this.props.text}
                                             possibleValues={this.props.paramTypeData.possibleValues}
+                                            mostLeastAdjective={this.props.paramTypeData.mostLeastAdjective}
                                             initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
                                             candidateLists={this.props.paramTypeData.candidateLists}
                                             paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
@@ -585,6 +777,27 @@ class ParamTextItem extends React.Component {
                                             viewOnlyMode={this.props.viewOnlyMode}
                                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                                             handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
+                                            handleMostLeastAdjectiveChange={(e) => this.props.handleMostLeastAdjectiveChange(e, this.props.uuid)}
+                                        />;
+            }else if(this.props.paramTypeData.type === "superlative"){
+                paramTypeSpecificForm = <SuperlativeParam
+                                            uuid={this.props.uuid}
+                                            selectedText={this.props.text}
+                                            possibleValues={this.props.paramTypeData.possibleValues}
+                                            mostLeastAdjective={this.props.paramTypeData.mostLeastAdjective}
+                                            initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
+                                            //candidateLists={this.props.paramTypeData.candidateLists}
+                                            paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
+                                            handleAddBlankParamValue={() => this.props.handleAddBlankParamValue(this.props.uuid)}
+                                            handleParamValueChange={(e, i) => this.props.handleParamValueChange(e, i, this.props.uuid)}
+                                            //handleParamValueBlurred={(e, i) => this.props.handleParamValueBlurred(e, i, this.props.uuid)}
+                                            handleParamNumValuesAllowedChange={(e) => this.props.handleParamNumValuesAllowedChange(e, this.props.uuid)}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
+                                            removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
+                                            handleInitialValuesSelected={(listOfValues) => this.props.handleInitialValuesSelected(listOfValues, this.props.uuid)}
+                                            handleMostLeastAdjectiveChange={(e) => this.props.handleMostLeastAdjectiveChange(e, this.props.uuid)}
                                         />;
             }else if(this.props.paramTypeData.type === "flag"){
                 paramTypeSpecificForm = <FlagParam/>;
@@ -672,16 +885,17 @@ class ParamTextItem extends React.Component {
                         <option value="">--Select value type--</option>
                         <option value="freeform">Something the user types in</option>
                         <option value="enumeration">Something user selects from a list</option>
-                        <option value="flag">Yes/no</option>
                         <option value="date">A date</option>
                         <option value="number">A number</option>
+                        <option value="superlative">A superlative</option>
+                        <option value="flag">Yes/no</option>
                     </select>
 
                     {paramTypeSpecificForm}
 
                     {/* Only show these questions after the user has selected a parameter type and has selected extracted values (if relevant)
                     (because we want the user to focus on that first) */}
-                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" && (this.props.paramTypeData.initialValuesSelected || (this.props.paramTypeData.type !== "freeform" && this.props.paramTypeData.type !== "enumeration")) ? (
+                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" && this.props.paramTypeData.type !== "superlative" && (this.props.paramTypeData.initialValuesSelected || (this.props.paramTypeData.type !== "freeform" && this.props.paramTypeData.type !== "enumeration")) ? (
                         <div
                             className={styles.paramDataChunk}
                         >
@@ -754,6 +968,22 @@ class TemplateParamTextItem extends React.Component {
                                             possibleValues={this.props.paramTypeData.possibleValues}
                                             initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
                                             candidateLists={this.props.paramTypeData.candidateLists}
+                                            paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
+                                            uuidInEditMode={this.props.uuidInEditMode}
+                                            groupSelectionMode={this.props.groupSelectionMode}
+                                            viewOnlyMode={this.props.viewOnlyMode}
+                                            demoIndex={this.props.demoIndex}
+                                            handleTemplateParamValueChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                                            valuesEditable={this.props.valuesEditable}
+                                        />;
+            }else if(this.props.paramTypeData.type === "superlative"){
+                paramTemplate = <TemplateSuperlativeParam
+                                            uuid={this.props.uuid}
+                                            paramName={this.props.paramName}
+                                            paramValue={this.props.paramValue}
+                                            //selectedText={this.props.text}
+                                            possibleValues={this.props.paramTypeData.possibleValues}
+                                            initialValuesSelected={this.props.paramTypeData.initialValuesSelected}
                                             paramMultipleValuesAllowed={this.props.paramMultipleValuesAllowed}
                                             uuidInEditMode={this.props.uuidInEditMode}
                                             groupSelectionMode={this.props.groupSelectionMode}
@@ -940,7 +1170,8 @@ class NaturalLanguage extends React.Component {
                                     type: "",
                                     possibleValues: [ { textCandidate: selectedText, xPath: null }],
                                     initialValuesSelected: undefined, // i.e., whether we're past the value extraction state
-                                    candidateLists: undefined
+                                    candidateLists: undefined,
+                                    mostLeastAdjective: null
                                 },
                                 paramAnnotatorCreated: false
                             };
@@ -1458,7 +1689,9 @@ class NaturalLanguage extends React.Component {
             type: value,
             initialValuesSelected: idToItemClone[uuid].paramTypeData.initialValuesSelected,
             candidateLists: idToItemClone[uuid].paramTypeData.candidateLists,
-            possibleValues: idToItemClone[uuid].paramTypeData.possibleValues/* ,
+            possibleValues: idToItemClone[uuid].paramTypeData.possibleValues,
+            mostLeastAdjective: idToItemClone[uuid].paramTypeData.mostLeastAdjective
+            /* ,
             valuesExplicitlyAddedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser || [],
             valuesExplicitlyDeletedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser || [] */
         };
@@ -1579,6 +1812,17 @@ class NaturalLanguage extends React.Component {
         });
     }
 
+    handleMostLeastAdjectiveChange(e, uuid){
+        const value = e.target.value;
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        
+        idToItemClone[uuid].paramTypeData.mostLeastAdjective = value;
+
+        this.setState({
+            idToItem: idToItemClone
+        });
+    }
+
     addParameter(uuid){
         // Get uuid's item, create a new empty param obj to add to the end of it
 
@@ -1596,7 +1840,8 @@ class NaturalLanguage extends React.Component {
                 type: "",
                 possibleValues: [],
                 initialValuesSelected: [], // i.e., whether we're past the value extraction state
-                candidateLists: []
+                candidateLists: [],
+                mostLeastAdjective: null
             },
             paramAnnotatorCreated: true
         };
@@ -2367,6 +2612,7 @@ class NaturalLanguage extends React.Component {
                             handleParamNumberRestrictionChange={(e, restrictionToChange) => this.handleParamNumberRestrictionChange(e, restrictionToChange, textItem.uuid)}
                             handleGroupSelectionChange={(e) => this.handleGroupSelectionChange(e, textItem.uuid)}
                             handleInitialValuesSelected={(listOfValues) => this.handleInitialValuesSelected(listOfValues, textItem.uuid)}
+                            handleMostLeastAdjectiveChange={(e) => this.handleMostLeastAdjectiveChange(e, textItem.uuid)}
                         />
                     </span>
                 );
