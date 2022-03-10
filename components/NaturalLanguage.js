@@ -516,33 +516,63 @@ const superlativeCandidateLists = [
     [ { textCandidate: "most" }, { textCandidate: "least" } ],
     [ { textCandidate: "largest" }, { textCandidate: "smallest" } ],
     [ { textCandidate: "oldest" }, { textCandidate: "youngest" } ],
+    [ { textCandidate: "highest" }, { textCandidate: "lowest" } ],
     //[ { textCandidate: "earliest" }, { textCandidate: "latest" } ]
 ];
-const superlativeRules = {
-    "most": function(valuesList){
-        return Math.max(valuesList);
-    },
-    "least": function(valuesList){
-        return Math.min(valuesList);
-    },
-    "largest": function(valuesList){
-        return Math.max(valuesList);
-    },
-    "smallest": function(valuesList){
-        return Math.min(valuesList);
-    },
-    "oldest": function(valuesList){
-        return Math.max(valuesList);
-    },
-    "youngest": function(valuesList){
-        return Math.min(valuesList);
-    },
-    /*"earliest": function(valuesList){
 
-    },
-    "latest": function(valuesList){
+function mostSuperlative(valuesList){
+    let superlativeValue = undefined;
+    let superlativeValueIndex = undefined;
+    for(let i = 0; i < valuesList.length; i++){
+        const currentValue = valuesList[i];
+        if(currentValue !== null && !isNaN(currentValue)){
+            if(superlativeValue === undefined || currentValue > superlativeValue){
+                superlativeValue = currentValue;
+                superlativeValueIndex = i;
+            }
+        }
+    }
+
+    return {
+        superlativeValue,
+        superlativeValueIndex
+    }
+}
+
+function leastSuperlative(valuesList){
+    let superlativeValue = undefined;
+    let superlativeValueIndex = undefined;
+    for(let i = 0; i < valuesList.length; i++){
+        const currentValue = valuesList[i];
+        if(currentValue !== null && !isNaN(currentValue)){
+            if(superlativeValue === undefined || currentValue < superlativeValue){
+                superlativeValue = currentValue;
+                superlativeValueIndex = i;
+            }
+        }
+    }
+
+    return {
+        superlativeValue,
+        superlativeValueIndex
+    }
+}
+
+const superlativeRules = {
+    "most": mostSuperlative,
+    "least": leastSuperlative,
+    "largest": mostSuperlative,
+    "smallest": leastSuperlative,
+    "oldest": mostSuperlative,
+    "youngest": leastSuperlative,
+    "highest": mostSuperlative,
+    "lowest": leastSuperlative,
+    // "earliest": function(valuesList){
+
+    // },
+    // "latest": function(valuesList){
         
-    },*/
+    // },
 };
 class SuperlativeParam extends React.Component {
     render(){
@@ -2077,8 +2107,34 @@ class NaturalLanguage extends React.Component {
         });
     }
 
-    getParamValueObj(){
+    findSuperlatives(nlString){
+        // use superlativeRules
+        const foundSuperlatives = [];
+        for(let superlativeString of Object.keys(superlativeRules)){
+            if(nlString.includes(superlativeString)){
+                foundSuperlatives.push(superlativeString);
+            }
+        }
+        return foundSuperlatives;
+    }
+
+    getConstantSuperlatives(){
+        let constantSuperlatives = [];
+        for(let item of Object.values(this.state.idToItem)){
+            if(item.type === "text"){
+                const text = item.text;
+                const superlatives = this.findSuperlatives(text);
+                if(superlatives.length > 0){
+                    constantSuperlatives = constantSuperlatives.concat(superlatives);
+                }
+            }
+        }
+        return constantSuperlatives;
+    }
+
+    getParamValueData(){
         let paramValueObj = {};
+        let superlativeParameters = [];
         for(let item of Object.values(this.state.idToItem)){
             if(item.paramTypeData){
                 // This item is a param. Add this param name and its param values/xpaths to paramValueObj
@@ -2090,16 +2146,24 @@ class NaturalLanguage extends React.Component {
                 }
                 const paramName = item.paramName;
                 paramValueObj[paramName] = thisParam;
+                if(item.paramTypeData.type === "superlative"){
+                    // ideally should only be 1 superlative in the NL; not sure if we can meaningfully support multiple? not enough semantic input from user
+                    superlativeParameters.push(paramName);
+                }
             }
         }
-        console.log("paramValueObj", paramValueObj);
-        return paramValueObj;
+        //console.log("paramValueObj", paramValueObj);
+        //return paramValueObj;
+        return {
+            paramValueObj,
+            superlativeParameters
+        };
     }
 
     generateCodeStringFromProgramObj(program){
         let currentProgramCode;
             
-        const paramValueObj = this.getParamValueObj();
+        const paramValueObj = this.getParamValueData().paramValueObj;
 
         let programString = "[\n";
         for(let programStep of program){
@@ -2144,9 +2208,11 @@ class NaturalLanguage extends React.Component {
             }
             console.log("currentParamValuePairings", currentParamValuePairings);
 
-            const paramValueObj = this.getParamValueObj();
-
-            generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj);
+            const { paramValueObj, superlativeParameters } = this.getParamValueData();
+            
+            const constantSuperlatives = this.getConstantSuperlatives();
+            
+            generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
             console.log("generatedProgram", generatedProgram);
 
             currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgram.program);
@@ -2403,6 +2469,7 @@ class NaturalLanguage extends React.Component {
             }
 
             const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
+            console.log("programOutput", programOutput);
             context.setState({
                 programOutput
             });
@@ -2938,7 +3005,7 @@ class NaturalLanguage extends React.Component {
         if(this.state.generatedProgram){
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
             runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
-            const paramValueObj = this.getParamValueObj();
+            const paramValueObj = this.getParamValueData().paramValueObj;
             // Show a representation of the program
             programSteps = this.state.generatedProgram.program.map((step, step_index) => {
                 // Should remove prefix before [clone]?
@@ -3005,7 +3072,7 @@ class NaturalLanguage extends React.Component {
                                     <div>
                                         Influenced by the following parameters:
                                     </div>
-                                    { step.relevantParam || step.relevantParamForRow || step.relevantParamForCol ?  (
+                                    { step.relevantParam || step.filterParamForRowSelection || step.relevantParamForCol ?  (
                                         <div>
                                             <div>
                                                 <input
@@ -3023,7 +3090,7 @@ class NaturalLanguage extends React.Component {
                                                         className={styles.importantPieceOfInfo}
                                                     >
                                                         { step.relevantParam ? <span> {step.relevantParam} &nbsp;&nbsp;&nbsp; </span> : "" }
-                                                        { step.relevantParamForRow ? <span> {step.relevantParamForRow} &nbsp;&nbsp;&nbsp; </span> : "" }
+                                                        { step.filterParamForRowSelection ? <span> {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" }
                                                         { step.relevantParamForCol ? <span> {step.relevantParamForCol} &nbsp;&nbsp;&nbsp; </span> : "" }
                                                     </span>
                                                 </label>

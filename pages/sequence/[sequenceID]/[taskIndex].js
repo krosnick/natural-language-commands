@@ -160,6 +160,10 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                         <NaturalLanguage
                             name={name}
                             text={text}
+                            //text="What is the name of the most rich person in the United States?"
+                            //text="What is the name of the youngest billionaire in the United States?"
+                            //text="What is the lowest rank billionaire in the United States?"
+                            //text="What is the name of the lowest rank billionaire in the United States?"
                             // websiteUrl={websiteUrl}
                             websiteHTML={websiteHTML}
                             textEditable={false}
