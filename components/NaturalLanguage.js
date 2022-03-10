@@ -1260,8 +1260,8 @@ class NaturalLanguage extends React.Component {
                             // Do this in the background, as to not slow down initial param rendering
                             setTimeout(function(uuid, context){
                                 let candidateLists = [];
-                                if(selectedText.trim() !== ""){
-                                    // Don't want to run getCandidateLists on an empty string; not meaningful and it's going to crash the app
+                                if(selectedText.trim() !== "" && selectedText.trim().length > 1){
+                                    // Don't want to run getCandidateLists on an empty string; not meaningful and it's going to crash the app; similarly don't want to run on a single character
                                     candidateLists = getCandidateLists([selectedText.trim()], false, '//*[@clone]');
                                 }
                                 const idToItemClone = _.cloneDeep(context.state.idToItem);
