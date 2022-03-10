@@ -353,3 +353,8 @@
     cursor: pointer;
     margin: 10px;   
 }
+
+.inferenceExplanationIndentation {
+    position: relative;
+    left: 25px;
+}

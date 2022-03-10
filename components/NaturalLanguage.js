@@ -3076,7 +3076,7 @@ class NaturalLanguage extends React.Component {
                                     <div>
                                         Influenced by the following parameters:
                                     </div>
-                                    { step.relevantParam || step.filterParamForRowSelection || step.relevantParamForCol ?  (
+                                    { step.relevantParam || step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection || step.relevantParamForCol ?  (
                                         <div>
                                             <div>
                                                 <input
@@ -3091,11 +3091,77 @@ class NaturalLanguage extends React.Component {
                                                 />
                                                 <label htmlFor={`inferred_influencedBy_${step_index}`}>
                                                     <span
-                                                        className={styles.importantPieceOfInfo}
+                                                        //className={styles.importantPieceOfInfo}
                                                     >
-                                                        { step.relevantParam ? <span> {step.relevantParam} &nbsp;&nbsp;&nbsp; </span> : "" }
-                                                        { step.filterParamForRowSelection ? <span> {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" }
-                                                        { step.relevantParamForCol ? <span> {step.relevantParamForCol} &nbsp;&nbsp;&nbsp; </span> : "" }
+                                                        { step.relevantParam ?
+                                                            <span
+                                                                className={styles.importantPieceOfInfo}
+                                                            >
+                                                                {step.relevantParam} &nbsp;&nbsp;&nbsp;
+                                                            </span>
+                                                        : "" }
+                                                        {/* { step.filterParamForRowSelection ? <span> Row determined by: {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" } */}
+                                                        { step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
+                                                            <div
+                                                                className={styles.inferenceExplanationIndentation}
+                                                            >
+                                                                <div>
+                                                                    Row determined by:
+                                                                </div>
+                                                                <div
+                                                                    className={styles.inferenceExplanationIndentation}
+                                                                >
+                                                                    {step.filterParamForRowSelection ?
+                                                                        <div>
+                                                                            Filtered by:
+                                                                            <span
+                                                                                className={styles.importantPieceOfInfo}
+                                                                            >
+                                                                                {step.filterParamForRowSelection};
+                                                                            </span>
+                                                                        </div>
+                                                                    :""}
+                                                                    {step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
+                                                                        <>
+                                                                            Superlative: 
+                                                                            {step.colParamForSuperlativeForRowSelection ?
+                                                                                <span
+                                                                                    className={styles.importantPieceOfInfo}
+                                                                                >
+                                                                                    {step.colParamForSuperlativeForRowSelection};
+                                                                                </span>
+                                                                            :""}
+                                                                            {step.superlativeParamForRowSelection ?
+                                                                                <span
+                                                                                    className={styles.importantPieceOfInfo}
+                                                                                >
+                                                                                    {step.superlativeParamForRowSelection};
+                                                                                </span>
+                                                                            :""}
+                                                                            {step.constantSuperlativeValueForRowSelection ?
+                                                                                <span
+                                                                                    className={styles.importantPieceOfInfo}
+                                                                                >
+                                                                                    {step.constantSuperlativeValueForRowSelection};
+                                                                                </span>
+                                                                            :""}
+                                                                        </>
+                                                                    :""}
+                                                                </div>
+                                                            </div>
+                                                        : "" }
+                                                        { step.relevantParamForCol ?
+                                                            <span
+                                                                className={styles.inferenceExplanationIndentation}
+                                                            >
+                                                                Column determined by:
+                                                                <span
+                                                                    className={styles.importantPieceOfInfo}
+                                                                >
+                                                                    {step.relevantParamForCol}
+                                                                </span>
+                                                            </span>
+                                                        : "" }
                                                     </span>
                                                 </label>
                                             </div>
