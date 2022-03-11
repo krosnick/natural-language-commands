@@ -486,6 +486,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 if(rowColData.rowData){
                     
                     function identifyParameterForDataValueColIndex(dataValueColIndex, rowColData, rowXPath){
+                        console.log("identifyParameterForDataValueColIndex");
                         // For each parameter, find the row that contains those parameters, and then get the number of columns.
                             // Then, compare this to the number of columns for our data row.
                             // Choose the parameter which the closest number of columns to the data row. Then, note the offset.
@@ -542,7 +543,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         //console.log("necessaryColNum", necessaryColNum);
                         paramNumColDataOptions.filter(obj => obj.numCols === necessaryColNum);
                         
-                        //console.log("paramNumColDataOptions", paramNumColDataOptions);
+                        console.log("paramNumColDataOptions", paramNumColDataOptions);
 
                         let possibleParamOptions = [];
                         for(let paramNumColDataOption of paramNumColDataOptions){
@@ -593,8 +594,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 }*/
                             }
                         }
-                        //console.log("possibleParamOptions", possibleParamOptions);
+                        console.log("possibleParamOptions", possibleParamOptions);
                     
+                        // TODO - possibleParamOptions.length would be greater than 1 if multiple parameters have same value selected; might want to
+                            // choose one of the options, and maybe use different parameters for other steps of the demo. But definitely could get the inference wrong,
+                            // so maybe should just disallow user from selecting same value for multiple parameters
                         if(possibleParamOptions.length === 1){
                             // Create rule for identifying right column within data value row
                             let paramColData = possibleParamOptions[0];
