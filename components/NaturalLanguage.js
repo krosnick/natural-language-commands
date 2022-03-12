@@ -3511,9 +3511,9 @@ class NaturalLanguage extends React.Component {
                         <WebsiteEventListener
                             handleEmbeddedWebsiteEvent={(e) => this.handleEmbeddedWebsiteEvent(e)}
                         >
-                            <ChipotleClone
+                            {/* <ChipotleClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
-                            />
+                            /> */}
                             {/* <OscarsClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
@@ -3523,10 +3523,10 @@ class NaturalLanguage extends React.Component {
                             {/* <ForbesClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
-                            {/* <Clone
+                            <Clone
                                 websiteHTML={this.props.websiteHTML}
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
-                            /> */}
+                            />
                         </WebsiteEventListener>
                         {this.state.websiteSelectedTextObject ?
                             <button
