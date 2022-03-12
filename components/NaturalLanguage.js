@@ -3468,7 +3468,21 @@ class NaturalLanguage extends React.Component {
                                             className={styles.programOutput}
                                         >
                                             <div>Program output</div>
-                                            {this.state.programOutput.map((value) => <div>{value}</div>)}
+                                            {this.state.programOutput.map(function(value){
+                                                if(value.type === "error"){
+                                                    return (
+                                                        <div
+                                                            className={styles.runtimeError}
+                                                        >
+                                                            {value.message}
+                                                        </div>
+                                                    );
+                                                }else{
+                                                    return (
+                                                        <div>{value.message}</div>
+                                                    );
+                                                }
+                                            })}
                                         </div>
                                     ):(
                                         ""
@@ -3497,9 +3511,9 @@ class NaturalLanguage extends React.Component {
                         <WebsiteEventListener
                             handleEmbeddedWebsiteEvent={(e) => this.handleEmbeddedWebsiteEvent(e)}
                         >
-                            {/* <ChipotleClone
+                            <ChipotleClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
-                            /> */}
+                            />
                             {/* <OscarsClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
@@ -3509,10 +3523,10 @@ class NaturalLanguage extends React.Component {
                             {/* <ForbesClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
-                            <Clone
+                            {/* <Clone
                                 websiteHTML={this.props.websiteHTML}
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
-                            />
+                            /> */}
                         </WebsiteEventListener>
                         {this.state.websiteSelectedTextObject ?
                             <button

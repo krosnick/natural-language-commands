@@ -55,13 +55,19 @@ export async function executeProgram(program, paramValuePairings){
                 await delayFor(3000); // Let's wait 1000ms between each click
                 const returnValue = operations[programStep.eventType](element);
                 if(returnValue){ // because some operations won't return anything
-                    valuesToReturn.push(returnValue);
+                    valuesToReturn.push({
+                        message: returnValue,
+                        type: "output"
+                    });
                 }
             }
         } catch (error) {
             // An error happened, let's return it
             return [
-                error
+                {
+                    message: "Program failed for this set of values",
+                    type: "error"
+                }
             ];
         }
     }

@@ -358,3 +358,7 @@
     position: relative;
     left: 25px;
 }
+
+.runtimeError {
+    color: red;
+}

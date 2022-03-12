@@ -21031,10 +21031,10 @@ iframe[data-v-d35eef7a] {
 }
 
 .meal-builder-item-selector-card-container .card[data-v-65cc132f] {
-    -webkit-user-select: none;
+    /* -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+    user-select: none; */
     cursor: pointer;
     width: 100%;
     height: 100px;
