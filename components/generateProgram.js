@@ -216,7 +216,7 @@ function getSiblingSimilarityScores(eventTargetXPath){
     // Starting at this level, and then for each level up until the top of the HTML DOM tree, calculate the likeliness score for each level (i.e., each set of siblings)
     var ancestorNode = targetElement;
     var levelData = [];
-    while(ancestorNode.parentNode){
+    while(ancestorNode && ancestorNode.parentNode){
         // For ancestorNode, compare it and its siblings and calculate a score for how similar they are
         var siblingNodes = ancestorNode.parentNode.children;
         var levelScore = 0;
@@ -254,7 +254,7 @@ function getLikelyRowsColumns(eventTargetXPath){
     var indicesWithPositiveScore = [];
     for(var i = 0; i <= 5; i++){
         //if(levelData[i].levelScore > 0){
-        if(levelData[i].levelScore > 20){
+        if(levelData[i] && levelData[i].levelScore > 20){
             indicesWithPositiveScore.push(i);
         }
     }
@@ -816,10 +816,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     const originalSuperlativeValue = currentParamValuePairings[superlativeParam];
                                     // Handling case where user wrote in some custom text for most/least
                                     let superlativeValue = originalSuperlativeValue;
-                                    if(superlativeValue.indexOf("most ") > 0){
+                                    if(superlativeValue.indexOf("most ") > -1){
                                         superlativeValue = "most";
                                     }
-                                    if(superlativeValue.indexOf("least ") > 0){
+                                    if(superlativeValue.indexOf("least ") > -1){
                                         superlativeValue = "least";
                                     }
 
@@ -928,10 +928,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 //superlativeParameters
                                 //console.log("superlativeValueForRowSelection", superlativeValueForRowSelection);
                                 let superlative = superlativeValueForRowSelection;
-                                if(superlative.indexOf("most ") > 0){
+                                if(superlative.indexOf("most ") > -1){
                                     superlative = "most";
                                 }
-                                if(superlative.indexOf("least ") > 0){
+                                if(superlative.indexOf("least ") > -1){
                                     superlative = "least";
                                 }
 

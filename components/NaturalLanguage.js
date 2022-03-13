@@ -2472,8 +2472,8 @@ class NaturalLanguage extends React.Component {
     }
 
     handleRunProgram(){
-        // First, cause website to re-render so we have clean slate
-        this.forceReRenderEmbeddedWebsite();
+        /*// First, cause website to re-render so we have clean slate
+        this.forceReRenderEmbeddedWebsite();*/
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
         // Before running program, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
@@ -2496,6 +2496,32 @@ class NaturalLanguage extends React.Component {
         setTimeout(function(context){
             // This will regenerate program again, using the new xpaths
             context.handleStopRecordingDemo();
+
+            // First, cause website to re-render so we have clean slate
+            context.forceReRenderEmbeddedWebsite();
+
+            // Wait a couple seconds to execute program
+            setTimeout(async function(context){
+                // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
+                const paramToValueObj = {};
+                for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
+                    const paramName = paramNameValueObj.paramName;
+                    const paramValue = paramNameValueObj.paramValue;
+                    paramToValueObj[paramName] = paramValue;
+                }
+
+                const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
+                console.log("programOutput", programOutput);
+                context.setState({
+                    programOutput,
+                    programRunInProgress: false
+                });
+            }, 2000, context);
+        }, 0, this);
+
+        /* setTimeout(function(context){
+            // This will regenerate program again, using the new xpaths
+            context.handleStopRecordingDemo();
         }, 0, this);
 
         // Wait a couple seconds to execute program
@@ -2514,7 +2540,7 @@ class NaturalLanguage extends React.Component {
                 programOutput,
                 programRunInProgress: false
             });
-        }, 2000, this);
+        }, 2000, this); */
     }
 
     handleDemoReplay(demo_index){
