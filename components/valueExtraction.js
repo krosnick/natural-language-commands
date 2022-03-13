@@ -384,6 +384,9 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, embeddedWebsitePrefix
     console.log("bestSoFar", bestSoFar);
     console.log("xPathPrefix", xPathPrefix);
     console.log("xPathSuffix", xPathSuffix);
+
+    const newValueXPathObjList = Object.values(bestSoFar);
+    return newValueXPathObjList;
 }
 
 function getParentXPath(xPathString){

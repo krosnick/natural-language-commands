@@ -1137,7 +1137,8 @@ class NaturalLanguage extends React.Component {
             showCodeEditor: false,
             currentProgramCode: null,
             freeformNLQuery: "",
-            mostRelevantQueries: null
+            mostRelevantQueries: null,
+            programRunInProgress: false
         }
     }
 
@@ -1846,10 +1847,6 @@ class NaturalLanguage extends React.Component {
         this.setState({
             idToItem: idToItemClone
         });
-
-        setTimeout(function(context){
-            makeXPathsMoreRobust(context.state.idToItem[uuid].paramTypeData.possibleValues, embeddedWebsiteXPathPrefix);
-        }, 10000, this);
     }
 
     handleMostLeastAdjectiveChange(e, uuid){
@@ -2109,11 +2106,24 @@ class NaturalLanguage extends React.Component {
     }
 
     handleStartRecordingDemo(){
+        console.log("handleStartRecordingDemo");
         // Reload embedded website page, to ensure clean slate when user starts performing demo
         this.forceReRenderEmbeddedWebsite();
 
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
+        for(let item of Object.values(idToItemClone)){
+            if(item.paramTypeData){
+                // This item is a param. Run makeXPathsMoreRobust on its values and update 
+                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, embeddedWebsiteXPathPrefix);
+                console.log("newValueXPathObjList", newValueXPathObjList);
+                idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
+            }
+        }
+
         this.setState({
-            inRecordingDemoMode: true
+            inRecordingDemoMode: true,
+            idToItem: idToItemClone
         });
     }
 
@@ -2463,9 +2473,22 @@ class NaturalLanguage extends React.Component {
         // First, cause website to re-render so we have clean slate
         this.forceReRenderEmbeddedWebsite();
 
+        const idToItemClone = _.cloneDeep(this.state.idToItem);
+        // Before running program, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
+        for(let item of Object.values(idToItemClone)){
+            if(item.paramTypeData){
+                // This item is a param. Run makeXPathsMoreRobust on its values and update 
+                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, embeddedWebsiteXPathPrefix);
+                console.log("newValueXPathObjList", newValueXPathObjList);
+                idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
+            }
+        }
+
         // Clear current program output
         this.setState({
-            programOutput: null
+            programOutput: null,
+            idToItem: idToItemClone,
+            programRunInProgress: true
         });
 
         // Wait a couple seconds to execute program
@@ -2481,7 +2504,8 @@ class NaturalLanguage extends React.Component {
             const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
             console.log("programOutput", programOutput);
             context.setState({
-                programOutput
+                programOutput,
+                programRunInProgress: false
             });
         }, 2000, this);
     }
@@ -3464,10 +3488,22 @@ class NaturalLanguage extends React.Component {
                                         {runningProgramNLTemplateItems}
                                     </div>
                                     <div>
-                                        <button
-                                            className={styles.runProgramButton}
-                                            onClick={() => this.handleRunProgram()}
-                                        >Run program</button>
+                                        {this.state.programRunInProgress ? (
+                                            <button
+                                                className={styles.runProgramButton}
+                                                onClick={() => this.handleRunProgram()}
+                                                disabled={true}
+                                            >
+                                                Running...
+                                            </button>
+                                        ):(
+                                            <button
+                                                className={styles.runProgramButton}
+                                                onClick={() => this.handleRunProgram()}
+                                            >
+                                                Run program
+                                            </button>
+                                        )}
                                     </div>
                                     {this.state.programOutput ? (
                                         <div
