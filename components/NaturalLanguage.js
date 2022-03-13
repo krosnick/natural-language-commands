@@ -2213,6 +2213,7 @@ class NaturalLanguage extends React.Component {
         
         let generatedProgram = this.state.generatedProgram;
         let currentProgramCode;
+        let demonstrationsClone = _.cloneDeep(this.state.demonstrations);
         if(this.state.demonstrations.length === 1){
             // Only 1 demo so far. Let's use this 1 demo to generate a program
             const demoIndex = 0;
@@ -2236,6 +2237,11 @@ class NaturalLanguage extends React.Component {
             console.log("generatedProgram", generatedProgram);
 
             currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgram.program);
+
+            // Want to note what the param value data was that was used during the demo;
+                // later on when user runs program, we want to see if the param value data at that time is what it was at the time of the demo(s);
+                // if it's different, then we'll want to warn user that they should probably re-demo so we can generate updated program
+            demonstrationsClone[demoIndex].paramValueDataUsed = this.getParamValueData();
         }else{
             // Multiple demos. Currently we don't know how to generalize from multiple demos,
                 // so for now we just won't update the program
@@ -2243,6 +2249,7 @@ class NaturalLanguage extends React.Component {
 
         this.setState({
             generatedProgram,
+            demonstrations: demonstrationsClone,
             //currentProgramCode: "var x = 1; // sample code",
             currentProgramCode,
             inRecordingDemoMode: false,
@@ -2475,72 +2482,57 @@ class NaturalLanguage extends React.Component {
         /*// First, cause website to re-render so we have clean slate
         this.forceReRenderEmbeddedWebsite();*/
 
-        const idToItemClone = _.cloneDeep(this.state.idToItem);
-        // Before running program, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
-        for(let item of Object.values(idToItemClone)){
-            if(item.paramTypeData && !item.paramTypeData.type === "superlative"){
-                // This item is a param. Run makeXPathsMoreRobust on its values and update 
-                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, embeddedWebsiteXPathPrefix);
-                console.log("newValueXPathObjList", newValueXPathObjList);
-                idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
+        // Check if param value data has changed since demo(s) were recorded;
+            // if they have, then we'll want to alert user that they probably should re-demo
+            // (so we can generate updated program)
+        const currentParamValueData = this.getParamValueData();
+        console.log("currentParamValueData", currentParamValueData);
+        let alertUserToReDemo = false;
+        for(let demo of this.state.demonstrations){
+            const demoParamValueDataUsed = demo.paramValueDataUsed;
+            console.log("demoParamValueDataUsed", demoParamValueDataUsed);
+            if(!_.isEqual(currentParamValueData, demoParamValueDataUsed)){
+                console.log("not equal");
+                alertUserToReDemo = true;
             }
         }
 
         // Clear current program output
         this.setState({
             programOutput: null,
-            idToItem: idToItemClone,
-            programRunInProgress: true
+            programRunInProgress: !alertUserToReDemo
         });
 
-        setTimeout(function(context){
-            // This will regenerate program again, using the new xpaths
-            context.handleStopRecordingDemo();
-
-            // First, cause website to re-render so we have clean slate
-            context.forceReRenderEmbeddedWebsite();
-
-            // Wait a couple seconds to execute program
-            setTimeout(async function(context){
-                // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
-                const paramToValueObj = {};
-                for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
-                    const paramName = paramNameValueObj.paramName;
-                    const paramValue = paramNameValueObj.paramValue;
-                    paramToValueObj[paramName] = paramValue;
-                }
-
-                const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
-                console.log("programOutput", programOutput);
-                context.setState({
-                    programOutput,
-                    programRunInProgress: false
-                });
-            }, 2000, context);
-        }, 0, this);
-
-        /* setTimeout(function(context){
-            // This will regenerate program again, using the new xpaths
-            context.handleStopRecordingDemo();
-        }, 0, this);
-
-        // Wait a couple seconds to execute program
-        setTimeout(async function(context){
-            // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
-            const paramToValueObj = {};
-            for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
-                const paramName = paramNameValueObj.paramName;
-                const paramValue = paramNameValueObj.paramValue;
-                paramToValueObj[paramName] = paramValue;
-            }
-
-            const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
-            console.log("programOutput", programOutput);
-            context.setState({
-                programOutput,
-                programRunInProgress: false
-            });
-        }, 2000, this); */
+        if(alertUserToReDemo){
+            window.alert("You've updated parameter values since you last created a demonstration. You should re-demo so we can generate an updated program.");
+        }else{
+            setTimeout(function(context){
+                // No need to regenerate program anymore, because we won't let user run program if param values have changed (in which case, they'll have to create a new demo which will then regenerate the program)
+                /*// This will regenerate program again, using the new xpaths
+                context.handleStopRecordingDemo();*/
+    
+                // First, cause website to re-render so we have clean slate
+                context.forceReRenderEmbeddedWebsite();
+    
+                // Wait a couple seconds to execute program
+                setTimeout(async function(context){
+                    // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
+                    const paramToValueObj = {};
+                    for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
+                        const paramName = paramNameValueObj.paramName;
+                        const paramValue = paramNameValueObj.paramValue;
+                        paramToValueObj[paramName] = paramValue;
+                    }
+    
+                    const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
+                    console.log("programOutput", programOutput);
+                    context.setState({
+                        programOutput,
+                        programRunInProgress: false
+                    });
+                }, 2000, context);
+            }, 0, this);
+        }
     }
 
     handleDemoReplay(demo_index){
