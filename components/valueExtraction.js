@@ -166,6 +166,233 @@ export function getCandidateLists(positiveExamplesList, exactStringBoolean, embe
     }
 } */
 
+function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selectorType, valuesWithoutXPath, valuesWithXPath){
+    // Now try using this nodeXPathSubstring and see if we match more example values than before
+    const newTemplateXPath = parentXPath + nodeXPathSubstring + xPathSuffix;
+    console.log("newTemplateXPath", newTemplateXPath);
+
+    const parentXPathFilledIn = parentXPath.replace("INSERT-INDEX-HERE", 1); // filling in, just in case it still has a template
+    //console.log("parentXPathFilledIn", parentXPathFilledIn);
+    const numNodesAtThisLevel = document.evaluate(parentXPathFilledIn, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0).children.length;
+    // Try newTemplateXPath with different indices for INSERT-INDEX-HERE and see how many results we get and if they match our values
+    //let index = 1; // xpath nodes are 1-indexed
+    const newMatchesFound = [];
+    let numExtraneousNodesFound = 0;
+    //while(true){
+    for(let index = 1; index <= numNodesAtThisLevel; index++){
+        const filledInTemplateXPath = newTemplateXPath.replace("INSERT-INDEX-HERE", index);
+        if(filledInTemplateXPath.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
+            const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            if(result.snapshotItem(0)){
+                let textCandidate = result.snapshotItem(0).textContent;
+                //if(valuesWithoutXPath.includes(textCandidate)){
+                if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
+                    newMatchesFound.push(textCandidate);
+                //}else if(!valuesWithXPath.includes(textCandidate)){
+                }else if(indexOfCaseInsensitive(valuesWithXPath, textCandidate) === -1){
+                    // We've matched a node whose value isn't one the user has specified. We want to keep track of how many of these we have (if it's too high, then maybe we shouldn't generalize the xpath in this way)
+                    numExtraneousNodesFound +=1;
+                }
+            }
+        }
+        //index += 1;
+    }
+
+    return {
+        newMatchesFound,
+        numExtraneousNodesFound,
+        nodeXPathSubstring,
+        newTemplateXPath,
+        selectorType,
+        numNodesAtThisLevel
+    };
+}
+
+export function makeXPathsMoreRobust(valueAndXPathObjList, embeddedWebsitePrefix){
+    //let numItemsWithXPath = 0;
+    let valuesWithoutXPath = [];
+    let valuesWithXPath = [];
+    let objWithXPath; // to use as an example, as we go up through DOM
+    for(let obj of valueAndXPathObjList){
+        if(obj.xPath){
+            objWithXPath = obj;
+            //numItemsWithXPath += 1;
+            valuesWithXPath.push(obj.textCandidate);
+        }else{
+            valuesWithoutXPath.push(obj.textCandidate);
+        }
+    }
+    console.log("objWithXPath", objWithXPath);
+    console.log("valuesWithoutXPath", valuesWithoutXPath);
+
+    // Now traverse up DOM for objWithXPath
+    //let bestListSoFar = valueAndXPathObjList;
+    let bestSoFar = {}; // Put into a map, so it's easier to index into later
+    for(let valueAndXPathObj of valueAndXPathObjList){
+        // using toLowerCase because it'll be easier, since we don't know what case text will be on website; this of course relies on users not giving multiple values that are the same word except different case
+        bestSoFar[valueAndXPathObj.textCandidate.toLowerCase()] = _.cloneDeep(valueAndXPathObj);
+    }
+    let xPathPrefix = objWithXPath.templateXPath;
+    let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
+    const curNode = document.evaluate(objWithXPath.xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+    //console.log("curNode", curNode);
+    while(curNode.parentNode && valuesWithoutXPath.length > 0){ // i.e., until we reach the top of the document
+        // Try an alternate xPath substring for this level
+        //const parentXPath = getXPathForElement(curNode.parentNode); // this does use indices
+        const parentXPath = getParentXPath(xPathPrefix);
+        const curNodeXPathSubstring = xPathPrefix.substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
+        
+        //const tag = curNode.tagName.toLowerCase();
+
+        const candidateChanges = [];
+
+        // Try inserting a / (so that it's //) on the right of this xpath. So that this could match values whose DOM node is deeper
+        // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+        if(xPathSuffix.length > 0){
+            const nodeXPathSubstring = `${curNodeXPathSubstring}/`;
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath);
+            candidateChanges.push(attempt);
+        }
+
+        // Try using a class instead of an index
+        const classList = curNode.classList;
+        for(let className of classList){
+            //const nodeXPathSubstring1 = `/${tag}[@class='${className}']`;
+            const nodeXPathSubstring1 = `/*[@class='${className}']`;
+            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath);
+            candidateChanges.push(attempt1);
+
+            // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+            if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
+                // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
+                const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
+                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", valuesWithoutXPath, valuesWithXPath);
+                candidateChanges.push(attempt2);
+            }
+        }
+
+        // Try using an attribute instead of an index
+        const attributes = curNode.attributes;
+        for(let attribute of attributes){
+            const attrName = attribute.name;
+            const attributeValue = attribute.value;
+            let nodeXPathSubstring1;
+            if(attributeValue){
+                //nodeXPathSubstring1 = `/${tag}[@${attrName}='${attributeValue}']`;
+                nodeXPathSubstring1 = `/*[@${attrName}='${attributeValue}']`;
+            }else{
+                //nodeXPathSubstring1 = `/${tag}[@${attrName}]`;
+                nodeXPathSubstring1 = `/*[@${attrName}]`;
+            }
+            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "attribute", valuesWithoutXPath, valuesWithXPath);
+            candidateChanges.push(attempt1);
+
+            // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+            if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
+                // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
+                const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
+                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", valuesWithoutXPath, valuesWithXPath);
+                candidateChanges.push(attempt2);
+            }
+        }
+
+        // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+        // Try just ignoring/excluding this level, aka, allowing any number of levels to happen here (this could help us include values whose DOM node is not as deep, but not sure if this could over-select, select too many nodes on the page)
+        if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
+            const nodeXPathSubstring = `/`;
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "slash", valuesWithoutXPath, valuesWithXPath);
+            candidateChanges.push(attempt);
+        }
+
+        // Choose the best option from candidateChanges; or, if none of the options increase length of newMatchesFound, then just use original index-based substring
+        // Sort in descending order of newMatchesFound.length
+        candidateChanges.sort(function(a, b){
+            return b.newMatchesFound.length - a.newMatchesFound.length;
+        });
+
+        let bestCandidateForThisLevel;
+
+        if(candidateChanges.length > 0){
+            const mostNewMatchesFound = candidateChanges[0].newMatchesFound.length;
+
+            // Filter to only include candidates with mostNewMatchesFound
+            candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound);
+
+            // Now sort in ascending order of numExtraneousNodesFound (we want the xpath with the highest mostNewMatchesFound and then the least numExtraneousNodesFound)
+            candidateChanges.sort(function(a, b){
+                return a.numExtraneousNodesFound - b.numExtraneousNodesFound;
+            });
+
+            if(candidateChanges.length > 0){
+                bestCandidateForThisLevel = candidateChanges[0];
+            }
+        }
+
+        //console.log("candidateChanges", candidateChanges);
+        console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
+
+        if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
+            // No changes at this level helped us find more matches, so just use what we had already
+
+            //curNodeXPathSubstring
+            // Remove curNodeXPathSubstring from end of xPathPrefix
+            // Add curNodeXPathSubstring to beginning of xPathSuffix
+            xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf(curNodeXPathSubstring));
+            xPathSuffix = curNodeXPathSubstring + xPathSuffix;
+        }else{
+
+            const newXPathSubstring = bestCandidateForThisLevel.nodeXPathSubstring;
+            const numNodesAtThisLevel = bestCandidateForThisLevel.numNodesAtThisLevel;
+            // Update bestSoFar to have improved xpaths
+            //bestSoFar[valueAndXPathObj.textCandidate]
+            //let index = 1; // xpath nodes are 1-indexed
+            //while(true){
+            for(let index = 1; index <= numNodesAtThisLevel; index++){
+                const filledInTemplateXPath = bestCandidateForThisLevel.newTemplateXPath.replace("INSERT-INDEX-HERE", index);
+                const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                if(result.snapshotItem(0)){
+                    let textCandidate = result.snapshotItem(0).textContent.toLowerCase();
+                    // If this xpath match corresponds to one of the user specified values, update it in bestSoFar
+                    if(bestSoFar[textCandidate]){
+                        bestSoFar[textCandidate].xPath = filledInTemplateXPath;
+                        bestSoFar[textCandidate].templateXPath = bestCandidateForThisLevel.newTemplateXPath;
+                        bestSoFar[textCandidate].commonXPathPrefix = bestCandidateForThisLevel.newTemplateXPath.substring(0, bestCandidateForThisLevel.newTemplateXPath.indexOf("[INSERT-INDEX-HERE]"));
+                        bestSoFar[textCandidate].commonXPathSuffix = bestCandidateForThisLevel.newTemplateXPath.substring(bestCandidateForThisLevel.newTemplateXPath.lastIndexOf("[INSERT-INDEX-HERE]") + "[INSERT-INDEX-HERE]".length);
+                    }
+
+                    // Update valuesWithoutXPath and valuesWithXPath accordingly
+                    //if(valuesWithoutXPath.includes(textCandidate)){
+                    if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
+                        // Remove from valuesWithoutXPath
+                        //const indexInList = valuesWithoutXPath.indexOf(textCandidate);
+                        const indexInList = indexOfCaseInsensitive(valuesWithoutXPath, textCandidate);
+                        valuesWithoutXPath.splice(indexInList, 1);
+
+                        // Add to valuesWithXPath
+                        valuesWithXPath.push(textCandidate);
+                    }
+
+                }
+                //index += 1;
+            }
+
+            xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf(curNodeXPathSubstring));
+            xPathSuffix = newXPathSubstring + xPathSuffix;
+        }
+    }
+
+    console.log("bestSoFar", bestSoFar);
+    console.log("xPathPrefix", xPathPrefix);
+    console.log("xPathSuffix", xPathSuffix);
+}
+
+function getParentXPath(xPathString){
+    // Trim off the last node
+    const lastIndexOfSlash = xPathString.lastIndexOf("/");
+    const parentXPath = xPathString.substring(0, lastIndexOfSlash);
+    return parentXPath;
+}
+
 // Get all possible parameter values, where positiveExamplesList is a list of example values the user has provided
 function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
     if(positiveExamplesList.length === 0){
@@ -194,15 +421,18 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
                 // Now, traverse up through the DOM
                 var ancestorNode = parentNodesContainingKeyword.snapshotItem(matchingItemIndex);
                 var possibleExtractions = [];
-                while(ancestorNode.parentNode){ // i.e., until we reach the top of the document
+                while(ancestorNode.parentNode && ancestorNode.parentNode.parentNode){ // i.e., until we reach the top of the document
                     // For each of ancestorNode's siblings, try querying the partial selector and see if there's a match (and if the match is "meaningful"?)
                     var siblingNodes = ancestorNode.parentNode.children;
                     var ancestorNodeXPath = getXPathForElement(ancestorNode, document);
+                    var ancestorNodeParentXPath = getXPathForElement(ancestorNode.parentNode, document);
                     var xPathDiff = parentNodeOfTextNodeXPath.substring(ancestorNodeXPath.length);
 
                     var values = [];
                     var numberXPathQueryUnsuccessful = 0; // In the end, we might not even use this in our heuristics
-                    for(var siblingNode of siblingNodes){
+                    //for(var siblingNode of siblingNodes){
+                    for(let siblingIndex = 0; siblingIndex < siblingNodes.length; siblingIndex++){
+                        var siblingNode = siblingNodes[siblingIndex];
                         var siblingNodeXPath = getXPathForElement(siblingNode, document);
 
                         if(!siblingNodeXPath.includes("script") && !siblingNodeXPath.includes("style")){ // We don't want to include text that's within a <script> node
@@ -212,7 +442,9 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
                             if(candidate.snapshotItem(0)){
                                 var textCandidate = candidate.snapshotItem(0).textContent;
                                 if(textCandidate !== ""){
-                                    values.push({ textCandidate, xPath: xPathDownSiblingToQuery } );
+                                    // using * so that later we can loop through all children at the level
+                                    values.push({ textCandidate, xPath: xPathDownSiblingToQuery, templateXPath: `${ancestorNodeParentXPath}/*[INSERT-INDEX-HERE]${xPathDiff}`, commonXPathPrefix: ancestorNodeParentXPath, commonXPathSuffix: xPathDiff } );
+                                    //values.push({ textCandidate, xPath: xPathDownSiblingToQuery, templateXPath: `${ancestorNodeXPath}/${siblingNode.tagName.toLowerCase()}[INSERT-INDEX-HERE]${xPathDiff}`, commonXPathPrefix: ancestorNodeXPath, commonXPathSuffix: xPathDiff } );
                                 }else{
                                     numberXPathQueryUnsuccessful += 1;
                                 }

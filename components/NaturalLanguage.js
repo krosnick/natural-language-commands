@@ -8,13 +8,15 @@ import OscarsClone from './website_clones/OscarsClone';
 import ForbesClone from './website_clones/ForbesClone';
 // import MLBClone from './website_clones/MLBClone';
 import Clone from './website_clones/Clone';
-import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists } from './valueExtraction';
+import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists, makeXPathsMoreRobust } from './valueExtraction';
 import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo } from './generateProgram';
 import WebsiteEventListener from './WebsiteEventListener';
 import MonacoEditor from "@monaco-editor/react";
 import tfjs from '@tensorflow/tfjs';
 import { load } from '@tensorflow-models/universal-sentence-encoder';
 import * as acorn from 'acorn';
+
+const embeddedWebsiteXPathPrefix = '//*[@clone]';
 
 // Adapted from https://developer.mozilla.org/en-US/docs/Web/XPath/Snippets
 function getXPathForElement(el, xml) {
@@ -1262,7 +1264,7 @@ class NaturalLanguage extends React.Component {
                                 let candidateLists = [];
                                 if(selectedText.trim() !== "" && selectedText.trim().length > 1){
                                     // Don't want to run getCandidateLists on an empty string; not meaningful and it's going to crash the app; similarly don't want to run on a single character
-                                    candidateLists = getCandidateLists([selectedText.trim()], false, '//*[@clone]');
+                                    candidateLists = getCandidateLists([selectedText.trim()], false, embeddedWebsiteXPathPrefix);
                                 }
                                 const idToItemClone = _.cloneDeep(context.state.idToItem);
                                 idToItemClone[uuid].paramTypeData.candidateLists = candidateLists;
@@ -1844,6 +1846,10 @@ class NaturalLanguage extends React.Component {
         this.setState({
             idToItem: idToItemClone
         });
+
+        setTimeout(function(context){
+            makeXPathsMoreRobust(context.state.idToItem[uuid].paramTypeData.possibleValues, embeddedWebsiteXPathPrefix);
+        }, 10000, this);
     }
 
     handleMostLeastAdjectiveChange(e, uuid){
