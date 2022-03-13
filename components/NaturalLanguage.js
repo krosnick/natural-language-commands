@@ -2253,7 +2253,7 @@ class NaturalLanguage extends React.Component {
         setTimeout(function(context){
             //console.log("context.editorRef.current", context.editorRef.current);
             // only if an editor instance already, format code
-            if(context.editorRef && context.editorRef.current){
+            if(context.editorRef && context.editorRef.current && context.editorRef.current.getAction('editor.action.formatDocument')){
                 context.editorRef.current.getAction('editor.action.formatDocument').run();
             }
         }, 1000, this);
@@ -2266,7 +2266,9 @@ class NaturalLanguage extends React.Component {
 
         setTimeout(function(context){
             //console.log("context.editorRef.current", context.editorRef.current);
-            context.editorRef.current.getAction('editor.action.formatDocument').run();
+            if(context.editorRef && context.editorRef.current && context.editorRef.current.getAction('editor.action.formatDocument')){
+                context.editorRef.current.getAction('editor.action.formatDocument').run();
+            }
         }, 1000, this);
     }
 
@@ -2286,7 +2288,7 @@ class NaturalLanguage extends React.Component {
         setTimeout(function(context){
             //console.log("context.editorRef.current", context.editorRef.current);
             // only if an editor instance already, format code
-            if(context.editorRef && context.editorRef.current){
+            if(context.editorRef && context.editorRef.current && context.editorRef.current.getAction('editor.action.formatDocument')){
                 context.editorRef.current.getAction('editor.action.formatDocument').run();
             }
         }, 1000, this);
@@ -2322,7 +2324,7 @@ class NaturalLanguage extends React.Component {
         setTimeout(function(context){
             //console.log("context.editorRef.current", context.editorRef.current);
             // only if an editor instance already, format code
-            if(context.editorRef && context.editorRef.current){
+            if(context.editorRef && context.editorRef.current && context.editorRef.current.getAction('editor.action.formatDocument')){
                 context.editorRef.current.getAction('editor.action.formatDocument').run();
             }
         }, 1000, this);
@@ -2490,6 +2492,11 @@ class NaturalLanguage extends React.Component {
             idToItem: idToItemClone,
             programRunInProgress: true
         });
+
+        setTimeout(function(context){
+            // This will regenerate program again, using the new xpaths
+            context.handleStopRecordingDemo();
+        }, 0, this);
 
         // Wait a couple seconds to execute program
         setTimeout(async function(context){
