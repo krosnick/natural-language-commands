@@ -208,7 +208,7 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
     };
 }
 
-export function makeXPathsMoreRobust(valueAndXPathObjList, embeddedWebsitePrefix){
+export function makeXPathsMoreRobust(valueAndXPathObjList){
     //let numItemsWithXPath = 0;
     let valuesWithoutXPath = [];
     let valuesWithXPath = [];

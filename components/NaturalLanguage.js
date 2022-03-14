@@ -2115,7 +2115,7 @@ class NaturalLanguage extends React.Component {
         for(let item of Object.values(idToItemClone)){
             if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
                 // This item is a param. Run makeXPathsMoreRobust on its values and update 
-                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, embeddedWebsiteXPathPrefix);
+                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues);
                 console.log("newValueXPathObjList", newValueXPathObjList);
                 idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
             }
