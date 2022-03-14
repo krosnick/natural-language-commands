@@ -2113,7 +2113,7 @@ class NaturalLanguage extends React.Component {
         const idToItemClone = _.cloneDeep(this.state.idToItem);
         // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
         for(let item of Object.values(idToItemClone)){
-            if(item.paramTypeData && !item.paramTypeData.type === "superlative"){
+            if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
                 // This item is a param. Run makeXPathsMoreRobust on its values and update 
                 const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, embeddedWebsiteXPathPrefix);
                 console.log("newValueXPathObjList", newValueXPathObjList);
