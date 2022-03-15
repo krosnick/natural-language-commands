@@ -168,19 +168,24 @@ export function getCandidateLists(positiveExamplesList, exactStringBoolean, embe
 
 function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selectorType, valuesWithoutXPath, valuesWithXPath){
     // Now try using this nodeXPathSubstring and see if we match more example values than before
+    //console.log("parentXPath", parentXPath);
+    //console.log("nodeXPathSubstring", nodeXPathSubstring);
+    //console.log("xPathSuffix", xPathSuffix);
     const newTemplateXPath = parentXPath + nodeXPathSubstring + xPathSuffix;
-    console.log("newTemplateXPath", newTemplateXPath);
+    //console.log("newTemplateXPath", newTemplateXPath);
 
-    const parentXPathFilledIn = parentXPath.replace("INSERT-INDEX-HERE", 1); // filling in, just in case it still has a template
+    const parentXPathFilledIn = parentXPath.replace("INSERT-ROW-INDEX-HERE", 1); // filling in, just in case it still has a template
+    //const parentXPathFilledIn = newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", 1); // filling in, just in case it still has a template
     //console.log("parentXPathFilledIn", parentXPathFilledIn);
     const numNodesAtThisLevel = document.evaluate(parentXPathFilledIn, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0).children.length;
-    // Try newTemplateXPath with different indices for INSERT-INDEX-HERE and see how many results we get and if they match our values
+    //console.log("numNodesAtThisLevel", numNodesAtThisLevel);
+    // Try newTemplateXPath with different indices for INSERT-ROW-INDEX-HERE and see how many results we get and if they match our values
     //let index = 1; // xpath nodes are 1-indexed
     const newMatchesFound = [];
     let numExtraneousNodesFound = 0;
     //while(true){
     for(let index = 1; index <= numNodesAtThisLevel; index++){
-        const filledInTemplateXPath = newTemplateXPath.replace("INSERT-INDEX-HERE", index);
+        const filledInTemplateXPath = newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", index);
         if(filledInTemplateXPath.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
             const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
             if(result.snapshotItem(0)){
@@ -222,8 +227,8 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
             valuesWithoutXPath.push(obj.textCandidate);
         }
     }
-    console.log("objWithXPath", objWithXPath);
-    console.log("valuesWithoutXPath", valuesWithoutXPath);
+    //console.log("objWithXPath", objWithXPath);
+    //console.log("valuesWithoutXPath", valuesWithoutXPath);
 
     // Now traverse up DOM for objWithXPath
     //let bestListSoFar = valueAndXPathObjList;
@@ -234,9 +239,11 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
     }
     let xPathPrefix = objWithXPath.templateXPath;
     let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
-    const curNode = document.evaluate(objWithXPath.xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+    let curNode = document.evaluate(objWithXPath.xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
     //console.log("curNode", curNode);
-    while(curNode.parentNode && valuesWithoutXPath.length > 0){ // i.e., until we reach the top of the document
+    //while(curNode.parentNode && valuesWithoutXPath.length > 0 && xPathPrefix.length > 0){ // i.e., until we reach the top of the document
+    while(curNode.parentNode.parentNode && valuesWithoutXPath.length > 0 && xPathPrefix.length > 0){ // i.e., until we reach the top of the document
+        console.log("valuesWithoutXPath", valuesWithoutXPath);
         // Try an alternate xPath substring for this level
         //const parentXPath = getXPathForElement(curNode.parentNode); // this does use indices
         const parentXPath = getParentXPath(xPathPrefix);
@@ -244,7 +251,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
         
         //const tag = curNode.tagName.toLowerCase();
 
-        const candidateChanges = [];
+        let candidateChanges = [];
 
         // Try inserting a / (so that it's //) on the right of this xpath. So that this could match values whose DOM node is deeper
         // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
@@ -316,7 +323,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
             const mostNewMatchesFound = candidateChanges[0].newMatchesFound.length;
 
             // Filter to only include candidates with mostNewMatchesFound
-            candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound);
+            candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound);
 
             // Now sort in ascending order of numExtraneousNodesFound (we want the xpath with the highest mostNewMatchesFound and then the least numExtraneousNodesFound)
             candidateChanges.sort(function(a, b){
@@ -329,7 +336,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
         }
 
         //console.log("candidateChanges", candidateChanges);
-        console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
+        //console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
 
         if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
             // No changes at this level helped us find more matches, so just use what we had already
@@ -348,7 +355,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
             //let index = 1; // xpath nodes are 1-indexed
             //while(true){
             for(let index = 1; index <= numNodesAtThisLevel; index++){
-                const filledInTemplateXPath = bestCandidateForThisLevel.newTemplateXPath.replace("INSERT-INDEX-HERE", index);
+                const filledInTemplateXPath = bestCandidateForThisLevel.newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", index);
                 const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                 if(result.snapshotItem(0)){
                     let textCandidate = result.snapshotItem(0).textContent.toLowerCase();
@@ -356,8 +363,8 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
                     if(bestSoFar[textCandidate]){
                         bestSoFar[textCandidate].xPath = filledInTemplateXPath;
                         bestSoFar[textCandidate].templateXPath = bestCandidateForThisLevel.newTemplateXPath;
-                        bestSoFar[textCandidate].commonXPathPrefix = bestCandidateForThisLevel.newTemplateXPath.substring(0, bestCandidateForThisLevel.newTemplateXPath.indexOf("[INSERT-INDEX-HERE]"));
-                        bestSoFar[textCandidate].commonXPathSuffix = bestCandidateForThisLevel.newTemplateXPath.substring(bestCandidateForThisLevel.newTemplateXPath.lastIndexOf("[INSERT-INDEX-HERE]") + "[INSERT-INDEX-HERE]".length);
+                        bestSoFar[textCandidate].commonXPathPrefix = bestCandidateForThisLevel.newTemplateXPath.substring(0, bestCandidateForThisLevel.newTemplateXPath.indexOf("[INSERT-ROW-INDEX-HERE]"));
+                        bestSoFar[textCandidate].commonXPathSuffix = bestCandidateForThisLevel.newTemplateXPath.substring(bestCandidateForThisLevel.newTemplateXPath.lastIndexOf("[INSERT-ROW-INDEX-HERE]") + "[INSERT-ROW-INDEX-HERE]".length);
                     }
 
                     // Update valuesWithoutXPath and valuesWithXPath accordingly
@@ -379,11 +386,12 @@ export function makeXPathsMoreRobust(valueAndXPathObjList){
             xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf(curNodeXPathSubstring));
             xPathSuffix = newXPathSubstring + xPathSuffix;
         }
+        curNode = curNode.parentNode;
     }
 
-    console.log("bestSoFar", bestSoFar);
-    console.log("xPathPrefix", xPathPrefix);
-    console.log("xPathSuffix", xPathSuffix);
+    //console.log("bestSoFar", bestSoFar);
+    //console.log("xPathPrefix", xPathPrefix);
+    //console.log("xPathSuffix", xPathSuffix);
 
     const newValueXPathObjList = Object.values(bestSoFar);
     return newValueXPathObjList;
@@ -446,8 +454,8 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
                                 var textCandidate = candidate.snapshotItem(0).textContent;
                                 if(textCandidate !== ""){
                                     // using * so that later we can loop through all children at the level
-                                    values.push({ textCandidate, xPath: xPathDownSiblingToQuery, templateXPath: `${ancestorNodeParentXPath}/*[INSERT-INDEX-HERE]${xPathDiff}`, commonXPathPrefix: ancestorNodeParentXPath, commonXPathSuffix: xPathDiff } );
-                                    //values.push({ textCandidate, xPath: xPathDownSiblingToQuery, templateXPath: `${ancestorNodeXPath}/${siblingNode.tagName.toLowerCase()}[INSERT-INDEX-HERE]${xPathDiff}`, commonXPathPrefix: ancestorNodeXPath, commonXPathSuffix: xPathDiff } );
+                                    values.push({ textCandidate, xPath: xPathDownSiblingToQuery, templateXPath: `${ancestorNodeParentXPath}/*[INSERT-ROW-INDEX-HERE]${xPathDiff}`, commonXPathPrefix: ancestorNodeParentXPath, commonXPathSuffix: xPathDiff } );
+                                    //values.push({ textCandidate, xPath: xPathDownSiblingToQuery, templateXPath: `${ancestorNodeXPath}/${siblingNode.tagName.toLowerCase()}[INSERT-ROW-INDEX-HERE]${xPathDiff}`, commonXPathPrefix: ancestorNodeXPath, commonXPathSuffix: xPathDiff } );
                                 }else{
                                     numberXPathQueryUnsuccessful += 1;
                                 }
