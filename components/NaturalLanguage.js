@@ -2130,14 +2130,18 @@ class NaturalLanguage extends React.Component {
                         }
                     }
                 }
-                // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
-                rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
-                const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                const numRows = parentOfRowsElement.children.length;
                 
-                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
-                //console.log("newValueXPathObjList", newValueXPathObjList);
-                idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
+                // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
+                if(rowPrefix){
+                    // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
+                    rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
+                    const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    const numRows = parentOfRowsElement.children.length;
+                    
+                    const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                    //console.log("newValueXPathObjList", newValueXPathObjList);
+                    idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
+                }
             }
         }
 
