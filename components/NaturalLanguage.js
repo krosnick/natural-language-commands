@@ -9,7 +9,7 @@ import ForbesClone from './website_clones/ForbesClone';
 // import MLBClone from './website_clones/MLBClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists, makeXPathsMoreRobust } from './valueExtraction';
-import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo } from './generateProgram';
+import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo, getCommonPrefixLength } from './generateProgram';
 import WebsiteEventListener from './WebsiteEventListener';
 import MonacoEditor from "@monaco-editor/react";
 import tfjs from '@tensorflow/tfjs';
@@ -2115,8 +2115,28 @@ class NaturalLanguage extends React.Component {
         for(let item of Object.values(idToItemClone)){
             if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
                 // This item is a param. Run makeXPathsMoreRobust on its values and update 
-                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues);
-                console.log("newValueXPathObjList", newValueXPathObjList);
+
+                let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
+                let rowPrefix;
+                for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
+                    for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
+                        if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
+                            const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
+                            //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
+                            if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
+                                commonPrefixLengthAmongstXPaths = commonPrefixLength;
+                                rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+                            }
+                        }
+                    }
+                }
+                // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
+                rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
+                const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                const numRows = parentOfRowsElement.children.length;
+                
+                const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                //console.log("newValueXPathObjList", newValueXPathObjList);
                 idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
             }
         }

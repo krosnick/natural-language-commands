@@ -297,7 +297,7 @@ function getLikelyRowsColumns(eventTargetXPath){
     }
 }
 
-function getCommonPrefixLength(str1, str2){    
+export function getCommonPrefixLength(str1, str2){    
     let longestLength = 0;
     const shorterStrLength = Math.min(str1.length, str2.length);
     for(let i = 0; i < shorterStrLength; i++){
@@ -419,6 +419,10 @@ function tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring
     return candidate;
 }
 
+function makeXPathSuffixMoreRobust(){
+
+}
+
 function getParentXPath(xPathString){
     // Trim off the last node
     const lastIndexOfSlash = xPathString.lastIndexOf("/");
@@ -532,12 +536,19 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             var generalizedXPathFunction = function(inputValue){
                 // Want to use xPath prefix for the current value that's desired
                 var valueXPath = paramValueObj[matchingParam][inputValue];
+                console.log("valueXPath", valueXPath);
                 //var xPathPrefixToUse = valueXPath.substring(0, longestCommonPrefixLengthSoFar);
+                //var xPathRelativeSuffixToRemove = valueXPath.substring(longestCommonPrefixLengthSoFar);
+                console.log("xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
                 var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
+                console.log("indexOfSuffixToRemove", indexOfSuffixToRemove);
                 var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
+                console.log("xPathPrefixToUse", xPathPrefixToUse);
                 //console.log("generalizedXPathFunction xPathPrefixToUse", xPathPrefixToUse);
                 // Now tack on the end of the xPath to get the desired relative element
+                console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
                 var desiredTargetXPath = xPathPrefixToUse + xPathRelativeSuffixToInclude;
+                console.log("desiredTargetXPath", desiredTargetXPath);
                 //console.log("desiredTargetXPath", desiredTargetXPath);
                 return desiredTargetXPath;
             };
@@ -1213,7 +1224,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             }
                             const valueAndXPathObjList = Object.values(valueAndXPathObjMap);
                             //console.log("valueAndXPathObjList", valueAndXPathObjList);
-                            const newValueXPathObjList = makeXPathsMoreRobust(valueAndXPathObjList);
+                            const newValueXPathObjList = makeXPathsMoreRobust(valueAndXPathObjList, filterParamForRowSelection, rowsToConsider.length);
                             console.log("makeXPathsMoreRobust result", newValueXPathObjList);
 
                             // Compute new filterNodeXPathSuffix (the substring after [INSERT-ROW-INDEX-HERE] of templateXPath)
