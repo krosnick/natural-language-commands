@@ -236,8 +236,8 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
     let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
     let curNode = document.evaluate(objWithXPath.xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
     //console.log("curNode", curNode);
-    //while(curNode.parentNode && valuesWithoutXPath.length > 0 && xPathPrefix.length > 0){ // i.e., until we reach the top of the document
-    while(curNode.parentNode.parentNode && valuesWithoutXPath.length > 0 && xPathPrefix.length > 0){ // i.e., until we reach the top of the document
+    // Traverse up through the DOM until we hit the top part of the xpath that is the same across all param values (i.e., above [INSERT-ROW-INDEX-HERE])
+    while(curNode.parentNode.parentNode && valuesWithoutXPath.length > 0 && xPathPrefix.length > 0 && xPathSuffix.indexOf("[INSERT-ROW-INDEX-HERE]") === -1){
         console.log("valuesWithoutXPath", valuesWithoutXPath);
         // Try an alternate xPath substring for this level
         //const parentXPath = getXPathForElement(curNode.parentNode); // this does use indices
