@@ -465,7 +465,28 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
         for(let [param, valueObj] of Object.entries(paramValueObj)){
             for(let [value, xPath] of Object.entries(valueObj)){
                 if(xPath){ // because could be null/undefined
-                    var commonPrefixLength = getCommonPrefixLength(xPath, eventObj.targetXPath);
+                    // If param value xpaths have been made more robust already, then "xPath" might contain classes/attributes/etc
+                        // which may cause this xpath to have as smaller common prefix with eventObj.targetXPath,
+                        // and may actually result in all param value xpaths having the same common prefix with eventObj.targetXPath
+                        // even if one of the param value nodes is actually closer to eventObj.targetXPath than the others
+                    // So to work around this, we want to take that possibly class/attributed-based xpath and get the corresponding index-based xpath,
+                        // which we can then more meaningfully compare to eventObj.targetXPath
+                    //console.log("xPath", xPath);
+                    const node = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    const indexBasedXPath = getXPathForElement(node, document);
+                    //console.log("indexBasedXPath", indexBasedXPath);
+                    //console.log("xPath", xPath);
+                    //console.log("eventObj.targetXPath", eventObj.targetXPath);
+                    //var commonPrefixLength = getCommonPrefixLength(xPath, eventObj.targetXPath);
+                    var commonPrefixLength = getCommonPrefixLength(indexBasedXPath, eventObj.targetXPath);
+
+                    let commonPrefix = indexBasedXPath.substring(0, commonPrefixLength);
+                    // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+                    commonPrefix = commonPrefix.substring(0, commonPrefix.lastIndexOf("/"));
+                    // Now correct commonPrefixLength
+                    commonPrefixLength = commonPrefix.length;
+
+                    //console.log("commonPrefixLength", commonPrefixLength);
                     if(commonPrefixLength > longestCommonPrefixLengthSoFar){
                         longestCommonPrefixLengthSoFar = commonPrefixLength;
                         paramValuesLongestCommonPrefixLengthSoFar = {}
@@ -530,25 +551,78 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             var origValueXPath = paramValueObj[matchingParam][matchingValue];
             var demoTargetXPath = eventObj.targetXPath;
             var xPathRelativeSuffixToInclude = demoTargetXPath.substring(longestCommonPrefixLengthSoFar);
+            console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
+            //var xPathRelativeSuffixToRemove = origValueXPath.substring(longestCommonPrefixLengthSoFar);
 
-            var xPathRelativeSuffixToRemove = origValueXPath.substring(longestCommonPrefixLengthSoFar);
+            // TODO - try to make xPathRelativeSuffixToRemove and xPathRelativeSuffixToInclude more robust
+
+            // Want to compare index-based xpath strings (we can't just use origValueXPath, because that could contain classes/attributes)
+            console.log("origValueXPath", origValueXPath);
+            console.log("demoTargetXPath", demoTargetXPath);
+            const node = document.evaluate(origValueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+            const indexBasedXPath = getXPathForElement(node, document);
+            console.log("indexBasedXPath", indexBasedXPath);
+            const commonPrefixLength = getCommonPrefixLength(indexBasedXPath, demoTargetXPath);
+            console.log("commonPrefixLength", commonPrefixLength);
+            /*let xPathRelativeSuffixToRemove = indexBasedXPath.substring(commonPrefixLength);
+            // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+            xPathRelativeSuffixToRemove = xPathRelativeSuffixToRemove.substring(0, xPathRelativeSuffixToRemove.lastIndexOf("/"));
+            console.log("initial xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);*/
+
+            let commonXPathPrefix = indexBasedXPath.substring(0, commonPrefixLength);
+            // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+            commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
+            console.log("commonXPathPrefix", commonXPathPrefix);
+
+            let xPathRelativeSuffixToRemove = origValueXPath.substring(commonXPathPrefix.length);
+            console.log("initial xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
+
+            //let commonPrefixNode = document.evaluate(commonXPathPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+            // Need to figure out which part of origValueXPath (class/attribute/etc-based) corresponds to commonXPathPrefix
+                // Can do this by starting at end of origValueXPath, picking off nodes and executing the xpath to get the node,
+                // until we find the node equivalent to commonXPathPrefix's node (or, comparing the indexed xpaths)
+            let currentNodeXPath = origValueXPath;
+            while(currentNodeXPath.length > 0){
+                // We have a try/catch in case document.evaluate fails (e.g., if currentNodeXPath is invalid, like if it ends in a / because previously it ended in //)
+                try{
+                    const currentNode = document.evaluate(currentNodeXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    const currentNodeIndexedXPath = getXPathForElement(currentNode, document);
+                    if(currentNodeIndexedXPath === commonXPathPrefix){
+                        // This means currentNodeXPath is the class/attribute-based equivalent of commonXPathPrefix
+                        break;
+                    }
+                }catch{
+
+                }
+                // Update currentNodeXPath to trim off the last node
+                currentNodeXPath = currentNodeXPath.substring(0, currentNodeXPath.lastIndexOf("/"));
+            }
+            console.log("Final currentNodeXPath", currentNodeXPath);
+
+            // currentNodeXPath should now be the commonXPathPrefix for this param value
+            // Let's now compute the new/robust xPathRelativeSuffixToRemove, which we can just take as origValueXPath minus the prefix we just found
+                // aka, the end of origValueXPath
+                // (and this should be robust because the param value xpaths should already be robust before generateProgram was called)
+            xPathRelativeSuffixToRemove = origValueXPath.substring(currentNodeXPath.length);
+            console.log("Final xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
 
             var generalizedXPathFunction = function(inputValue){
                 // Want to use xPath prefix for the current value that's desired
                 var valueXPath = paramValueObj[matchingParam][inputValue];
-                console.log("valueXPath", valueXPath);
+                //console.log("valueXPath", valueXPath);
                 //var xPathPrefixToUse = valueXPath.substring(0, longestCommonPrefixLengthSoFar);
                 //var xPathRelativeSuffixToRemove = valueXPath.substring(longestCommonPrefixLengthSoFar);
-                console.log("xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
+                //console.log("xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
                 var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
-                console.log("indexOfSuffixToRemove", indexOfSuffixToRemove);
+                //console.log("indexOfSuffixToRemove", indexOfSuffixToRemove);
                 var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
-                console.log("xPathPrefixToUse", xPathPrefixToUse);
+
+                //console.log("xPathPrefixToUse", xPathPrefixToUse);
                 //console.log("generalizedXPathFunction xPathPrefixToUse", xPathPrefixToUse);
                 // Now tack on the end of the xPath to get the desired relative element
-                console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
+                //console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
                 var desiredTargetXPath = xPathPrefixToUse + xPathRelativeSuffixToInclude;
-                console.log("desiredTargetXPath", desiredTargetXPath);
+                //console.log("desiredTargetXPath", desiredTargetXPath);
                 //console.log("desiredTargetXPath", desiredTargetXPath);
                 return desiredTargetXPath;
             };
