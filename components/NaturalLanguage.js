@@ -2138,8 +2138,85 @@ class NaturalLanguage extends React.Component {
                     const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
                     const numRows = parentOfRowsElement.children.length;
                     
-                    const newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
-                    //console.log("newValueXPathObjList", newValueXPathObjList);
+                    // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
+                    let newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                    console.log("newValueXPathObjList", newValueXPathObjList);
+                    
+                    // Now, see if there are still any param values that have a null xpath, and try to fill those in
+                    
+                    let paramValuesWithNullXPathToStillTry = [];
+                    for(let valueObj of newValueXPathObjList){
+                        if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
+                            paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
+                        }
+                    }
+                    //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
+                    // Now, use getCandidateLists to fill in xpaths
+                    while(paramValuesWithNullXPathToStillTry.length > 0){
+                        // Seed with first value in paramValuesWithNullXPathToStillTry
+                        const candidateLists = getCandidateLists([paramValuesWithNullXPathToStillTry[0].trim()], false, embeddedWebsiteXPathPrefix);
+                        //console.log("candidateLists to fill in xpaths", candidateLists);
+
+                        // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
+                        let bestMatchList = [];
+                        for(let candidateList of candidateLists){
+                            const matchList = [];
+                            for(let valueObj of candidateList){
+                                for(let paramValue of paramValuesWithNullXPathToStillTry){
+                                    if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                        matchList.push(valueObj);
+                                    }
+                                }
+                            }
+                            if(matchList.length > bestMatchList.length){
+                                bestMatchList = matchList;
+                            }
+                            if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
+                                // We've found all the values
+                                break;
+                            }
+                        }
+                        console.log("bestMatchList", bestMatchList);
+
+                        // Update newValueXPathObjList objects based on bestMatchList
+                        for(let match of bestMatchList){
+                            // Find obj in newValueXPathObjList corresponding to match and replace it
+                            for(let i = 0; i < newValueXPathObjList.length; i++){
+                                const existingValueObj = newValueXPathObjList[i];
+                                if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
+                                    newValueXPathObjList[i] = match;
+                                }
+                            }
+                        }
+
+                        if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
+                            // We've found all the values, so break out of while loop
+                            break;
+                        }
+
+                        if(bestMatchList.length === 0){
+                            // The value we seeded with ([paramValuesWithNullXPathToStillTry[0]) actually can't be found on the page anywhere
+                                // Let's just remove it from paramValuesWithNullXPathToStillTry so we can try with remaining values (since we're never going to find a match for this value)
+
+                            // Update paramValuesWithNullXPathToStillTry to remove the first item
+                            paramValuesWithNullXPathToStillTry.splice(0, 1);
+                        }
+
+                        // There are still param values without an xpath, so we need to return to top of loop and try with remaining values
+                        // Update paramValuesWithNullXPathToStillTry to remove values that are in bestMatchList
+                        for(let match of bestMatchList){
+                            for(let i = 0; i < paramValuesWithNullXPathToStillTry.length; i++){
+                                let paramValue = paramValuesWithNullXPathToStillTry[i];
+                                if(match.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                    // A match has been found for paramValue, so remove paramValue from paramValuesWithNullXPathToStillTry
+                                    paramValuesWithNullXPathToStillTry.splice(i, 1);
+                                    break; // break out of inner loop because found value correspond to match value, and move on to next match value to look for
+                                }
+                            }
+                        }
+                    }
+                    console.log("updated newValueXPathObjList", newValueXPathObjList);
+
                     idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
                 }
             }

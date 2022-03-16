@@ -840,9 +840,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             
             const moreRobustXPathSuffixData = makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj, checkIfThisIsDemoConfig);
             console.log("moreRobustXPathSuffixData", moreRobustXPathSuffixData);
-
-            xPathRelativeSuffixToInclude = moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
-            console.log("Final xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
+            if(moreRobustXPathSuffixData){
+                // Only update xPathRelativeSuffixToInclude if moreRobustXPathSuffixData actually returned something (it will return undefined if all param values actually already have an xpath, so no need to make more robust)
+                xPathRelativeSuffixToInclude = moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
+                console.log("Final xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
+            }
 
             var generalizedXPathFunction = function(inputValue){
                 // Want to use xPath prefix for the current value that's desired
@@ -1739,12 +1741,16 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         
                         const moreRobustXPathSuffixData = makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj, checkIfThisIsDemoConfig);
 
-                        // At this point, (oldXPathRelativeSuffixPrefix + xPathSuffix) should be the new suffix to use. Update generateColXPathSuffix accordingly
-                        generateColXPathSuffix = function(inputValue, rowXPathPrefix){
-                            // Returning an xpath suffix that we tried to make more robust
-                            return moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
-                        }
-                        console.log("updated generateColXPathSuffix", generateColXPathSuffix);                        
+                        if(moreRobustXPathSuffixData){
+                            // Only update xPathRelativeSuffixToInclude if moreRobustXPathSuffixData actually returned something (it will return undefined if all param values actually already have an xpath, so no need to make more robust)
+                            
+                            // At this point, (oldXPathRelativeSuffixPrefix + xPathSuffix) should be the new suffix to use. Update generateColXPathSuffix accordingly
+                            generateColXPathSuffix = function(inputValue, rowXPathPrefix){
+                                // Returning an xpath suffix that we tried to make more robust
+                                return moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
+                            }
+                            console.log("updated generateColXPathSuffix", generateColXPathSuffix);
+                        }                        
                     }
 
                     // Make sure we don't accidentally find a column correspondence? Or I guess we couldn't "accidentally" do it?
