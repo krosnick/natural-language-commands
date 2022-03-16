@@ -2217,6 +2217,68 @@ class NaturalLanguage extends React.Component {
                         }
                     }
                 }
+
+                // Check and see if there are still values in newValueXPathObjList without an xpath
+                    // We should try a more refined search now for these strings.
+                    // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
+                    // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
+                
+                let commonXPathPrefix;
+                // Compute commonXPathPrefix
+                for(let valueObj of newValueXPathObjList){
+                    if(valueObj.xPath){
+                        if(commonXPathPrefix === undefined){
+                            commonXPathPrefix = valueObj.xPath;
+                        }
+                        const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
+                        commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
+
+                        // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+                        commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
+                    }
+                }
+                console.log("commonXPathPrefix", commonXPathPrefix);
+
+                for(let valueObj of newValueXPathObjList){
+                    // Check if this value has an xpath
+                    if(!valueObj.xPath){
+                        // First try within the scope of where the other xpaths are (e.g., so that we're not choosing text that's within a large body of text that's like a header/footer of the website)
+                        // So let's find the common prefix among all xpaths that have been found already
+                        const stringMatchesWithinScope = document.evaluate(`${commonXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                        console.log("stringMatchesWithinScope", stringMatchesWithinScope);
+                        let newXPath;
+                        if(stringMatchesWithinScope.snapshotLength > 0){
+                            // Take first result
+                            const matchingNode = stringMatchesWithinScope.snapshotItem(0);
+                            newXPath = getXPathForElement(matchingNode, document);
+                        }else{
+                            // TODO - if stringMatchesAnywhere has multiple text node matches, maybe could try rest of the values first to see if those have just a single string match
+                                // (and then maybe the updated commonXPathPrefix will be shorter/higher up in the DOM and will help us choose a more meaningful xpath here)
+
+                            // If no match was found within that common prefix scope, now just search anywhere within the page
+                            const stringMatchesAnywhere = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                            console.log("stringMatchesAnywhere", stringMatchesAnywhere);
+                            if(stringMatchesAnywhere.snapshotLength > 0){
+                                const matchingNode = stringMatchesAnywhere.snapshotItem(0);
+                                newXPath = getXPathForElement(matchingNode, document);
+                            }
+                        }
+
+                        if(newXPath){
+                            // Update commonXPathPrefix
+                            const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
+                            commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
+                            
+                            // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+                            commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
+                            
+                            // Update in newValueXPathObjList
+                            valueObj.xPath = newXPath;
+                        }
+                        console.log("newXPath", newXPath);
+                    }
+                }
+
                 console.log("updated newValueXPathObjList", newValueXPathObjList);
 
                 idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
