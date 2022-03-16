@@ -2133,6 +2133,7 @@ class NaturalLanguage extends React.Component {
                 
                 // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
                 let newValueXPathObjList = item.paramTypeData.possibleValues;
+                let xPathSuffix;
                 if(rowPrefix){
                     // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
                     rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
@@ -2140,7 +2141,9 @@ class NaturalLanguage extends React.Component {
                     const numRows = parentOfRowsElement.children.length;
                     
                     // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
-                    newValueXPathObjList = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                    const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                    newValueXPathObjList = result.newValueXPathObjList;
+                    xPathSuffix = result.xPathSuffix;
                     console.log("newValueXPathObjList", newValueXPathObjList);
                 }
 
@@ -2276,6 +2279,50 @@ class NaturalLanguage extends React.Component {
                             valueObj.xPath = newXPath;
                         }
                         console.log("newXPath", newXPath);
+                    }
+                }
+
+                // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
+                    // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
+                    // This is important because at program execution time we sometimes remove a suffix from param value xpaths (for matchingParam), so we want to try to adjust all our param value xpaths to have that suffix (if it's a valid xpath)
+                if(xPathSuffix){
+                    let newSuffix = xPathSuffix;
+                    // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                    if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                        newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
+                    }
+                    //console.log("xPathSuffix", xPathSuffix);
+                    //console.log("newSuffix", newSuffix)
+                    for(let valueObj of newValueXPathObjList){
+                        // Check if this param value xpath has newSuffix at the end
+                        const xPath = valueObj.xPath;
+                        if(xPath && xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
+                            // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                            let xPathPrefix = xPath;
+                            while(xPathPrefix.length > 0){
+                                //console.log("xPathPrefix", xPathPrefix);
+                                //console.log("newSuffix",newSuffix);
+                                const xPathToTry = xPathPrefix + newSuffix;
+                                //console.log("xPathToTry", xPathToTry);
+                                // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                try{
+                                    const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                    //console.log("node", node);
+                                    if(node){
+                                        const indexBasedXPath = getXPathForElement(node, document);
+                                        if(indexBasedXPath === xPath){
+                                            // This means that xPathToTry was valid and does match the original xPath
+                                            // Let's update our valueObj and then break out of loop
+                                            valueObj.xPath = xPathToTry;
+                                            break;
+                                        }
+                                    }
+                                }catch{
+                                }
+                                // Update xPathPrefix
+                                xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                            }
+                        }
                     }
                 }
 

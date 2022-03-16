@@ -389,7 +389,11 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
     //console.log("xPathSuffix", xPathSuffix);
 
     const newValueXPathObjList = Object.values(bestSoFar);
-    return newValueXPathObjList;
+    //return newValueXPathObjList;
+    return {
+        newValueXPathObjList,
+        xPathSuffix
+    };
 }
 
 function getParentXPath(xPathString){

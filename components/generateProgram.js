@@ -1537,7 +1537,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             }
                             const valueAndXPathObjList = Object.values(valueAndXPathObjMap);
                             //console.log("valueAndXPathObjList", valueAndXPathObjList);
-                            const newValueXPathObjList = makeXPathsMoreRobust(valueAndXPathObjList, filterParamForRowSelection, rowsToConsider.length);
+                            const {newValueXPathObjList, xPathSuffix} = makeXPathsMoreRobust(valueAndXPathObjList, filterParamForRowSelection, rowsToConsider.length);
                             console.log("makeXPathsMoreRobust result", newValueXPathObjList);
 
                             // Compute new filterNodeXPathSuffix (the substring after [INSERT-ROW-INDEX-HERE] of templateXPath)
