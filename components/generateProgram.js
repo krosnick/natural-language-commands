@@ -789,30 +789,32 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             for(let paramValue of Object.keys(paramValueObj[matchingParam])){
                 //const generatedRowXPathPrefix = generalizedXPathFunction(paramValue);
                 var valueXPath = paramValueObj[matchingParam][paramValue];
-                var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
-                var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
+                if(valueXPath){ // in case we weren't able to infer an xpath for this param value
+                    var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
+                    var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
 
-                const comboObj = {
-                    rowXPathPrefix: xPathPrefixToUse,
-                    exampleRowXPathPrefix: xPathPrefixToUse,
-                    exampleColXPathSuffix: xPathRelativeSuffixToInclude,
-                    exampleFullXPath: xPathPrefixToUse + xPathRelativeSuffixToInclude,
-                    paramValue,
-                };
-                const comboStringID = paramValue;
+                    const comboObj = {
+                        rowXPathPrefix: xPathPrefixToUse,
+                        exampleRowXPathPrefix: xPathPrefixToUse,
+                        exampleColXPathSuffix: xPathRelativeSuffixToInclude,
+                        exampleFullXPath: xPathPrefixToUse + xPathRelativeSuffixToInclude,
+                        paramValue,
+                    };
+                    const comboStringID = paramValue;
 
-                // See if full xpath for this combo is valid
-                const fullXPath = xPathPrefixToUse + xPathRelativeSuffixToInclude;
+                    // See if full xpath for this combo is valid
+                    const fullXPath = xPathPrefixToUse + xPathRelativeSuffixToInclude;
 
-                const domElement = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                
-                if(domElement){
-                    paramCombosWhereXPathIsValid.push(comboStringID);
-                    comboObj.xPath = fullXPath;
-                }else{
-                    paramCombosWhereXPathIsNotValid.push(comboStringID);
+                    const domElement = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    
+                    if(domElement){
+                        paramCombosWhereXPathIsValid.push(comboStringID);
+                        comboObj.xPath = fullXPath;
+                    }else{
+                        paramCombosWhereXPathIsNotValid.push(comboStringID);
+                    }
+                    paramValueCombinations[comboStringID] = comboObj;   
                 }
-                paramValueCombinations[comboStringID] = comboObj;
             }
             //console.log("paramValueCombinations", paramValueCombinations);
             
