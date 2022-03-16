@@ -419,8 +419,186 @@ function tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring
     return candidate;
 }
 
-function makeXPathSuffixMoreRobust(){
+function makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj){
+    let bestSoFar = _.cloneDeep(paramValueCombinations);
+    
+    if(paramCombosWhereXPathIsNotValid.length > 0){
+        // Try alternate xpath suffixes to return from the version of generateColXPathSuffix that returns a static string
+        
+        // Now traverse up DOM for objWithXPath
 
+        let xPathRelativeSuffixPrefix = exampleDataObj.exampleColXPathSuffix;
+        let parentXPath = getParentXPath(exampleDataObj.exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
+        let curNodeXPathSubstring = (exampleDataObj.exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
+        // Remove the last node
+        xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf("/"));
+        let oldXPathRelativeSuffixPrefix;
+        let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
+        let curNode = document.evaluate(exampleDataObj.exampleFullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+        //console.log("curNode", curNode);
+        // While there are still param values where our xpath rule doesn't yield a node, and while we're still looking through the lower part of the xpath (i.e., xPathRelativeSuffixPrefix.length > 0)
+        while(curNode.parentNode && paramCombosWhereXPathIsNotValid.length > 0 && xPathRelativeSuffixPrefix.length > 0){
+
+            // we'll need to combine exampleRowXPathPrefix + xPathRelativeSuffixPrefix + xPathSuffix to get the full xpath
+
+            let candidateChanges = [];
+
+            // Try inserting a / (so that it's //) on the right of this xpath. So that this could match values whose DOM node is deeper
+            // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+            if(xPathSuffix.length > 0){
+                const nodeXPathSubstring = `${curNodeXPathSubstring}/`;
+                const attempt = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring, xPathSuffix, "class", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
+                candidateChanges.push(attempt);
+            }
+
+            // Try using a class instead of an index
+            const classList = curNode.classList;
+            for(let className of classList){
+                //const nodeXPathSubstring1 = `/${tag}[@class='${className}']`;
+                const nodeXPathSubstring1 = `/*[@class='${className}']`;
+                const attempt1 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring1, xPathSuffix, "class", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
+                candidateChanges.push(attempt1);
+
+                // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+                if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
+                    // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
+                    const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
+                    const attempt2 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
+                    candidateChanges.push(attempt2);
+                }
+            }
+
+            // Try using an attribute instead of an index
+            const attributes = curNode.attributes;
+            for(let attribute of attributes){
+                const attrName = attribute.name;
+                const attributeValue = attribute.value;
+                let nodeXPathSubstring1;
+                if(attributeValue){
+                    //nodeXPathSubstring1 = `/${tag}[@${attrName}='${attributeValue}']`;
+                    nodeXPathSubstring1 = `/*[@${attrName}='${attributeValue}']`;
+                }else{
+                    //nodeXPathSubstring1 = `/${tag}[@${attrName}]`;
+                    nodeXPathSubstring1 = `/*[@${attrName}]`;
+                }
+                const attempt1 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring1, xPathSuffix, "attribute", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
+                candidateChanges.push(attempt1);
+
+                // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+                if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
+                    // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
+                    const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
+                    const attempt2 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
+                    candidateChanges.push(attempt2);
+                }
+            }
+
+            // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
+            // Try just ignoring/excluding this level, aka, allowing any number of levels to happen here (this could help us include values whose DOM node is not as deep, but not sure if this could over-select, select too many nodes on the page)
+            if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
+                const nodeXPathSubstring = `/`;
+                const attempt = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring, xPathSuffix, "slash", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
+                candidateChanges.push(attempt);
+            }
+
+            // Choose the best option from candidateChanges; or, if none of the options increase length of newMatchesFound, then just use original index-based substring
+            
+            // First, filter out options where scenariosThatNoLongerWork.length > 0 (i.e., this change caused some param/value combos that had a result before to no longer have a result (or to have multiple results, so we don't know which one to use))
+                // Also filter out options where the xpath for the demo'ed param/value combo doesn't match the demo element
+            candidateChanges = candidateChanges.filter(obj => obj.scenariosThatNoLongerWork.length === 0 && obj.matchesDemoElement);
+
+            // Sort in descending order of newMatchesFound.length
+            candidateChanges.sort(function(a, b){
+                return b.newMatchesFound.length - a.newMatchesFound.length;
+            });
+
+            //console.log("candidateChanges", candidateChanges);
+
+            let bestCandidateForThisLevel;
+
+            if(candidateChanges.length > 0){
+                // Just choose the first one (could have a better rule, e.g., to choose classes over // if both exist, etc)
+                bestCandidateForThisLevel = candidateChanges[0];
+            }
+
+            //console.log("candidateChanges", candidateChanges);
+            console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
+
+            if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
+                // No changes at this level helped us find more matches, so just use what we had already
+    
+                //curNodeXPathSubstring
+                // Remove curNodeXPathSubstring from end of xPathRelativeSuffixPrefix
+                // Add curNodeXPathSubstring to beginning of xPathSuffix
+                oldXPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix;
+                parentXPath = getParentXPath(exampleDataObj.exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
+                xPathSuffix = curNodeXPathSubstring + xPathSuffix;
+
+                curNodeXPathSubstring = (exampleDataObj.exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
+                xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf(curNodeXPathSubstring));
+
+                //parentXPath = getParentXPath(exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
+                //curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
+            }else{
+    
+                const newXPathSubstring = bestCandidateForThisLevel.nodeXPathSubstring;
+                
+                //console.log("Updating bestSoFar");
+                // Loop through parameter value combos
+                for(let [comboStringID, paramValueCombination] of Object.entries(paramValueCombinations)){
+                    const generatedRowXPathPrefix = paramValueCombination.rowXPathPrefix;
+                    //console.log("generatedRowXPathPrefix", generatedRowXPathPrefix);
+
+                    //console.log("paramValueCombination.newFullXPathSuffix", bestCandidateForThisLevel.newFullXPathSuffix);
+                    // See if full xpath for this combo is valid
+                    const fullXPath = generatedRowXPathPrefix + bestCandidateForThisLevel.newFullXPathSuffix;
+                    //console.log(`fullXPath for ${comboStringID}`, fullXPath);
+            
+                    let domElement;
+                    try{
+                        if(fullXPath.indexOf("///") === -1){
+                            domElement = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                        }
+                    }catch{
+            
+                    }
+                    if(domElement){
+                        bestSoFar[comboStringID].xPath = fullXPath;
+                        if(paramCombosWhereXPathIsNotValid.includes(comboStringID)){
+                            //newMatchesFound.push(comboStringID);
+
+                            paramCombosWhereXPathIsNotValid.splice(paramCombosWhereXPathIsNotValid.indexOf(comboStringID), 1);
+    
+                            // Add to valuesWithXPath
+                            paramCombosWhereXPathIsValid.push(comboStringID);
+                        }
+                    }
+                }
+                oldXPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix;
+                parentXPath = getParentXPath(exampleDataObj.exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
+                xPathSuffix = newXPathSubstring + xPathSuffix;
+
+                curNodeXPathSubstring = (exampleDataObj.exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
+                xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf(curNodeXPathSubstring));
+                
+                //parentXPath = getParentXPath(exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
+                //curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
+            }
+
+            curNode = curNode.parentNode;
+        }
+
+        console.log("Final oldXPathRelativeSuffixPrefix", oldXPathRelativeSuffixPrefix);
+        console.log("Final xPathSuffix", xPathSuffix);
+        //console.log("Final xPathRelativeSuffixPrefix", xPathRelativeSuffixPrefix);
+        console.log("bestSoFar", bestSoFar);
+
+        return {
+            oldXPathRelativeSuffixPrefix,
+            xPathSuffix,
+            bestSoFar
+        };
+    }
 }
 
 function getParentXPath(xPathString){
@@ -1469,403 +1647,37 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             }
                         }
                         console.log("paramValueCombinations", paramValueCombinations);
-                        let bestSoFar = _.cloneDeep(paramValueCombinations);
-
-                        //console.log("paramValueCombinations", paramValueCombinations);
-                        //console.log("paramCombosWhereXPathIsValid", paramCombosWhereXPathIsValid);
-                        //console.log("paramCombosWhereXPathIsNotValid", paramCombosWhereXPathIsNotValid);
-                        //console.log("bestSoFar", bestSoFar);
                         
-                        if(paramCombosWhereXPathIsNotValid.length > 0){
-                            // Try alternate xpath suffixes to return from the version of generateColXPathSuffix that returns a static string
-                            
-                            // Now traverse up DOM for objWithXPath
+                        // For the demo's given input values, compute col suffix and full xpath
+                        const exampleRowXPathPrefix = generateRowXPathPrefix(
+                            filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
+                            colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
+                            superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : null
+                        );
+                        //console.log("exampleRowXPathPrefix", exampleRowXPathPrefix);
+                        const colParamValue = null;
+                        const exampleColXPathSuffix = generateColXPathSuffix(colParamValue, exampleRowXPathPrefix);
+                        //console.log("exampleColXPathSuffix", exampleColXPathSuffix);
+                        const exampleFullXPath = exampleRowXPathPrefix + exampleColXPathSuffix;
+                        //console.log("exampleFullXPath", exampleFullXPath);
 
-                            // For the demo's given input values, compute col suffix and full xpath
-                            const exampleRowXPathPrefix = generateRowXPathPrefix(
-                                filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
-                                colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
-                                superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : null
-                            );
-                            //console.log("exampleRowXPathPrefix", exampleRowXPathPrefix);
-                            const colParamValue = null;
-                            const exampleColXPathSuffix = generateColXPathSuffix(colParamValue, exampleRowXPathPrefix);
-                            //console.log("exampleColXPathSuffix", exampleColXPathSuffix);
-                            const exampleFullXPath = exampleRowXPathPrefix + exampleColXPathSuffix;
-                            //console.log("exampleFullXPath", exampleFullXPath);
-
-                            const exampleDataObj = {
-                                exampleFullXPath,
-                                filterValueForRowSelection: filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
-                                colParamValueForSuperlativeForRowSelection: colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
-                                superlativeValueForRowSelection: superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : null
-                            };
-
-                            /*let valueXPath = paramValueObj[matchingParam][currentParamValuePairings[matchingParam]];
-                            console.log("valueXPath", valueXPath);
-                            //var xPathPrefixToUse = valueXPath.substring(0, longestCommonPrefixLengthSoFar);
-                            //console.log("xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
-                            let indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
-                            let xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
-                            console.log("xPathPrefixToUse", xPathPrefixToUse);
-                            console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
-                            //let xPathPrefix = demoTargetXPath;
-                            let xPathRelativeSuffixPrefix = xPathRelativeSuffixToInclude;
-                            let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make*/
-                            let xPathRelativeSuffixPrefix = exampleColXPathSuffix;
-                            let parentXPath = getParentXPath(exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
-                            let curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-                            // Remove the last node
-                            xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf("/"));
-                            let oldXPathRelativeSuffixPrefix;
-                            let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
-                            let curNode = document.evaluate(exampleFullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                            //console.log("curNode", curNode);
-                            // While there are still param values where our xpath rule doesn't yield a node, and while we're still looking through the lower part of the xpath (i.e., xPathRelativeSuffixPrefix.length > 0)
-                            while(curNode.parentNode && paramCombosWhereXPathIsNotValid.length > 0 && xPathRelativeSuffixPrefix.length > 0){
-
-                                // we'll need to combine exampleRowXPathPrefix + xPathRelativeSuffixPrefix + xPathSuffix to get the full xpath
-
-                                //console.log("curNode", curNode);
-                                //console.log("parentXPath", parentXPath);
-                                //const curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-                                //console.log("curNodeXPathSubstring", curNodeXPathSubstring);
-                                //const tag = curNode.tagName.toLowerCase();
-                                //console.log("xPathRelativeSuffixPrefix", xPathRelativeSuffixPrefix);
-                                //console.log("xPathSuffix", xPathSuffix);
-
-                                let candidateChanges = [];
-
-                                // Try inserting a / (so that it's //) on the right of this xpath. So that this could match values whose DOM node is deeper
-                                // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                if(xPathSuffix.length > 0){
-                                    const nodeXPathSubstring = `${curNodeXPathSubstring}/`;
-                                    const attempt = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring, xPathSuffix, "class", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
-                                    candidateChanges.push(attempt);
-                                }
-
-                                // Try using a class instead of an index
-                                const classList = curNode.classList;
-                                for(let className of classList){
-                                    //const nodeXPathSubstring1 = `/${tag}[@class='${className}']`;
-                                    const nodeXPathSubstring1 = `/*[@class='${className}']`;
-                                    const attempt1 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring1, xPathSuffix, "class", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
-                                    candidateChanges.push(attempt1);
-
-                                    // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                    if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
-                                        // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
-                                        const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                                        const attempt2 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
-                                        candidateChanges.push(attempt2);
-                                    }
-                                }
-
-                                // Try using an attribute instead of an index
-                                const attributes = curNode.attributes;
-                                for(let attribute of attributes){
-                                    const attrName = attribute.name;
-                                    const attributeValue = attribute.value;
-                                    let nodeXPathSubstring1;
-                                    if(attributeValue){
-                                        //nodeXPathSubstring1 = `/${tag}[@${attrName}='${attributeValue}']`;
-                                        nodeXPathSubstring1 = `/*[@${attrName}='${attributeValue}']`;
-                                    }else{
-                                        //nodeXPathSubstring1 = `/${tag}[@${attrName}]`;
-                                        nodeXPathSubstring1 = `/*[@${attrName}]`;
-                                    }
-                                    const attempt1 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring1, xPathSuffix, "attribute", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
-                                    candidateChanges.push(attempt1);
-
-                                    // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                    if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
-                                        // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
-                                        const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                                        const attempt2 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
-                                        candidateChanges.push(attempt2);
-                                    }
-                                }
-
-                                // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                // Try just ignoring/excluding this level, aka, allowing any number of levels to happen here (this could help us include values whose DOM node is not as deep, but not sure if this could over-select, select too many nodes on the page)
-                                if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
-                                    const nodeXPathSubstring = `/`;
-                                    const attempt = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring, xPathSuffix, "slash", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj);
-                                    candidateChanges.push(attempt);
-                                }
-
-                                // Choose the best option from candidateChanges; or, if none of the options increase length of newMatchesFound, then just use original index-based substring
-                                
-                                // First, filter out options where scenariosThatNoLongerWork.length > 0 (i.e., this change caused some param/value combos that had a result before to no longer have a result (or to have multiple results, so we don't know which one to use))
-                                    // Also filter out options where the xpath for the demo'ed param/value combo doesn't match the demo element
-                                candidateChanges = candidateChanges.filter(obj => obj.scenariosThatNoLongerWork.length === 0 && obj.matchesDemoElement);
-
-                                // Sort in descending order of newMatchesFound.length
-                                candidateChanges.sort(function(a, b){
-                                    return b.newMatchesFound.length - a.newMatchesFound.length;
-                                });
-
-                                //console.log("candidateChanges", candidateChanges);
-
-                                let bestCandidateForThisLevel;
-
-                                if(candidateChanges.length > 0){
-                                    // Just choose the first one (could have a better rule, e.g., to choose classes over // if both exist, etc)
-                                    bestCandidateForThisLevel = candidateChanges[0];
-                                }
-
-                                //console.log("candidateChanges", candidateChanges);
-                                console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
-
-                                if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
-                                    // No changes at this level helped us find more matches, so just use what we had already
+                        const exampleDataObj = {
+                            exampleRowXPathPrefix,
+                            exampleColXPathSuffix,
+                            exampleFullXPath,
+                            filterValueForRowSelection: filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
+                            colParamValueForSuperlativeForRowSelection: colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
+                            superlativeValueForRowSelection: superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : null
+                        };
                         
-                                    //curNodeXPathSubstring
-                                    // Remove curNodeXPathSubstring from end of xPathRelativeSuffixPrefix
-                                    // Add curNodeXPathSubstring to beginning of xPathSuffix
-                                    oldXPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix;
-                                    parentXPath = getParentXPath(exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
-                                    xPathSuffix = curNodeXPathSubstring + xPathSuffix;
+                        const moreRobustXPathSuffixData = makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj);
 
-                                    curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-                                    xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf(curNodeXPathSubstring));
-
-                                    //parentXPath = getParentXPath(exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
-                                    //curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-                                }else{
-                        
-                                    const newXPathSubstring = bestCandidateForThisLevel.nodeXPathSubstring;
-                                    
-                                    //console.log("Updating bestSoFar");
-                                    // Loop through parameter value combos
-                                    for(let [comboStringID, paramValueCombination] of Object.entries(paramValueCombinations)){
-                                        const generatedRowXPathPrefix = paramValueCombination.rowXPathPrefix;
-                                        //console.log("generatedRowXPathPrefix", generatedRowXPathPrefix);
-
-                                        //console.log("paramValueCombination.newFullXPathSuffix", bestCandidateForThisLevel.newFullXPathSuffix);
-                                        // See if full xpath for this combo is valid
-                                        const fullXPath = generatedRowXPathPrefix + bestCandidateForThisLevel.newFullXPathSuffix;
-                                        //console.log(`fullXPath for ${comboStringID}`, fullXPath);
-                                
-                                        let domElement;
-                                        try{
-                                            if(fullXPath.indexOf("///") === -1){
-                                                domElement = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                                            }
-                                        }catch{
-                                
-                                        }
-                                        if(domElement){
-                                            bestSoFar[comboStringID].xPath = fullXPath;
-                                            if(paramCombosWhereXPathIsNotValid.includes(comboStringID)){
-                                                //newMatchesFound.push(comboStringID);
-
-                                                paramCombosWhereXPathIsNotValid.splice(paramCombosWhereXPathIsNotValid.indexOf(comboStringID), 1);
-                        
-                                                // Add to valuesWithXPath
-                                                paramCombosWhereXPathIsValid.push(value);
-                                            }
-                                        }
-                                    }
-                                    oldXPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix;
-                                    parentXPath = getParentXPath(exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
-                                    xPathSuffix = newXPathSubstring + xPathSuffix;
-
-                                    curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-                                    xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf(curNodeXPathSubstring));
-                                    
-                                    //parentXPath = getParentXPath(exampleRowXPathPrefix + xPathRelativeSuffixPrefix);
-                                    //curNodeXPathSubstring = (exampleRowXPathPrefix + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-                                }
-
-                                curNode = curNode.parentNode;
-                            }
-
-                            console.log("Final oldXPathRelativeSuffixPrefix", oldXPathRelativeSuffixPrefix);
-                            console.log("Final xPathSuffix", xPathSuffix);
-                            //console.log("Final xPathRelativeSuffixPrefix", xPathRelativeSuffixPrefix);
-                            console.log("bestSoFar", bestSoFar);
-
-                            // At this point, (oldXPathRelativeSuffixPrefix + xPathSuffix) should be the new suffix to use. Update generateColXPathSuffix accordingly
-                            generateColXPathSuffix = function(inputValue, rowXPathPrefix){
-                                // Returning an xpath suffix that we tried to make more robust
-                                return oldXPathRelativeSuffixPrefix + xPathSuffix;
-                            }
-                            console.log("updated generateColXPathSuffix", generateColXPathSuffix);
-
-                            /*
-                            // At this point, xPathSuffix should be the new suffix to use. Update generalizedXPathFunction accordingly
-                            generalizedXPathFunction = function(inputValue){
-                                // Want to use xPath prefix for the current value that's desired
-                                var valueXPath = paramValueObj[matchingParam][inputValue];
-                                //var xPathPrefixToUse = valueXPath.substring(0, longestCommonPrefixLengthSoFar);
-                                var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemoveMap[inputValue]);
-                                var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
-                
-                                // Now tack on the end of the xPath to get the desired relative element
-                                var desiredTargetXPath = xPathPrefixToUse + xPathSuffix;
-                                console.log("desiredTargetXPath", desiredTargetXPath);
-                                return desiredTargetXPath;
-                            };*/
+                        // At this point, (oldXPathRelativeSuffixPrefix + xPathSuffix) should be the new suffix to use. Update generateColXPathSuffix accordingly
+                        generateColXPathSuffix = function(inputValue, rowXPathPrefix){
+                            // Returning an xpath suffix that we tried to make more robust
+                            return moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
                         }
-                        /*if(paramValuesWhereXPathIsNotValid.length > 0){
-                            // Try alternate xpaths for xPathRelativeSuffixToInclude
-                            
-                            // Now traverse up DOM for objWithXPath
-
-                            let valueXPath = paramValueObj[matchingParam][currentParamValuePairings[matchingParam]];
-                            console.log("valueXPath", valueXPath);
-                            //var xPathPrefixToUse = valueXPath.substring(0, longestCommonPrefixLengthSoFar);
-                            //console.log("xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
-                            let indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
-                            let xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
-                            console.log("xPathPrefixToUse", xPathPrefixToUse);
-                            console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
-                            //let xPathPrefix = demoTargetXPath;
-                            let xPathRelativeSuffixPrefix = xPathRelativeSuffixToInclude;
-                            let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
-                            const curNode = document.evaluate(demoTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                            // While there are still param values where our xpath rule doesn't yield a node, and while we're still looking through the lower part of the xpath (i.e., xPathRelativeSuffixPrefix.length > 0)
-                            while(curNode.parentNode && paramValuesWhereXPathIsNotValid.length > 0 && xPathRelativeSuffixPrefix.length > 0){
-
-                                // we'll need to combine xPathPrefixToUse + xPathRelativeSuffixPrefix + xPathSuffix to get the full xpath
-
-                                const parentXPath = getParentXPath(xPathPrefixToUse + xPathRelativeSuffixPrefix);
-                                console.log("parentXPath", parentXPath);
-                                const curNodeXPathSubstring = (xPathPrefixToUse + xPathRelativeSuffixPrefix).substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-                                console.log("curNodeXPathSubstring", curNodeXPathSubstring);
-                                //const tag = curNode.tagName.toLowerCase();
-
-                                const candidateChanges = [];
-
-                                // Try inserting a / (so that it's //) on the right of this xpath. So that this could match values whose DOM node is deeper
-                                // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                if(xPathSuffix.length > 0){
-                                    const nodeXPathSubstring = `${curNodeXPathSubstring}/`;
-                                    const attempt = tryAlternativeXPathSuffix(xPathPrefixToUse, xPathRelativeSuffixPrefix, nodeXPathSubstring, xPathSuffix, "class", paramValuesWhereXPathIsNotValid, paramValuesWhereXPathIsValid, paramValueObj[matchingParam], xPathRelativeSuffixToRemoveMap);
-                                    candidateChanges.push(attempt);
-                                }
-
-                                // Try using a class instead of an index
-                                const classList = curNode.classList;
-                                for(let className of classList){
-                                    //const nodeXPathSubstring1 = `/${tag}[@class='${className}']`;
-                                    const nodeXPathSubstring1 = `/*[@class='${className}']`;
-                                    const attempt1 = tryAlternativeXPathSuffix(xPathPrefixToUse, xPathRelativeSuffixPrefix, nodeXPathSubstring1, xPathSuffix, "class", paramValuesWhereXPathIsNotValid, paramValuesWhereXPathIsValid, paramValueObj[matchingParam], xPathRelativeSuffixToRemoveMap);
-                                    candidateChanges.push(attempt1);
-
-                                    // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                    if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
-                                        // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
-                                        const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                                        const attempt2 = tryAlternativeXPathSuffix(xPathPrefixToUse, xPathRelativeSuffixPrefix, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", paramValuesWhereXPathIsNotValid, paramValuesWhereXPathIsValid, paramValueObj[matchingParam], xPathRelativeSuffixToRemoveMap);
-                                        candidateChanges.push(attempt2);
-                                    }
-                                }
-
-                                // Try using an attribute instead of an index
-                                const attributes = curNode.attributes;
-                                for(let attribute of attributes){
-                                    const attrName = attribute.name;
-                                    const attributeValue = attribute.value;
-                                    let nodeXPathSubstring1;
-                                    if(attributeValue){
-                                        //nodeXPathSubstring1 = `/${tag}[@${attrName}='${attributeValue}']`;
-                                        nodeXPathSubstring1 = `/*[@${attrName}='${attributeValue}']`;
-                                    }else{
-                                        //nodeXPathSubstring1 = `/${tag}[@${attrName}]`;
-                                        nodeXPathSubstring1 = `/*[@${attrName}]`;
-                                    }
-                                    const attempt1 = tryAlternativeXPathSuffix(xPathPrefixToUse, xPathRelativeSuffixPrefix, nodeXPathSubstring1, xPathSuffix, "attribute", paramValuesWhereXPathIsNotValid, paramValuesWhereXPathIsValid, paramValueObj[matchingParam], xPathRelativeSuffixToRemoveMap);
-                                    candidateChanges.push(attempt1);
-
-                                    // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                    if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
-                                        // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
-                                        const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                                        const attempt2 = tryAlternativeXPathSuffix(xPathPrefixToUse, xPathRelativeSuffixPrefix, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", paramValuesWhereXPathIsNotValid, paramValuesWhereXPathIsValid, paramValueObj[matchingParam], xPathRelativeSuffixToRemoveMap);
-                                        candidateChanges.push(attempt2);
-                                    }
-                                }
-
-                                // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
-                                // Try just ignoring/excluding this level, aka, allowing any number of levels to happen here (this could help us include values whose DOM node is not as deep, but not sure if this could over-select, select too many nodes on the page)
-                                if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
-                                    const nodeXPathSubstring = `/`;
-                                    const attempt = tryAlternativeXPathSuffix(xPathPrefixToUse, xPathRelativeSuffixPrefix, nodeXPathSubstring, xPathSuffix, "slash", paramValuesWhereXPathIsNotValid, paramValuesWhereXPathIsValid, paramValueObj[matchingParam], xPathRelativeSuffixToRemoveMap);
-                                    candidateChanges.push(attempt);
-                                }
-
-                                // Choose the best option from candidateChanges; or, if none of the options increase length of newMatchesFound, then just use original index-based substring
-                                // Sort in descending order of newMatchesFound.length
-                                candidateChanges.sort(function(a, b){
-                                    return b.newMatchesFound.length - a.newMatchesFound.length;
-                                });
-
-                                let bestCandidateForThisLevel;
-
-                                if(candidateChanges.length > 0){
-                                    // Just choose the first one (could have a better rule, e.g., to choose classes over // if both exist, etc)
-                                    bestCandidateForThisLevel = candidateChanges[0];
-                                }
-
-                                //console.log("candidateChanges", candidateChanges);
-                                console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
-
-                                if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
-                                    // No changes at this level helped us find more matches, so just use what we had already
-                        
-                                    //curNodeXPathSubstring
-                                    // Remove curNodeXPathSubstring from end of xPathRelativeSuffixPrefix
-                                    // Add curNodeXPathSubstring to beginning of xPathSuffix
-                                    xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf(curNodeXPathSubstring));
-                                    xPathSuffix = curNodeXPathSubstring + xPathSuffix;
-                                }else{
-                        
-                                    const newXPathSubstring = bestCandidateForThisLevel.nodeXPathSubstring;
-                                    //const numNodesAtThisLevel = bestCandidateForThisLevel.numNodesAtThisLevel;
-                                    
-                                    // Update bestSoFar to have improved xpaths
-                                    // Loop through parameter values
-
-                                    for(let [value, xPath] of Object.entries(valueXPathObj)){
-                                        let indexOfSuffixToRemove = xPath.lastIndexOf(xPathRelativeSuffixToRemoveMap[value]);
-                                        let valueXPathPrefixToUse = xPath.substring(0, indexOfSuffixToRemove);
-                                        const newValueXPath = valueXPathPrefixToUse + bestCandidateForThisLevel.newFullXPathSuffix;
-                                        
-                                        const result = document.evaluate(newValueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                                        if(result.snapshotItem(0)){
-                                            // This xPath is valid
-                                            bestSoFar[value] = newValueXPath;
-                                            if(paramValuesWhereXPathIsNotValid.includes(value)){
-                                                paramValuesWhereXPathIsNotValid.splice(paramValuesWhereXPathIsNotValid.indexOf(value), 1);
-                        
-                                                // Add to valuesWithXPath
-                                                paramValuesWhereXPathIsValid.push(value);
-                                            }
-                                        }
-                                    }
-
-                                    xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf(curNodeXPathSubstring));
-                                    xPathSuffix = newXPathSubstring + xPathSuffix;
-                                }
-                            }
-
-                            // At this point, xPathSuffix should be the new suffix to use. Update generalizedXPathFunction accordingly
-                            console.log("Final xPathSuffix", xPathSuffix);
-                            generalizedXPathFunction = function(inputValue){
-                                // Want to use xPath prefix for the current value that's desired
-                                var valueXPath = paramValueObj[matchingParam][inputValue];
-                                //var xPathPrefixToUse = valueXPath.substring(0, longestCommonPrefixLengthSoFar);
-                                var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemoveMap[inputValue]);
-                                var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
-                
-                                // Now tack on the end of the xPath to get the desired relative element
-                                var desiredTargetXPath = xPathPrefixToUse + xPathSuffix;
-                                console.log("desiredTargetXPath", desiredTargetXPath);
-                                return desiredTargetXPath;
-                            };
-                        }*/
+                        console.log("updated generateColXPathSuffix", generateColXPathSuffix);                        
                     }
 
                     // Make sure we don't accidentally find a column correspondence? Or I guess we couldn't "accidentally" do it?
