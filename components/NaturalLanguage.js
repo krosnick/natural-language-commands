@@ -307,7 +307,7 @@ class TemplateFreeformParam extends React.Component {
                 size={Math.max(this.props.paramName.length, 20)}
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                disabled={!this.props.valuesEditable}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
             >
             </input>
@@ -335,7 +335,7 @@ class TemplateEnumerationParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                disabled={!this.props.valuesEditable}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -371,7 +371,7 @@ class TemplateSuperlativeParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                disabled={!this.props.valuesEditable}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -978,6 +978,7 @@ class TemplateParamTextItem extends React.Component {
             if(this.props.paramTypeData.type === "freeform"){
                 paramTemplate = <TemplateFreeformParam
                                             uuid={this.props.uuid}     
+                                            specificallyForParam={this.props.specificallyForParam}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -994,6 +995,7 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTemplate = <TemplateEnumerationParam
                                             uuid={this.props.uuid}
+                                            specificallyForParam={this.props.specificallyForParam}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1011,6 +1013,7 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "superlative"){
                 paramTemplate = <TemplateSuperlativeParam
                                             uuid={this.props.uuid}
+                                            specificallyForParam={this.props.specificallyForParam}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1026,7 +1029,8 @@ class TemplateParamTextItem extends React.Component {
                                         />;
             }else if(this.props.paramTypeData.type === "flag"){
                 paramTemplate = <TemplateFlagParam
-                                            uuid={this.props.uuid}           
+                                            uuid={this.props.uuid} 
+                                            specificallyForParam={this.props.specificallyForParam}         
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1042,6 +1046,7 @@ class TemplateParamTextItem extends React.Component {
                                             dateRestriction={this.props.paramTypeData.dateRestriction}
                                             otherDataValue={this.props.paramTypeData.otherDataValue}
                                             uuid={this.props.uuid}
+                                            specificallyForParam={this.props.specificallyForParam}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             uuidInEditMode={this.props.uuidInEditMode}
@@ -1058,6 +1063,7 @@ class TemplateParamTextItem extends React.Component {
                                             rangeStart={this.props.paramTypeData.rangeStart}
                                             rangeEnd={this.props.paramTypeData.rangeEnd}
                                             uuid={this.props.uuid}
+                                            specificallyForParam={this.props.specificallyForParam}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             uuidInEditMode={this.props.uuidInEditMode}
@@ -2077,13 +2083,17 @@ class NaturalLanguage extends React.Component {
         if(demoIndexToUpdate === null){
             demonstrationsClone.push({
                 eventSequence: [],
-                paramValuePairs: {}
+                paramValuePairs: {},
+                specificallyForParam: "",
+                specificallyForParamValue: "",
             });
             generatedProgramClone.push(null);
         }else{
             demonstrationsClone[demoIndexToUpdate] = {
                 eventSequence: [],
-                paramValuePairs: {}
+                paramValuePairs: {},
+                specificallyForParam: "",
+                specificallyForParamValue: "",
             };
             generatedProgramClone[demoIndexToUpdate] = null;
         }
@@ -2105,6 +2115,8 @@ class NaturalLanguage extends React.Component {
             // Still need to have a placeholder for the main demo (because there are other demos after it) so just clear the obj
             demonstrationsClone[demoIndex] = {
                 eventSequence: [],
+                specificallyForParam: null,
+                specificallyForParamValue: null,
                 paramValuePairs: {}
             };
             generatedProgramClone[demoIndex] = null;
@@ -2445,6 +2457,38 @@ class NaturalLanguage extends React.Component {
         return constantSuperlatives;
     }
 
+    // Similar to getParamValueData; just created a new version for now because i don't want to break getParamValueData
+    getParamIDNameValueData(){
+        let paramValueObj = {};
+        let superlativeParameters = [];
+        for(let item of Object.values(this.state.idToItem)){
+            if(item.paramTypeData){
+                // This item is a param. Add this param name and its param values/xpaths to paramValueObj
+                const paramValues = {};
+                for(let valueObj of item.paramTypeData.possibleValues){
+                    const paramValue = valueObj.textCandidate;
+                    const xPath = valueObj.xPath;
+                    paramValues[paramValue] = xPath;
+                }
+                const paramName = item.paramName;
+                const uuid = item.uuid;
+                paramValueObj[uuid] = {
+                    uuid,
+                    paramName,
+                    paramValues
+                };
+                if(item.paramTypeData.type === "superlative"){
+                    // ideally should only be 1 superlative in the NL; not sure if we can meaningfully support multiple? not enough semantic input from user
+                    superlativeParameters.push(paramName);
+                }
+            }
+        }
+        return {
+            paramValueObj,
+            superlativeParameters
+        };
+    }
+
     getParamValueData(){
         let paramValueObj = {};
         let superlativeParameters = [];
@@ -2641,7 +2685,7 @@ class NaturalLanguage extends React.Component {
     handleTemplateParamValueChange(e, paramUuid, demoIndex){
         const newParamValue = e.target.value;
         const paramName = this.state.idToItem[paramUuid].paramName;
-
+        
         if(demoIndex === "runningProgram"){
             // We're rendering this template not for a demo but for running the generated program
             const paramValuePairsClone = _.cloneDeep(this.state.paramValuePairsForRunningProgram);
@@ -2665,6 +2709,25 @@ class NaturalLanguage extends React.Component {
                 demonstrations: demonstrationsClone
             });
         }
+    }
+
+    handleRefinementDemoUpdate(e, demo_index, attributeToUpdate){
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        demonstrationsClone[demo_index][attributeToUpdate] = e.target.value;
+
+        if(attributeToUpdate === "specificallyForParam"){
+            // Clear value, because user just changed param, so current value wouldn't make sense
+            demonstrationsClone[demo_index]["specificallyForParamValue"] = "";
+        }else if(attributeToUpdate === "specificallyForParamValue"){
+            // Update param value for NL template
+            // Wait a second, so that this setState doesn't conflict with one below
+            setTimeout(function(context){
+                context.handleTemplateParamValueChange(e, demonstrationsClone[demo_index]["specificallyForParam"], demo_index);
+            }, 0, this);
+        }
+        this.setState({
+            demonstrations: demonstrationsClone
+        });
     }
 
     handleUpdateFreeformNLQuery(e){
@@ -2919,6 +2982,7 @@ class NaturalLanguage extends React.Component {
                         <TemplateParamTextItem
                             //text={textItem.text}
                             uuid={textItem.uuid}
+                            specificallyForParam={this.state.demonstrations[demoIndex] ? this.state.demonstrations[demoIndex].specificallyForParam : null}
                             paramName={textItem.paramName}
                             paramValue={paramValuePairs[textItem.uuid] ? paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
                             paramTypeData={textItem.paramTypeData}
@@ -3228,13 +3292,79 @@ class NaturalLanguage extends React.Component {
                         </button>
                         : ""
                     }
-                    <div>
-                        {demoNLTemplateItems}
-                    </div>
-                    <div>
-                        {events}
-                    </div>
-                    {/* A demo already exists; "redo" will overwrite it */}
+                    {demo_index > 0 ? (
+                        // This is a refinement demo, so user needs to choose param and value to make it for
+                        <>
+                            <p>
+                                This demonstration will apply only for a particular parameter value. Indicate which parameter and value you want this demonstration to be for.
+                            </p>
+                            <select
+                                log-this-element=""
+                                value={this.state.demonstrations[demo_index].specificallyForParam}
+                                onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParam")}
+                                disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
+                            >
+                                <>
+                                    <option
+                                        value={""}
+                                    >
+                                        {"<Choose parameter>"}
+                                    </option>
+                                    {Object.entries(this.getParamIDNameValueData().paramValueObj).map(([key, data]) => {
+                                        return (
+                                            <option
+                                                value={data.uuid}
+                                            >
+                                                {data.paramName}
+                                            </option>
+                                        );
+                                    })}
+                                </>
+                            </select>
+                            <select
+                                log-this-element=""
+                                value={this.state.demonstrations[demo_index].specificallyForParamValue}
+                                onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParamValue")}
+                                disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
+                            >
+                                {this.state.demonstrations[demo_index].specificallyForParam ? (
+                                    <>
+                                        <option
+                                            value={""}
+                                        >
+                                            {"<Choose value>"}
+                                        </option>
+                                        {Object.keys(this.getParamIDNameValueData().paramValueObj[this.state.demonstrations[demo_index].specificallyForParam].paramValues).map((paramValue) => {
+                                            return (
+                                                <option
+                                                    value={paramValue}
+                                                >
+                                                    {paramValue}
+                                                </option>
+                                            );
+                                        })}
+                                    </>
+                                ):(
+                                    ""
+                                )}
+                            </select>
+                        </>
+                    ):(
+                        ""
+                    )}
+                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParam && this.state.demonstrations[demo_index].specificallyForParamValue ? (
+                        // Only let user edit param/values and record refinement demo if they've specified which specific param/value it is for
+                        <>
+                            <div>
+                                {demoNLTemplateItems}
+                            </div>
+                            <div>
+                                {events}
+                            </div>
+                        </>
+                    ):(
+                        ""
+                    )}
                     {demo_index === this.state.demoIndexInCreateMode
                         ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
                         <>
@@ -3247,10 +3377,15 @@ class NaturalLanguage extends React.Component {
                                 </div>
                             ) : (
                                 <div>
-                                    <button
-                                        className={styles.startRecordingButton}
-                                        onClick={() => this.handleStartRecordingDemo(demo_index)}
-                                    >Start recording</button>
+                                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParam && this.state.demonstrations[demo_index].specificallyForParamValue ? (
+                                        // For refinement demo, only show "Start recording" button if user has already set specificallyForParam and specificallyForParamValue
+                                        <button
+                                            className={styles.startRecordingButton}
+                                            onClick={() => this.handleStartRecordingDemo(demo_index)}
+                                        >Start recording</button>
+                                    ):(
+                                        ""
+                                    )}
                                     <button
                                         className={styles.cancelButton}
                                         onClick={() => this.cancelNewDemo(demo_index)}
