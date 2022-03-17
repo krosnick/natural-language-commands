@@ -2257,29 +2257,55 @@ class NaturalLanguage extends React.Component {
                 for(let valueObj of newValueXPathObjList){
                     // Check if this value has an xpath
                     if(!valueObj.xPath){
-                        // First try within the scope of where the other xpaths are (e.g., so that we're not choosing text that's within a large body of text that's like a header/footer of the website)
-                        // So let's find the common prefix among all xpaths that have been found already
-                        const stringMatchesWithinScope = document.evaluate(`${commonXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                        console.log("stringMatchesWithinScope", stringMatchesWithinScope);
+                        
+                        // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
                         let newXPath;
-                        if(stringMatchesWithinScope.snapshotLength > 0){
-                            // Take first result
-                            const matchingNode = stringMatchesWithinScope.snapshotItem(0);
-                            newXPath = getXPathForElement(matchingNode, document);
-                        }else{
-                            // TODO - if stringMatchesAnywhere has multiple text node matches, maybe could try rest of the values first to see if those have just a single string match
-                                // (and then maybe the updated commonXPathPrefix will be shorter/higher up in the DOM and will help us choose a more meaningful xpath here)
-                                // Or, could look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
-                                // Could probably move the 'if(xPathSuffix)' in here and do that logic here
-                                // Also, can probably get rid of this stringMatchesWithinScope vs stringMatchesAnywhere distinction here then
-
-                            // If no match was found within that common prefix scope, now just search anywhere within the page
-                            const stringMatchesAnywhere = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                            console.log("stringMatchesAnywhere", stringMatchesAnywhere);
-                            if(stringMatchesAnywhere.snapshotLength > 0){
-                                const matchingNode = stringMatchesAnywhere.snapshotItem(0);
-                                newXPath = getXPathForElement(matchingNode, document);
+                        const stringMatches = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                        // A lot of this adapted from below; should make helper function
+                        if(xPathSuffix){
+                            let newSuffix = xPathSuffix;
+                            // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                            if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                                newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
                             }
+                            // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
+                            // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
+                            for(let snapshotIndex = 0; snapshotIndex < stringMatches.snapshotLength; snapshotIndex++){
+                                const node = stringMatches.snapshotItem(snapshotIndex);
+                                const xPath = getXPathForElement(node, document);
+                                if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
+                                    // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                                    let xPathPrefix = xPath;
+                                    while(xPathPrefix.length > 0){
+                                        const xPathToTry = xPathPrefix + newSuffix;
+                                        // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                        try{
+                                            const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                            if(node){
+                                                const indexBasedXPath = getXPathForElement(node, document);
+                                                if(indexBasedXPath === xPath){
+                                                    // This means that xPathToTry was valid and does match the original xPath
+                                                    // Let's set newXPath and break out of loop
+                                                    newXPath = xPathToTry;
+                                                    break;
+                                                }
+                                            }
+                                        }catch{
+                                        }
+                                        // Update xPathPrefix
+                                        xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                    }
+                                }else{
+                                    // newSuffix is the suffix, so just use this
+                                    newXPath = xPath;
+                                }
+                                if(newXPath){
+                                    break;
+                                }
+                            }
+                        }else{
+                            const matchingNode = stringMatches.snapshotItem(0);
+                            newXPath = getXPathForElement(matchingNode, document);
                         }
 
                         if(newXPath){
