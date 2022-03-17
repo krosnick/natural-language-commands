@@ -373,31 +373,33 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
             //while(true){
             for(let index = 1; index <= numRows; index++){
                 const filledInTemplateXPath = bestCandidateForThisLevel.newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", index);
-                const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                if(result.snapshotItem(0)){
-                    let textCandidate = result.snapshotItem(0).textContent.toLowerCase();
-                    // If this xpath match corresponds to one of the user specified values, update it in bestSoFar
-                    if(bestSoFar[textCandidate]){
-                        bestSoFar[textCandidate].xPath = filledInTemplateXPath;
-                        bestSoFar[textCandidate].templateXPath = bestCandidateForThisLevel.newTemplateXPath;
-                        bestSoFar[textCandidate].commonXPathPrefix = bestCandidateForThisLevel.newTemplateXPath.substring(0, bestCandidateForThisLevel.newTemplateXPath.indexOf("[INSERT-ROW-INDEX-HERE]"));
-                        bestSoFar[textCandidate].commonXPathSuffix = bestCandidateForThisLevel.newTemplateXPath.substring(bestCandidateForThisLevel.newTemplateXPath.lastIndexOf("[INSERT-ROW-INDEX-HERE]") + "[INSERT-ROW-INDEX-HERE]".length);
+                try{
+                    const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                    if(result.snapshotItem(0)){
+                        let textCandidate = result.snapshotItem(0).textContent.toLowerCase();
+                        // If this xpath match corresponds to one of the user specified values, update it in bestSoFar
+                        if(bestSoFar[textCandidate]){
+                            bestSoFar[textCandidate].xPath = filledInTemplateXPath;
+                            bestSoFar[textCandidate].templateXPath = bestCandidateForThisLevel.newTemplateXPath;
+                            bestSoFar[textCandidate].commonXPathPrefix = bestCandidateForThisLevel.newTemplateXPath.substring(0, bestCandidateForThisLevel.newTemplateXPath.indexOf("[INSERT-ROW-INDEX-HERE]"));
+                            bestSoFar[textCandidate].commonXPathSuffix = bestCandidateForThisLevel.newTemplateXPath.substring(bestCandidateForThisLevel.newTemplateXPath.lastIndexOf("[INSERT-ROW-INDEX-HERE]") + "[INSERT-ROW-INDEX-HERE]".length);
+                        }
+
+                        // Update valuesWithoutXPath and valuesWithXPath accordingly
+                        //if(valuesWithoutXPath.includes(textCandidate)){
+                        if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
+                            // Remove from valuesWithoutXPath
+                            //const indexInList = valuesWithoutXPath.indexOf(textCandidate);
+                            const indexInList = indexOfCaseInsensitive(valuesWithoutXPath, textCandidate);
+                            valuesWithoutXPath.splice(indexInList, 1);
+
+                            // Add to valuesWithXPath
+                            valuesWithXPath.push(textCandidate);
+                        }
+
                     }
-
-                    // Update valuesWithoutXPath and valuesWithXPath accordingly
-                    //if(valuesWithoutXPath.includes(textCandidate)){
-                    if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
-                        // Remove from valuesWithoutXPath
-                        //const indexInList = valuesWithoutXPath.indexOf(textCandidate);
-                        const indexInList = indexOfCaseInsensitive(valuesWithoutXPath, textCandidate);
-                        valuesWithoutXPath.splice(indexInList, 1);
-
-                        // Add to valuesWithXPath
-                        valuesWithXPath.push(textCandidate);
-                    }
-
+                }catch{
                 }
-                //index += 1;
             }
 
             xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf(curNodeXPathSubstring));

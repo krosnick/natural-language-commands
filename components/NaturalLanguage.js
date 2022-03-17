@@ -1127,10 +1127,10 @@ class NaturalLanguage extends React.Component {
             userFeedback: "",
             incompleteFormParamIDs: [],
             demonstrations: [],
-            inCreateNewDemoMode: false,
-            inRecordingDemoMode: false,
+            demoIndexInCreateMode: null,
+            demoIndexInRecordingMode: null,
             triggerWebsiteReload: Math.random(),
-            generatedProgram: null,
+            generatedProgram: [],
             paramValuePairsForRunningProgram: {},
             websiteSelectedTextObject: null,
             programOutput: null,
@@ -2001,8 +2001,8 @@ class NaturalLanguage extends React.Component {
         console.log("handleEmbeddedWebsiteEvent", e);
         console.log("window.getSelection()", window.getSelection());
 
-        // Only process/capture events if user is currently in demo mode
-        if(this.state.inCreateNewDemoMode && this.state.inRecordingDemoMode){
+        // Only process/capture events if user is currently in demo mode (so when demoIndexInCreateMode and demoIndexInRecordingMode are demo indices, not null)
+        if(this.state.demoIndexInCreateMode !== null && this.state.demoIndexInRecordingMode !== null){
             // For now only process "click" events
             if(e.type === "click"){
                 console.log("handleEmbeddedWebsiteEvent e.target", e.target);
@@ -2037,16 +2037,8 @@ class NaturalLanguage extends React.Component {
                     
                     // Handle events here. Process them. Store in React state as part of the demonstration, etc
                     const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-                    /*const demonstrationIndex = 0; // later on this should be a variable value
-                    if(demonstrationsClone.length === demonstrationIndex){
-                        // First event for this demonstration, so add a list for it
-                        demonstrationsClone.push([]);
-                    }*/
-                    const demonstrationIndex = demonstrationsClone.length - 1;
                     // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
-                    //demonstrationsClone[demonstrationIndex].push(e);
-                    //demonstrationsClone[demonstrationIndex].eventSequence.push(e);
-                    demonstrationsClone[demonstrationIndex].eventSequence.push({
+                    demonstrationsClone[this.state.demoIndexInRecordingMode].eventSequence.push({
                         originalEventObj: e,
                         targetXPath,
                         eventType: e.type
@@ -2064,8 +2056,7 @@ class NaturalLanguage extends React.Component {
         // Add event associated with this.state.websiteSelectedTextObject to current demo event sequence
         const targetXPath = getXPathForElement(this.state.websiteSelectedTextObject.event.target, document);
         const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        const demonstrationIndex = demonstrationsClone.length - 1;
-        demonstrationsClone[demonstrationIndex].eventSequence.push({
+        demonstrationsClone[this.state.demoIndexInRecordingMode].eventSequence.push({
             originalEventObj: this.state.websiteSelectedTextObject.event,
             targetXPath,
             eventType: "print"
@@ -2076,36 +2067,61 @@ class NaturalLanguage extends React.Component {
         });
     }
 
-    handleCreateDemo(){
-        // Create new demo object. Currently only allowing 1 demo per program,
-            // so user will either be creating it for the first time, or overwriting their existing one
-        
-        // Want to clear program too, in case this is a redo (and program existed already)
-        this.setState({
-            demonstrations: [
-                {
-                    eventSequence: [],
-                    paramValuePairs: {}
-                }
-            ],
-            inCreateNewDemoMode: true,
-            generatedProgram: null,
-            currentProgramCode: null,
-        });
-    }
-
-    cancelNewDemo(){
-        // User doesn't want to create this demo, so remove the last obj that was recently added to demonstrations
+    handleCreateDemo(demoIndexToUpdate){
+        // Create new demo object
+        // If demoIndexToUpdate is given, then clear the data for that demo
+        // If demoIndexToUpdate is null, just add a new demo obj
         const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        demonstrationsClone.splice(demonstrationsClone.length-1, 1);
+        const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+        console.log("handleCreateDemo demoIndexToUpdate", demoIndexToUpdate)
+        if(demoIndexToUpdate === null){
+            demonstrationsClone.push({
+                eventSequence: [],
+                paramValuePairs: {}
+            });
+            generatedProgramClone.push(null);
+        }else{
+            demonstrationsClone[demoIndexToUpdate] = {
+                eventSequence: [],
+                paramValuePairs: {}
+            };
+            generatedProgramClone[demoIndexToUpdate] = null;
+        }
 
         this.setState({
             demonstrations: demonstrationsClone,
-            inCreateNewDemoMode: false
+            demoIndexInCreateMode: demoIndexToUpdate === null ? demonstrationsClone.length-1 : demoIndexToUpdate,
+            generatedProgram: generatedProgramClone,
+            currentProgramCode: null, //  TODO, this shouldn't be empty, should still contain code for other demos
         });
     }
 
-    handleStartRecordingDemo(){
+    cancelNewDemo(demoIndex){
+        // User doesn't want to create this demo, so remove the last obj that was recently added to demonstrations
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+
+        if(this.state.demonstrations.length > 1 && demoIndex === 0){
+            // Still need to have a placeholder for the main demo (because there are other demos after it) so just clear the obj
+            demonstrationsClone[demoIndex] = {
+                eventSequence: [],
+                paramValuePairs: {}
+            };
+            generatedProgramClone[demoIndex] = null;
+        }else{
+            // This is a refinement demo, so we'll just get rid of it
+            demonstrationsClone.splice(demoIndex, 1);
+            generatedProgramClone.splice(demoIndex, 1);
+        }
+
+        this.setState({
+            demonstrations: demonstrationsClone,
+            generatedProgram: generatedProgramClone,
+            demoIndexInCreateMode: null
+        });
+    }
+
+    handleStartRecordingDemo(demoIndex){
         console.log("handleStartRecordingDemo");
         // Reload embedded website page, to ensure clean slate when user starts performing demo
         this.forceReRenderEmbeddedWebsite();
@@ -2399,7 +2415,7 @@ class NaturalLanguage extends React.Component {
         }
 
         this.setState({
-            inRecordingDemoMode: true,
+            demoIndexInRecordingMode: demoIndex,
             idToItem: idToItemClone
         });
     }
@@ -2463,18 +2479,26 @@ class NaturalLanguage extends React.Component {
         const paramValueObj = this.getParamValueData().paramValueObj;
 
         let programString = "[\n";
-        for(let programStep of program){
-            let programStepString = "{\n";
-            for(let [key, value] of Object.entries(programStep)){
-                if(typeof(value) === "string"){
-                    programStepString += `"${key}": "${value}",\n`;
-                }else{
-                    programStepString += `"${key}": ${value},\n`;
+        for(let programVersion of program){
+            if(program){
+                programString += "[\n";
+                for(let programStep of programVersion.program){
+                    let programStepString = "{\n";
+                    for(let [key, value] of Object.entries(programStep)){
+                        if(typeof(value) === "string"){
+                            programStepString += `"${key}": "${value}",\n`;
+                        }else{
+                            programStepString += `"${key}": ${value},\n`;
+                        }
+                        //programStepString += key + ": " + value + ", ";
+                    }
+                    programStepString += "}";
+                    programString += programStepString + ",\n";
                 }
-                //programStepString += key + ": " + value + ", ";
+                programString += "],\n";
+            }else{
+                programString += "null,\n";
             }
-            programStepString += "}";
-            programString += programStepString + ",\n";
         }
         programString += "]";
 
@@ -2485,52 +2509,50 @@ class NaturalLanguage extends React.Component {
         return currentProgramCode;
     }
 
-    handleStopRecordingDemo(){
+    handleStopRecordingDemo(demo_index){
         // Update mode state variables, and also generate program or update existing program
-        
-        let generatedProgram = this.state.generatedProgram;
+        console.log("handleStopRecordingDemo");
+        console.log("demo_index", demo_index);
+        //let generatedProgram = this.state.generatedProgram;
+        let generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
         let currentProgramCode;
         let demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        if(this.state.demonstrations.length === 1){
-            // Only 1 demo so far. Let's use this 1 demo to generate a program
-            const demoIndex = 0;
-            const demoObj = this.state.demonstrations[demoIndex];
-            
-            let demoEventSequence = demoObj.eventSequence;
-            
-            let currentParamValuePairings = {};
-            for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
-                const paramName = paramNameValueObj.paramName;
-                const paramValue = paramNameValueObj.paramValue;
-                currentParamValuePairings[paramName] = paramValue;
-            }
-            console.log("currentParamValuePairings", currentParamValuePairings);
-
-            const { paramValueObj, superlativeParameters } = this.getParamValueData();
-            
-            const constantSuperlatives = this.getConstantSuperlatives();
-            
-            generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
-            console.log("generatedProgram", generatedProgram);
-
-            currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgram.program);
-
-            // Want to note what the param value data was that was used during the demo;
-                // later on when user runs program, we want to see if the param value data at that time is what it was at the time of the demo(s);
-                // if it's different, then we'll want to warn user that they should probably re-demo so we can generate updated program
-            demonstrationsClone[demoIndex].paramValueDataUsed = this.getParamValueData();
-        }else{
-            // Multiple demos. Currently we don't know how to generalize from multiple demos,
-                // so for now we just won't update the program
+        //if(this.state.demonstrations.length === 1){
+        const demoObj = this.state.demonstrations[demo_index];
+        
+        let demoEventSequence = demoObj.eventSequence;
+        
+        let currentParamValuePairings = {};
+        for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
+            const paramName = paramNameValueObj.paramName;
+            const paramValue = paramNameValueObj.paramValue;
+            currentParamValuePairings[paramName] = paramValue;
         }
+        console.log("currentParamValuePairings", currentParamValuePairings);
+
+        const { paramValueObj, superlativeParameters } = this.getParamValueData();
+        
+        const constantSuperlatives = this.getConstantSuperlatives();
+        
+        //generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
+        const programResult = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
+        generatedProgramClone[demo_index] = programResult;
+        console.log("generatedProgramClone", generatedProgramClone);
+
+        currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
+
+        // Want to note what the param value data was that was used during the demo;
+            // later on when user runs program, we want to see if the param value data at that time is what it was at the time of the demo(s);
+            // if it's different, then we'll want to warn user that they should probably re-demo so we can generate updated program
+        demonstrationsClone[demo_index].paramValueDataUsed = this.getParamValueData();
 
         this.setState({
-            generatedProgram,
+            generatedProgram: generatedProgramClone,
             demonstrations: demonstrationsClone,
             //currentProgramCode: "var x = 1; // sample code",
             currentProgramCode,
-            inRecordingDemoMode: false,
-            inCreateNewDemoMode: false, // for now, we'll also exit demo mode
+            demoIndexInRecordingMode: null,
+            demoIndexInCreateMode: null, // for now, we'll also exit demo mode
             websiteSelectedTextObject: null
         });
 
@@ -2558,10 +2580,10 @@ class NaturalLanguage extends React.Component {
 
     removeProgramStep(step_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-        generatedProgramClone.program.splice(step_index, 1);
+        generatedProgramClone[0].program.splice(step_index, 1);
 
         // Need to update code string to reflect program change we just made
-        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program);
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone[0].program);
 
         this.setState({
             currentProgramCode,
@@ -2590,14 +2612,14 @@ class NaturalLanguage extends React.Component {
     handleProgramStepInfluencedByChange(staticOrInferred, step_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
         if(staticOrInferred === "static"){
-            generatedProgramClone.program[step_index].static = true;
+            generatedProgramClone[0].program[step_index].static = true;
         }else{
             // inferred
-            generatedProgramClone.program[step_index].static = false;
+            generatedProgramClone[0].program[step_index].static = false;
         }
 
         // Need to update code string to reflect program change we just made
-        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program);
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone[0].program);
 
         this.setState({
             currentProgramCode,
@@ -2801,7 +2823,7 @@ class NaturalLanguage extends React.Component {
                         paramToValueObj[paramName] = paramValue;
                     }
     
-                    const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
+                    const programOutput = await executeProgram(context.state.generatedProgram[0].program, paramToValueObj);
                     console.log("programOutput", programOutput);
                     context.setState({
                         programOutput,
@@ -3149,13 +3171,18 @@ class NaturalLanguage extends React.Component {
                         key = {e_index}
                         className={styles.step}
                     >
-                        <button
-                            onClick={() => this.removeDemoStep(e_index)}
-                            className={styles.removeValueButton}
-                            title="Delete"
-                        >
-                            x
-                        </button>
+                        {demo_index === this.state.demoIndexInCreateMode ? (
+                            // Only allow user to delete a demo step during creation mode
+                            <button
+                                onClick={() => this.removeDemoStep(e_index)}
+                                className={styles.removeValueButton}
+                                title="Delete"
+                            >
+                                x
+                            </button>
+                        ):(
+                            ""
+                        )}
                         <div
                             className={styles.stepPieceOfInfo}
                         >
@@ -3180,18 +3207,18 @@ class NaturalLanguage extends React.Component {
                     </div>
                 );
             });
-            const nlTemplateEditable = demo_index === (demonstrations.length - 1) && this.state.inCreateNewDemoMode;
+            const nlTemplateEditable = demo_index === this.state.demoIndexInCreateMode;
             const demoNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, demo_index, nlTemplateEditable);
             return (
                 <div
                     key={demo_index}
                     className={styles.demonstration}
                 >
-                    {/* <div
+                    <div
                         className={styles.demonstrationName}
                     >
-                        Demonstration {demo_index + 1}
-                    </div> */}
+                        { demo_index === 0 ? "Main demonstration" : `Refinement demonstration ${demo_index}`}
+                    </div>
                     {!nlTemplateEditable ?
                         <button
                             className={styles.replayDemoButton}
@@ -3207,6 +3234,44 @@ class NaturalLanguage extends React.Component {
                     <div>
                         {events}
                     </div>
+                    {/* A demo already exists; "redo" will overwrite it */}
+                    {demo_index === this.state.demoIndexInCreateMode
+                        ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
+                        <>
+                            {this.state.demoIndexInRecordingMode !== null ? (
+                                <div>
+                                    <button
+                                        className={styles.stopRecordingButton}
+                                        onClick={() => this.handleStopRecordingDemo(demo_index)}
+                                    >Stop recording</button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <button
+                                        className={styles.startRecordingButton}
+                                        onClick={() => this.handleStartRecordingDemo(demo_index)}
+                                    >Start recording</button>
+                                    <button
+                                        className={styles.cancelButton}
+                                        onClick={() => this.cancelNewDemo(demo_index)}
+                                    >Cancel</button>
+                                </div>
+                            )}
+                        </>
+                        ):(
+                            <>
+                                {events.length > 0 || (demo_index === 0 && this.state.demonstrations.length > 0 && events.length === 0) ? (
+                                    <button
+                                        className={styles.createDemoButton}
+                                        onClick={() => this.handleCreateDemo(demo_index)}
+                                        disabled={this.state.demoIndexInCreateMode !== null} // Shouldn't be able to redo demo if another demo is currently being created
+                                    >Redo demonstration</button>
+                                ):(
+                                    ""
+                                )}
+                            </>
+                        )
+                    }
                 </div>
             );
         });
@@ -3286,7 +3351,7 @@ class NaturalLanguage extends React.Component {
                 if(programStep.uuid){
                     // find programStep.uuid in this.state.generatedProgram.program
                     let correspondingOldProgramStep;
-                    for(let oldProgramStep of this.state.generatedProgram.program){
+                    for(let oldProgramStep of this.state.generatedProgram[0].program){
                         if(oldProgramStep.uuid === programStep.uuid){
                             correspondingOldProgramStep = oldProgramStep;
                             break;
@@ -3313,7 +3378,7 @@ class NaturalLanguage extends React.Component {
             }
 
             const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-            generatedProgramClone.program = updatedProgram;
+            generatedProgramClone[0].program = updatedProgram;
 
             this.setState({
                 currentProgramCode: value,
@@ -3338,12 +3403,13 @@ class NaturalLanguage extends React.Component {
         const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
         let runningProgramNLTemplateItems;
         let programSteps;
-        if(this.state.generatedProgram){
+        // Actually should do this logic per program version
+        if(this.state.generatedProgram && this.state.generatedProgram[0]){
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
             runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
             const paramValueObj = this.getParamValueData().paramValueObj;
             // Show a representation of the program
-            programSteps = this.state.generatedProgram.program.map((step, step_index) => {
+            programSteps = this.state.generatedProgram[0].program.map((step, step_index) => {
                 // Should remove prefix before [clone]?
                 //const targetXPath = getXPathForElement(e.target, document);
 
@@ -3643,32 +3709,12 @@ class NaturalLanguage extends React.Component {
                             <p
                                 className={styles.sectionHeader}
                             >
-                                {/* Demonstrations */}
-                                Demonstration
+                                Demonstrations
                             </p>
                             {demonstrationItems}
-                            {this.state.inCreateNewDemoMode
+                            {this.state.demoIndexInCreateMode !== null
                                 ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
                                 <>
-                                    {this.state.inRecordingDemoMode ? (
-                                        <div>
-                                            <button
-                                                className={styles.stopRecordingButton}
-                                                onClick={() => this.handleStopRecordingDemo()}
-                                            >Stop recording</button>
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <button
-                                                className={styles.startRecordingButton}
-                                                onClick={() => this.handleStartRecordingDemo()}
-                                            >Start recording</button>
-                                            <button
-                                                className={styles.cancelButton}
-                                                onClick={() => this.cancelNewDemo()}
-                                            >Cancel</button>
-                                        </div>
-                                    )}
                                 </>
                                 ):( // Currently not in demo mode; show user 'create demo' button in case they want to create a demo
                                     <>
@@ -3676,20 +3722,20 @@ class NaturalLanguage extends React.Component {
                                             // No demo exists yet, user is creating for the first time
                                             <button
                                                 className={styles.createDemoButton}
-                                                onClick={() => this.handleCreateDemo()}
-                                            >Create demonstration</button>
+                                                onClick={() => this.handleCreateDemo(null)}
+                                            >Create main demonstration</button>
                                         ):(
                                             // A demo already exists; "redo" will overwrite it
                                             <button
                                                 className={styles.createDemoButton}
-                                                onClick={() => this.handleCreateDemo()}
-                                            >Redo demonstration</button>
+                                                onClick={() => this.handleCreateDemo(null)}
+                                            >Add a refinement demonstration</button>
                                         )}
                                     </>
                                 )
                             }
                         </div>
-                        {this.state.generatedProgram ? (
+                        {this.state.generatedProgram && this.state.generatedProgram[0] ? (
                             <div
                                 className={styles.section}
                             >
