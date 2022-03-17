@@ -1142,11 +1142,14 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 // Use special heuristics for trying to identify rule for which element should be printed
                 
                 // Identify likely semantic rows/cols that this element is contained in that we can use to try to uncover patterns
+                console.log("eventObj.targetXPath", eventObj.targetXPath);
                 const rowColData = getLikelyRowsColumns(eventObj.targetXPath);
 
                 if(rowColData.rowData){
                     
-                    function identifyParameterForDataValueColIndex(dataValueColIndex, rowColData, rowXPath){
+                    //function identifyParameterForDataValueColIndex(dataValueColIndex, rowColData, rowXPath){
+                    function identifyParameterForDataValueColIndex(colIndexOptionObjects, rowColData, rowXPath){
+                        console.log("colIndexOptionObjects", colIndexOptionObjects);
                         console.log("identifyParameterForDataValueColIndex");
                         // For each parameter, find the row that contains those parameters, and then get the number of columns.
                             // Then, compare this to the number of columns for our data row.
@@ -1218,64 +1221,98 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         
                         console.log("paramNumColDataOptions", paramNumColDataOptions);
 
-                        let possibleParamOptions = [];
-                        for(let paramNumColDataOption of paramNumColDataOptions){
-                            const paramName = paramNumColDataOption.paramName;
-                            const expectedValue = currentParamValuePairings[paramName];
-                    
-                            // Check col dataValueColIndex of param row to see if value is expectedValue
-                            if(paramNumColDataOption.paramRowElement.children.length > dataValueColIndex){
-                                const paramColItem = paramNumColDataOption.paramRowElement.children[dataValueColIndex];
-                                const paramColItemXPath = getXPathForElement(paramColItem, document);
-                    
-                                // Find the param value (from paramValueObj[param]) whose xpath is closest to paramColItem's xpath
-                                // TODO
-                    
-                                let longestCommonPrefixLengthSoFar = 0;
-                                let valuesLongestCommonPrefixLengthSoFar = [];
-                                
-                                const valueObj = paramValueObj[paramName];
-                                for(let [value, xPath] of Object.entries(valueObj)){
-                                    if(xPath){ // because could be null/undefined
-                                        let indexBasedXPath = getXPathForElement(document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0), document);
-                                        let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, paramColItemXPath);
-                                        if(commonPrefixLength > longestCommonPrefixLengthSoFar){
-                                            longestCommonPrefixLengthSoFar = commonPrefixLength;
-                                            valuesLongestCommonPrefixLengthSoFar = [value];
-                                        }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
-                                            valuesLongestCommonPrefixLengthSoFar.push(value);
+                        let colDataToUse;
+                        let bestChoice;
+                        let otherOptions = [];
+
+                        // Try looking for relevant param for all colIndexOptionObjects; then choose the one
+                        for(let colIndexOptionObject of colIndexOptionObjects){
+                            console.log("colIndexOptionObject", colIndexOptionObject);
+                            let possibleParamOptions = [];
+                            for(let paramNumColDataOption of paramNumColDataOptions){
+                                const paramName = paramNumColDataOption.paramName;
+                                console.log("paramName", paramName);
+                                const expectedValue = currentParamValuePairings[paramName];
+                                console.log("expectedValue", expectedValue);
+                        
+                                // Check col colIndexOptionObject.dataValueColIndex of param row to see if value is expectedValue
+                                if(paramNumColDataOption.paramRowElement.children.length > colIndexOptionObject.dataValueColIndex){
+                                    const paramColItem = paramNumColDataOption.paramRowElement.children[colIndexOptionObject.dataValueColIndex];
+                                    const paramColItemXPath = getXPathForElement(paramColItem, document);
+                        
+                                    // Find the param value (from paramValueObj[param]) whose xpath is closest to paramColItem's xpath
+                                    // TODO
+                        
+                                    let longestCommonPrefixLengthSoFar = 0;
+                                    let valuesLongestCommonPrefixLengthSoFar = [];
+                                    
+                                    const valueObj = paramValueObj[paramName];
+                                    for(let [value, xPath] of Object.entries(valueObj)){
+                                        if(xPath){ // because could be null/undefined
+                                            let indexBasedXPath = getXPathForElement(document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0), document);
+                                            let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, paramColItemXPath);
+                                            if(commonPrefixLength > longestCommonPrefixLengthSoFar){
+                                                longestCommonPrefixLengthSoFar = commonPrefixLength;
+                                                valuesLongestCommonPrefixLengthSoFar = [value];
+                                            }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
+                                                valuesLongestCommonPrefixLengthSoFar.push(value);
+                                            }
                                         }
                                     }
-                                }
-                    
-                                //console.log("valuesLongestCommonPrefixLengthSoFar", valuesLongestCommonPrefixLengthSoFar);
-                                // Don't consider if more than 1 value whose xpath is "close" to paramColItemXPath
-                                if(valuesLongestCommonPrefixLengthSoFar.length === 1){
-                                    const valueXPath = valueObj[valuesLongestCommonPrefixLengthSoFar[0]];
-                                    //console.log("valueXPath", valueXPath);
-                                    const valueNode = document.evaluate(valueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                                    //console.log("valueNode", valueNode);
-                                    //console.log("valueNode.textContent", valueNode.textContent);
-                                    //console.log("expectedValue", expectedValue);
-                                    if(valueNode.textContent === expectedValue){
-                                        // Should consider this param/value option
-                                        possibleParamOptions.push(paramNumColDataOption);
+                        
+                                    console.log("valuesLongestCommonPrefixLengthSoFar", valuesLongestCommonPrefixLengthSoFar);
+                                    // Don't consider if more than 1 value whose xpath is "close" to paramColItemXPath
+                                    if(valuesLongestCommonPrefixLengthSoFar.length === 1){
+                                        const valueXPath = valueObj[valuesLongestCommonPrefixLengthSoFar[0]];
+                                        //console.log("valueXPath", valueXPath);
+                                        const valueNode = document.evaluate(valueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                        console.log("valueNode", valueNode);
+                                        console.log("valueNode.textContent", valueNode.textContent);
+                                        //console.log("expectedValue", expectedValue);
+                                        //if(valueNode.textContent === expectedValue){
+                                        if(valueNode.textContent.trim().toLowerCase() === expectedValue.trim().toLowerCase()){
+                                            // Should consider this param/value option
+                                            possibleParamOptions.push(paramNumColDataOption);
+                                        }
                                     }
+                                    
+                                    /*if(paramColItem.textContent === expectedValue){ // is 'equal to' too strict?
+                                        possibleParamOptions.push(paramNumColDataOption);
+                                    }*/
                                 }
-                                
-                                /*if(paramColItem.textContent === expectedValue){ // is 'equal to' too strict?
-                                    possibleParamOptions.push(paramNumColDataOption);
-                                }*/
+                            }
+                            console.log("possibleParamOptions", possibleParamOptions);
+
+                            if(possibleParamOptions.length === 1){
+                                // For now, just choose the first col where we see a relevant param
+                                bestChoice = {
+                                    possibleParamOptions,
+                                    colIndexOptionObject
+                                };
+                                break;
+                            }else{
+                                otherOptions.push({
+                                    possibleParamOptions,
+                                    colIndexOptionObject
+                                });
                             }
                         }
-                        console.log("possibleParamOptions", possibleParamOptions);
+                        console.log("bestChoice", bestChoice);
                     
+                        colDataToUse = bestChoice;
+                        /*if(!colDataToUse){
+                            if(otherOptions.length > 0){
+
+                            }
+                        }*/
+
                         // TODO - possibleParamOptions.length would be greater than 1 if multiple parameters have same value selected; might want to
                             // choose one of the options, and maybe use different parameters for other steps of the demo. But definitely could get the inference wrong,
                             // so maybe should just disallow user from selecting same value for multiple parameters
-                        if(possibleParamOptions.length === 1){
+                        //if(colDataToUse && colDataToUse.possibleParamOptions.length === 1){
+                        if(colDataToUse){
                             // Create rule for identifying right column within data value row
-                            let paramColData = possibleParamOptions[0];
+                            let paramColData = colDataToUse.possibleParamOptions[0];
                             //relevantParamForCol = paramColData.paramName;
                             const paramXPath = getXPathForElement(paramColData.paramRowElement, document);
                             // rowColData.colData.levelParent minus 
@@ -1325,7 +1362,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
 
                             return {
                                 relevantParamForCol: paramColData.paramName,
-                                generateColXPathSuffix
+                                generateColXPathSuffix,
+                                colDataToUse
                             }
                         }else{
                             return null;
@@ -1443,7 +1481,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
 
                     let superlativeParamForRowSelection;
                     let constantSuperlativeValueForRowSelection;
-                    let colIndexToCheckForSuperlative; // next, should see if this column corresponds to a parameter
+                    //let colIndexToCheckForSuperlative; // next, should see if this column corresponds to a parameter
                     let colParamForSuperlativeForRowSelection;
                     let generateSuperlativeColXPathSuffix;
                     // Now, need to identify if a superlative is also relevant to choosing this row; if already filtered and rowsToConsider is length 1, then don't check for superlative
@@ -1456,9 +1494,14 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
 
                         // For each col item in the selected row, compare it to all other values in its col and see if it is the largest or smallest
                         const chosenRowColItems = rowColData.colData.levelParent.children;
+                        const colIndexOptionObjects = [];
                         for(let colIndex = 0; colIndex < chosenRowColItems.length; colIndex++){
                             const colItem = chosenRowColItems[colIndex];
                             if(!isNaN(colItem.textContent)){
+
+                                let superlativeParamForRowSelectionOption;
+                                let constantSuperlativeValueForRowSelectionOption;
+
                                 const chosenValue = parseFloat(colItem.textContent);
                                 //console.log("chosenValue", chosenValue);
                                 const allValues = [];
@@ -1499,26 +1542,31 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     const superlativeResult = superlativeRules[superlativeValue](allValues).superlativeValue;
                                     //console.log("superlativeResult", superlativeResult);
                                     if(superlativeResult === chosenValue){
-                                        superlativeParamForRowSelection = superlativeParam;
+                                        superlativeParamForRowSelectionOption = superlativeParam;
                                         break;
                                     }
                                 }
 
-                                if(!superlativeParamForRowSelection){ // if we already have a superlativeParamForRowSelection, just use that
+                                if(!superlativeParamForRowSelectionOption){ // if we already have a superlativeParamForRowSelectionOption, just use that
                                     for(const constantSuperlative of constantSuperlatives){
                                         const superlativeResult = superlativeRules[constantSuperlative](allValues).superlativeValue;
                                         //console.log("superlativeResult", superlativeResult);
                                         if(superlativeResult === chosenValue){
-                                            constantSuperlativeValueForRowSelection = constantSuperlative;
+                                            constantSuperlativeValueForRowSelectionOption = constantSuperlative;
                                             break; // we'll just take the first one
                                         }
                                     }
                                 }
 
-                                if(superlativeParamForRowSelection || constantSuperlativeValueForRowSelection){
+                                if(superlativeParamForRowSelectionOption || constantSuperlativeValueForRowSelectionOption){
                                     // We'll just use the first column we find
-                                    colIndexToCheckForSuperlative = colIndex;
-                                    break;
+                                    //colIndexToCheckForSuperlative = colIndex;
+                                    colIndexOptionObjects.push({
+                                        superlativeParamForRowSelection: superlativeParamForRowSelectionOption,
+                                        constantSuperlativeValueForRowSelection: constantSuperlativeValueForRowSelectionOption,
+                                        dataValueColIndex: colIndex
+                                    });
+                                    //break;
                                 }
                             }else{
                                 // TODO - should try to parse the string and see if it's a monetary amount, etc
@@ -1526,21 +1574,30 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         }
 
                         // If colIndexToCheckForSuperlative, see if this col depends on a parameter
-                        if(!isNaN(colIndexToCheckForSuperlative)){
+                        console.log("list of colIndexOptionObjects", colIndexOptionObjects);
+                        if(colIndexOptionObjects.length > 0){
                             //console.log("colIndexToCheckForSuperlative", colIndexToCheckForSuperlative);
-                            const res = identifyParameterForDataValueColIndex(colIndexToCheckForSuperlative, rowColData, rowXPath);
+                            //const res = identifyParameterForDataValueColIndex(colIndexToCheckForSuperlative, rowColData, rowXPath);
+                            const res = identifyParameterForDataValueColIndex(colIndexOptionObjects, rowColData, rowXPath);
                             //console.log("res", res);
                             if(res && res.relevantParamForCol){
+                                console.log("superlative related res", res);
                                 colParamForSuperlativeForRowSelection = res.relevantParamForCol;
                                 //console.log("colParamForSuperlativeForRowSelection", colParamForSuperlativeForRowSelection);
                                 generateSuperlativeColXPathSuffix = res.generateColXPathSuffix;
+                                
+                                // Set these now, since we now the right col
+                                superlativeParamForRowSelection = res.colDataToUse.colIndexOptionObject.superlativeParamForRowSelection
+                                constantSuperlativeValueForRowSelection = res.colDataToUse.colIndexOptionObject.constantSuperlativeValueForRowSelection;
                             }else{
-                                const colXPath = getXPathForElement(chosenRowColItems[colIndexToCheckForSuperlative], document);
+                                //const colXPath = getXPathForElement(chosenRowColItems[colIndexToCheckForSuperlative], document);
+                                const colXPath = getXPathForElement(chosenRowColItems[colIndexOptionObjects[0].dataValueColIndex], document);
                                 //console.log("colXPath", colXPath);
                                 generateSuperlativeColXPathSuffix = function(inputValue, rowXPathPrefix){
                                     // For now, return default constant col suffix (for col that we do superlative on)
                                     return colXPath.substring(rowXPath.length);
                                 }
+                                superlativeParamForRowSelection = colIndexOptionObjects[0].superlativeParamForRowSelection;
                             }
                         }
                     }
@@ -1690,6 +1747,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     
                     // If no explicit column data, then... for now, don't come up with a column rule? (that's not ideal, but don't see a better approach)
 
+                    console.log("rowColData.colData", rowColData.colData);
                     if(rowColData.colData){
                         // For each parameter, find the row that contains those parameters, and then get the number of columns.
                             // Then, compare this to the number of columns for our data row.
@@ -1703,13 +1761,26 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 dataValueColIndex = childIndex;
                             }
                         }
+                        console.log("dataValueColIndex", dataValueColIndex);
 
-                        const res = identifyParameterForDataValueColIndex(dataValueColIndex, rowColData, rowXPath);
+                        // Have to pass in an obj list now because that's what identifyParameterForDataValueColIndex expects now
+                        //const res = identifyParameterForDataValueColIndex(dataValueColIndex, rowColData, rowXPath);
+                        const res = identifyParameterForDataValueColIndex([{dataValueColIndex}], rowColData, rowXPath);
                         //console.log("res", res);
+                        console.log("print related res", res);
                         if(res){
                             relevantParamForCol = res.relevantParamForCol;
                             generateColXPathSuffix = res.generateColXPathSuffix;
-                        }
+                        }/*else{
+                            //const colXPath = getXPathForElement(chosenRowColItems[colIndexToCheckForSuperlative], document);
+                            const colXPath = getXPathForElement(rowColData.colData.levelParent.children[dataValueColIndex], document);
+                            console.log("static colXPath", colXPath);
+                            console.log("rowXPath", rowXPath);
+                            generateColXPathSuffix = function(inputValue, rowXPathPrefix){
+                                // For now, return default constant col suffix (for col that we do superlative on)
+                                return colXPath.substring(rowXPath.length);
+                            }
+                        }*/
                     }
 
 
