@@ -307,6 +307,7 @@ class TemplateFreeformParam extends React.Component {
                 size={Math.max(this.props.paramName.length, 20)}
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                className={this.props.uuid === this.props.specificallyForParam? styles.specialParam : ""}
                 disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
             >
@@ -335,6 +336,7 @@ class TemplateEnumerationParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                className={this.props.uuid === this.props.specificallyForParam? styles.specialParam : ""}
                 disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
@@ -371,6 +373,7 @@ class TemplateSuperlativeParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
+                className={this.props.uuid === this.props.specificallyForParam? styles.specialParam : ""}
                 disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
@@ -1076,7 +1079,19 @@ class TemplateParamTextItem extends React.Component {
             }
         }
 
-        return paramTemplate;
+        //return paramTemplate;
+        return (
+            <span
+                className={styles.paramTemplate}
+            >
+                {paramTemplate}
+                <span
+                    className={styles.paramNameLabel}
+                >
+                    {this.props.paramName}
+                </span>
+            </span>
+        );
     }
 }
 
@@ -3294,74 +3309,85 @@ class NaturalLanguage extends React.Component {
                     }
                     {demo_index > 0 ? (
                         // This is a refinement demo, so user needs to choose param and value to make it for
-                        <>
+                        <div
+                            className={styles.margin}
+                        >
                             <p>
                                 This demonstration will apply only for a particular parameter value. Indicate which parameter and value you want this demonstration to be for.
                             </p>
-                            <select
-                                log-this-element=""
-                                value={this.state.demonstrations[demo_index].specificallyForParam}
-                                onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParam")}
-                                disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
-                            >
-                                <>
-                                    <option
-                                        value={""}
-                                    >
-                                        {"<Choose parameter>"}
-                                    </option>
-                                    {Object.entries(this.getParamIDNameValueData().paramValueObj).map(([key, data]) => {
-                                        return (
-                                            <option
-                                                value={data.uuid}
-                                            >
-                                                {data.paramName}
-                                            </option>
-                                        );
-                                    })}
-                                </>
-                            </select>
-                            <select
-                                log-this-element=""
-                                value={this.state.demonstrations[demo_index].specificallyForParamValue}
-                                onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParamValue")}
-                                disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
-                            >
-                                {this.state.demonstrations[demo_index].specificallyForParam ? (
+                            <div>
+                                <span>Parameter:</span>
+                                <select
+                                    log-this-element=""
+                                    value={this.state.demonstrations[demo_index].specificallyForParam}
+                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParam")}
+                                    disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
+                                >
                                     <>
                                         <option
                                             value={""}
                                         >
-                                            {"<Choose value>"}
+                                            {"<Choose parameter>"}
                                         </option>
-                                        {Object.keys(this.getParamIDNameValueData().paramValueObj[this.state.demonstrations[demo_index].specificallyForParam].paramValues).map((paramValue) => {
+                                        {Object.entries(this.getParamIDNameValueData().paramValueObj).map(([key, data]) => {
                                             return (
                                                 <option
-                                                    value={paramValue}
+                                                    value={data.uuid}
                                                 >
-                                                    {paramValue}
+                                                    {data.paramName}
                                                 </option>
                                             );
                                         })}
                                     </>
-                                ):(
-                                    ""
-                                )}
-                            </select>
-                        </>
+                                </select>
+                            </div>
+                            <div>
+                                <span>Value:</span>
+                                <select
+                                    log-this-element=""
+                                    className={styles.specialParam}
+                                    value={this.state.demonstrations[demo_index].specificallyForParamValue}
+                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParamValue")}
+                                    disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
+                                >
+                                    {this.state.demonstrations[demo_index].specificallyForParam ? (
+                                        <>
+                                            <option
+                                                value={""}
+                                            >
+                                                {"<Choose value>"}
+                                            </option>
+                                            {Object.keys(this.getParamIDNameValueData().paramValueObj[this.state.demonstrations[demo_index].specificallyForParam].paramValues).map((paramValue) => {
+                                                return (
+                                                    <option
+                                                        value={paramValue}
+                                                    >
+                                                        {paramValue}
+                                                    </option>
+                                                );
+                                            })}
+                                        </>
+                                    ):(
+                                        ""
+                                    )}
+                                </select>
+                            </div>
+                        </div>
                     ):(
                         ""
                     )}
                     {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParam && this.state.demonstrations[demo_index].specificallyForParamValue ? (
                         // Only let user edit param/values and record refinement demo if they've specified which specific param/value it is for
-                        <>
-                            <div>
+                        <div>
+                            <div
+                                className={styles.margin}
+                            >
                                 {demoNLTemplateItems}
                             </div>
                             <div>
                                 {events}
                             </div>
-                        </>
+                        </div>
                     ):(
                         ""
                     )}
@@ -3718,6 +3744,31 @@ class NaturalLanguage extends React.Component {
                                 className={styles.demonstrationName}
                             >
                                 {programVersion_index === 0 ? "Main program" : `Refinement program ${programVersion_index}`}
+                            </div>
+                            {this.state.demonstrations[programVersion_index].specificallyForParam ? (
+                                // This is a refinement param, show parameter/value
+                                <div>
+                                    <p>Specifically for </p>
+                                    <p>Parameter:
+                                        <b
+                                            className={styles.specialParamText}
+                                        >
+                                            {this.state.idToItem[this.state.demonstrations[programVersion_index].specificallyForParam].paramName}
+                                        </b>
+                                    </p>
+                                    <p>Value:
+                                        <b
+                                            className={styles.specialParamText}
+                                        >   
+                                            {this.state.demonstrations[programVersion_index].specificallyForParamValue}
+                                        </b>
+                                    </p>
+                                </div>
+                            ):(
+                                ""
+                            )}
+                            <div>
+
                             </div>
                             <div>
                                 {programSteps}
