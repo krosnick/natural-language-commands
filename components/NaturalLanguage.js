@@ -2578,12 +2578,12 @@ class NaturalLanguage extends React.Component {
         }, 1000, this);
     }
 
-    removeProgramStep(step_index){
+    removeProgramStep(step_index, programVersion_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-        generatedProgramClone[0].program.splice(step_index, 1);
+        generatedProgramClone[programVersion_index].program.splice(step_index, 1);
 
         // Need to update code string to reflect program change we just made
-        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone[0].program);
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
 
         this.setState({
             currentProgramCode,
@@ -2619,7 +2619,7 @@ class NaturalLanguage extends React.Component {
         }
 
         // Need to update code string to reflect program change we just made
-        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone[0].program);
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
 
         this.setState({
             currentProgramCode,
@@ -3402,204 +3402,199 @@ class NaturalLanguage extends React.Component {
         const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
         const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
         let runningProgramNLTemplateItems;
-        let programSteps;
+        let stepsForAllProgramVersions;
         // Actually should do this logic per program version
-        if(this.state.generatedProgram && this.state.generatedProgram[0]){
+        if(this.state.generatedProgram){
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
             runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
             const paramValueObj = this.getParamValueData().paramValueObj;
             // Show a representation of the program
-            programSteps = this.state.generatedProgram[0].program.map((step, step_index) => {
-                // Should remove prefix before [clone]?
-                //const targetXPath = getXPathForElement(e.target, document);
-
-                /* const paramCheckboxes = Object.keys(paramValueObj).map((paramName, paramIndex) => {
-                    return (
-                        <div>
-                            <input
-                                type="checkbox"
-                                log-this-element=""
-                                name={`programStep_${step_index}_paramIndex_${paramIndex}`}
-                                id={`programStep_${step_index}_paramIndex_${paramIndex}`}
-                                value={paramName}
-                                checked={step.relevantParam === paramName || step.relevantParamForRow === paramName || step.relevantParamForCol === paramName}
-                            />
-                            <label htmlFor={`programStep_${step_index}_paramIndex_${paramIndex}`}>{paramName}</label>
-                        </div>
-                    );
-                }); */
-
-                return (
-                    <div
-                        key = {step_index}
-                        className={styles.step}
-                    >
-                        <button
-                            onClick={() => this.removeProgramStep(step_index)}
-                            className={styles.removeValueButton}
-                            title="Delete"
-                        >
-                            x
-                        </button>
-                        <div
-                            className={styles.stepPieceOfInfo}
-                        >
-                            Program step type: 
-                            <span
-                                className={styles.importantPieceOfInfo}
+            stepsForAllProgramVersions = this.state.generatedProgram.map((programVersion, programVersion_index) => {
+                if(programVersion && programVersion.program){
+                    let programSteps = programVersion.program.map((step, step_index) => {
+                        return (
+                            <div
+                                key = {step_index}
+                                className={styles.step}
                             >
-                                {step.eventType}
-                            </span>
-                        </div>
-                        {/* <div>Target xPath: {targetXPath}</div> */}
-                        <div
-                            className={styles.stepPieceOfInfo}
-                        >
-                            { step.customGetElement ? (
-                                <div
-                                    className={styles.importantPieceOfInfo}
+                                <button
+                                    onClick={() => this.removeProgramStep(step_index, programVersion_index)}
+                                    className={styles.removeValueButton}
+                                    title="Delete"
                                 >
-                                    Custom logic (see code)
-                                </div>
-                            ):(
-                                <>
-                                    {/* <div>
-                                        Influenced by the following parameters:
-                                    </div>
-                                    <div
-                                        //className={styles.importantPieceOfInfo}
+                                    x
+                                </button>
+                                <div
+                                    className={styles.stepPieceOfInfo}
+                                >
+                                    Program step type: 
+                                    <span
+                                        className={styles.importantPieceOfInfo}
                                     >
-                                        {paramCheckboxes}
-                                    </div> */}
-                                    <div>
-                                        Influenced by the following parameters:
-                                    </div>
-                                    { step.relevantParam || step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection || step.relevantParamForCol ?  (
-                                        <div>
+                                        {step.eventType}
+                                    </span>
+                                </div>
+                                {/* <div>Target xPath: {targetXPath}</div> */}
+                                <div
+                                    className={styles.stepPieceOfInfo}
+                                >
+                                    { step.customGetElement ? (
+                                        <div
+                                            className={styles.importantPieceOfInfo}
+                                        >
+                                            Custom logic (see code)
+                                        </div>
+                                    ):(
+                                        <>
                                             <div>
-                                                <input
-                                                    type="radio"
-                                                    log-this-element=""
-                                                    name={`inferred_influencedBy_${step_index}`}
-                                                    id={`inferred_influencedBy_${step_index}`}
-                                                    value="inferred"
-                                                    checked={!step.static}
-                                                    onChange={() => this.handleProgramStepInfluencedByChange("inferred", step_index)}
-                                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
-                                                />
-                                                <label htmlFor={`inferred_influencedBy_${step_index}`}>
-                                                    <span
-                                                        //className={styles.importantPieceOfInfo}
-                                                    >
-                                                        { step.relevantParam ?
+                                                Influenced by the following parameters:
+                                            </div>
+                                            { step.relevantParam || step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection || step.relevantParamForCol ?  (
+                                                <div>
+                                                    <div>
+                                                        <input
+                                                            type="radio"
+                                                            log-this-element=""
+                                                            name={`inferred_influencedBy_${step_index}`}
+                                                            id={`inferred_influencedBy_${step_index}`}
+                                                            value="inferred"
+                                                            checked={!step.static}
+                                                            onChange={() => this.handleProgramStepInfluencedByChange("inferred", step_index)}
+                                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                        />
+                                                        <label htmlFor={`inferred_influencedBy_${step_index}`}>
+                                                            <span
+                                                                //className={styles.importantPieceOfInfo}
+                                                            >
+                                                                { step.relevantParam ?
+                                                                    <span
+                                                                        className={styles.importantPieceOfInfo}
+                                                                    >
+                                                                        {step.relevantParam} &nbsp;&nbsp;&nbsp;
+                                                                    </span>
+                                                                : "" }
+                                                                {/* { step.filterParamForRowSelection ? <span> Row determined by: {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" } */}
+                                                                { step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
+                                                                    <div
+                                                                        className={styles.inferenceExplanationIndentation}
+                                                                    >
+                                                                        <div>
+                                                                            Row determined by:
+                                                                        </div>
+                                                                        <div
+                                                                            className={styles.inferenceExplanationIndentation}
+                                                                        >
+                                                                            {step.filterParamForRowSelection ?
+                                                                                <div>
+                                                                                    Filtered by:
+                                                                                    <span
+                                                                                        className={styles.importantPieceOfInfo}
+                                                                                    >
+                                                                                        {step.filterParamForRowSelection};
+                                                                                    </span>
+                                                                                </div>
+                                                                            :""}
+                                                                            {step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
+                                                                                <>
+                                                                                    Superlative: 
+                                                                                    {step.colParamForSuperlativeForRowSelection ?
+                                                                                        <span
+                                                                                            className={styles.importantPieceOfInfo}
+                                                                                        >
+                                                                                            {step.colParamForSuperlativeForRowSelection};
+                                                                                        </span>
+                                                                                    :""}
+                                                                                    {step.superlativeParamForRowSelection ?
+                                                                                        <span
+                                                                                            className={styles.importantPieceOfInfo}
+                                                                                        >
+                                                                                            {step.superlativeParamForRowSelection};
+                                                                                        </span>
+                                                                                    :""}
+                                                                                    {step.constantSuperlativeValueForRowSelection ?
+                                                                                        <span
+                                                                                            className={styles.importantPieceOfInfo}
+                                                                                        >
+                                                                                            {step.constantSuperlativeValueForRowSelection};
+                                                                                        </span>
+                                                                                    :""}
+                                                                                </>
+                                                                            :""}
+                                                                        </div>
+                                                                    </div>
+                                                                : "" }
+                                                                { step.relevantParamForCol ?
+                                                                    <span
+                                                                        className={styles.inferenceExplanationIndentation}
+                                                                    >
+                                                                        Column determined by:
+                                                                        <span
+                                                                            className={styles.importantPieceOfInfo}
+                                                                        >
+                                                                            {step.relevantParamForCol}
+                                                                        </span>
+                                                                    </span>
+                                                                : "" }
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                    <div>
+                                                        <input
+                                                            type="radio"
+                                                            log-this-element=""
+                                                            name={`static_influencedBy_${step_index}`}
+                                                            id={`static_influencedBy_${step_index}`}
+                                                            value="static"
+                                                            checked={step.static}
+                                                            onChange={() => this.handleProgramStepInfluencedByChange("static", step_index)}
+                                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                        />
+                                                        <label htmlFor={`static_influencedBy_${step_index}`}>
                                                             <span
                                                                 className={styles.importantPieceOfInfo}
                                                             >
-                                                                {step.relevantParam} &nbsp;&nbsp;&nbsp;
+                                                                None
                                                             </span>
-                                                        : "" }
-                                                        {/* { step.filterParamForRowSelection ? <span> Row determined by: {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" } */}
-                                                        { step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
-                                                            <div
-                                                                className={styles.inferenceExplanationIndentation}
-                                                            >
-                                                                <div>
-                                                                    Row determined by:
-                                                                </div>
-                                                                <div
-                                                                    className={styles.inferenceExplanationIndentation}
-                                                                >
-                                                                    {step.filterParamForRowSelection ?
-                                                                        <div>
-                                                                            Filtered by:
-                                                                            <span
-                                                                                className={styles.importantPieceOfInfo}
-                                                                            >
-                                                                                {step.filterParamForRowSelection};
-                                                                            </span>
-                                                                        </div>
-                                                                    :""}
-                                                                    {step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
-                                                                        <>
-                                                                            Superlative: 
-                                                                            {step.colParamForSuperlativeForRowSelection ?
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                >
-                                                                                    {step.colParamForSuperlativeForRowSelection};
-                                                                                </span>
-                                                                            :""}
-                                                                            {step.superlativeParamForRowSelection ?
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                >
-                                                                                    {step.superlativeParamForRowSelection};
-                                                                                </span>
-                                                                            :""}
-                                                                            {step.constantSuperlativeValueForRowSelection ?
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                >
-                                                                                    {step.constantSuperlativeValueForRowSelection};
-                                                                                </span>
-                                                                            :""}
-                                                                        </>
-                                                                    :""}
-                                                                </div>
-                                                            </div>
-                                                        : "" }
-                                                        { step.relevantParamForCol ?
-                                                            <span
-                                                                className={styles.inferenceExplanationIndentation}
-                                                            >
-                                                                Column determined by:
-                                                                <span
-                                                                    className={styles.importantPieceOfInfo}
-                                                                >
-                                                                    {step.relevantParamForCol}
-                                                                </span>
-                                                            </span>
-                                                        : "" }
-                                                    </span>
-                                                </label>
-                                            </div>
-                                            <div>
-                                                <input
-                                                    type="radio"
-                                                    log-this-element=""
-                                                    name={`static_influencedBy_${step_index}`}
-                                                    id={`static_influencedBy_${step_index}`}
-                                                    value="static"
-                                                    checked={step.static}
-                                                    onChange={() => this.handleProgramStepInfluencedByChange("static", step_index)}
-                                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
-                                                />
-                                                <label htmlFor={`static_influencedBy_${step_index}`}>
+                                                            &nbsp; (static - simply replays recording)
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div>
                                                     <span
                                                         className={styles.importantPieceOfInfo}
                                                     >
                                                         None
                                                     </span>
                                                     &nbsp; (static - simply replays recording)
-                                                </label>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <span
-                                                className={styles.importantPieceOfInfo}
-                                            >
-                                                None
-                                            </span>
-                                            &nbsp; (static - simply replays recording)
-                                        </div>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
-                                </>
-                            )}
+                                </div>
+                            </div>
+                        );
+                    });
+                    return (
+                        <div
+                            className={styles.demonstration}
+                        >
+                            <div
+                                className={styles.demonstrationName}
+                            >
+                                {programVersion_index === 0 ? "Main program" : `Refinement program ${programVersion_index}`}
+                            </div>
+                            <div>
+                                {programSteps}
+                            </div>
                         </div>
-                    </div>
-                );
+                    );
+                }else{
+                    return null;
+                }
             });
+            // Filter to make sure we're not including program versions that are null
+            stepsForAllProgramVersions = stepsForAllProgramVersions.filter(item => item !== null);
         }
         return (
             <div
@@ -3735,7 +3730,7 @@ class NaturalLanguage extends React.Component {
                                 )
                             }
                         </div>
-                        {this.state.generatedProgram && this.state.generatedProgram[0] ? (
+                        {stepsForAllProgramVersions.length > 0 ? (
                             <div
                                 className={styles.section}
                             >
@@ -3753,7 +3748,7 @@ class NaturalLanguage extends React.Component {
                                         Partial program representation
                                     </p>
                                     <div>
-                                        {programSteps}
+                                        {stepsForAllProgramVersions}
                                     </div>
                                     <div>
                                         {this.state.showCodeEditor ? (
