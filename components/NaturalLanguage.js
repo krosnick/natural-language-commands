@@ -2169,6 +2169,8 @@ class NaturalLanguage extends React.Component {
                         for(let valueObj of candidateList){
                             for(let paramValue of paramValuesWithNullXPathToStillTry){
                                 if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                    // Update valueObj to use same text user had
+                                    valueObj.textCandidate = paramValue;
                                     matchList.push(valueObj);
                                 }
                             }
@@ -2189,6 +2191,7 @@ class NaturalLanguage extends React.Component {
                         for(let i = 0; i < newValueXPathObjList.length; i++){
                             const existingValueObj = newValueXPathObjList[i];
                             if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
+                                match.textCandidate = existingValueObj.textCandidate;
                                 newValueXPathObjList[i] = match;
                             }
                         }
@@ -2257,6 +2260,9 @@ class NaturalLanguage extends React.Component {
                         }else{
                             // TODO - if stringMatchesAnywhere has multiple text node matches, maybe could try rest of the values first to see if those have just a single string match
                                 // (and then maybe the updated commonXPathPrefix will be shorter/higher up in the DOM and will help us choose a more meaningful xpath here)
+                                // Or, could look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
+                                // Could probably move the 'if(xPathSuffix)' in here and do that logic here
+                                // Also, can probably get rid of this stringMatchesWithinScope vs stringMatchesAnywhere distinction here then
 
                             // If no match was found within that common prefix scope, now just search anywhere within the page
                             const stringMatchesAnywhere = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);

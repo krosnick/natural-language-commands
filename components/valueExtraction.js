@@ -208,13 +208,13 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
 }
 
 export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
-    console.log("makeXPathsMoreRobust", makeXPathsMoreRobust);
+    //console.log("makeXPathsMoreRobust", makeXPathsMoreRobust);
     //let numItemsWithXPath = 0;
     let valuesWithoutXPath = [];
     let valuesWithXPath = [];
     let objWithXPath; // to use as an example, as we go up through DOM
     for(let obj of valueAndXPathObjList){
-        if(obj.xPath){
+        if(obj.xPath && obj.templateXPath){
             objWithXPath = obj;
             //numItemsWithXPath += 1;
             valuesWithXPath.push(obj.textCandidate);
@@ -237,13 +237,16 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
     let curNode = document.evaluate(objWithXPath.xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
     //console.log("curNode", curNode);
     // Traverse up through the DOM until we hit the top part of the xpath that is the same across all param values (i.e., above [INSERT-ROW-INDEX-HERE])
-    while(curNode.parentNode.parentNode && valuesWithoutXPath.length > 0 && xPathPrefix.length > 0 && xPathSuffix.indexOf("[INSERT-ROW-INDEX-HERE]") === -1){
-        console.log("valuesWithoutXPath", valuesWithoutXPath);
+    // We do want to keep going up until [INSERT-ROW-INDEX-HERE] because we really do want to try to make each step a class or attribute instead of index
+    while(curNode.parentNode.parentNode && xPathPrefix.length > 0 && xPathPrefix.indexOf("[INSERT-ROW-INDEX-HERE]") > -1 && xPathSuffix.indexOf("[INSERT-ROW-INDEX-HERE]") === -1){
+        //console.log("valuesWithoutXPath", valuesWithoutXPath);
         // Try an alternate xPath substring for this level
         //const parentXPath = getXPathForElement(curNode.parentNode); // this does use indices
         const parentXPath = getParentXPath(xPathPrefix);
         const curNodeXPathSubstring = xPathPrefix.substring(parentXPath.length); // in case we do decide to just use the index-based string for this level
-        
+        if(curNodeXPathSubstring.indexOf("INSERT-ROW-INDEX-HERE") > -1){
+            break;
+        }
         //const tag = curNode.tagName.toLowerCase();
 
         let candidateChanges = [];
@@ -252,15 +255,14 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
         if(xPathSuffix.length > 0){
             const nodeXPathSubstring = `${curNodeXPathSubstring}/`;
-            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath, numRows);
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "insertSlash", valuesWithoutXPath, valuesWithXPath, numRows);
             candidateChanges.push(attempt);
         }
 
         // Try using a class instead of an index
         const classList = curNode.classList;
         for(let className of classList){
-            //const nodeXPathSubstring1 = `/${tag}[@class='${className}']`;
-            const nodeXPathSubstring1 = `/*[@class='${className}']`;
+            const nodeXPathSubstring1 = `/*[contains(@class, '${className}')]`;
             const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath, numRows);
             candidateChanges.push(attempt1);
 
@@ -302,7 +304,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         // Try just ignoring/excluding this level, aka, allowing any number of levels to happen here (this could help us include values whose DOM node is not as deep, but not sure if this could over-select, select too many nodes on the page)
         if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
             const nodeXPathSubstring = `/`;
-            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "slash", valuesWithoutXPath, valuesWithXPath, numRows);
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "replaceWithSlash", valuesWithoutXPath, valuesWithXPath, numRows);
             candidateChanges.push(attempt);
         }
 
@@ -317,24 +319,30 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         if(candidateChanges.length > 0){
             const mostNewMatchesFound = candidateChanges[0].newMatchesFound.length;
 
-            // Filter to only include candidates with mostNewMatchesFound
+            // Filter to only include candidates with mostNewMatchesFound; note it's ok if mostNewMatchesFound is 0; we still want to make a change to something more robust
             candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound);
-
-            // Now sort in ascending order of numExtraneousNodesFound (we want the xpath with the highest mostNewMatchesFound and then the least numExtraneousNodesFound)
+            // We'd prefer a class or attribute change over insertSlash or replaceWithSlash if possible
+            const filteredByClassOrAttribute = candidateChanges.filter(obj => obj.selectorType === "class" || obj.selectorType === "attribute");
+            if(filteredByClassOrAttribute.length > 0){
+                candidateChanges = filteredByClassOrAttribute;
+            }
+            
+            /*// Now sort in ascending order of numExtraneousNodesFound (we want the xpath with the highest mostNewMatchesFound and then the least numExtraneousNodesFound)
             candidateChanges.sort(function(a, b){
                 return a.numExtraneousNodesFound - b.numExtraneousNodesFound;
-            });
+            });*/
 
             if(candidateChanges.length > 0){
                 bestCandidateForThisLevel = candidateChanges[0];
             }
         }
 
-        //console.log("candidateChanges", candidateChanges);
+        //console.log("final candidateChanges for this level", candidateChanges);
         //console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
 
-        if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
-            // No changes at this level helped us find more matches, so just use what we had already
+        //if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
+        if(!bestCandidateForThisLevel){
+            // No candidates at this level, so just use what we had already
 
             //curNodeXPathSubstring
             // Remove curNodeXPathSubstring from end of xPathPrefix
@@ -384,7 +392,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         curNode = curNode.parentNode;
     }
 
-    console.log("makeXPathsMoreRobust bestSoFar", bestSoFar);
+    //console.log("makeXPathsMoreRobust bestSoFar", bestSoFar);
     //console.log("xPathPrefix", xPathPrefix);
     //console.log("xPathSuffix", xPathSuffix);
 
