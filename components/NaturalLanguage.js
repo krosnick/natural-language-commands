@@ -2132,7 +2132,16 @@ class NaturalLanguage extends React.Component {
                 }
                 
                 // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
-                let newValueXPathObjList = item.paramTypeData.possibleValues;
+                //let newValueXPathObjList = item.paramTypeData.possibleValues;
+                let newValueXPathObjList = [];
+
+                // If an item in possibleValues is an empty string, don't include it
+                for(let possibleValueObj of item.paramTypeData.possibleValues){
+                    if(possibleValueObj.textCandidate.trim().length > 0){
+                        newValueXPathObjList.push(possibleValueObj);
+                    }
+                }
+
                 let xPathSuffix;
                 if(rowPrefix){
                     // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
