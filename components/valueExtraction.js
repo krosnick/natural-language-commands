@@ -87,15 +87,29 @@ export function getCandidateLists(positiveExamplesList, exactStringBoolean, embe
         }
     }
     
+    // Go through singleListOfCandidateValueSets and if a given list has the same param value multiple times, just include the first instance
+    const listsWithNoDuplicates = [];
+    for(let candidateList of singleListOfCandidateValueSets){
+        const itemMap = {};
+        for(let item of candidateList){
+            if(!itemMap[item.textCandidate]){
+                // Not yet in the map, so add it
+                itemMap[item.textCandidate] = item;
+            }
+        }
+        const newCandidateList = Object.values(itemMap);
+        listsWithNoDuplicates.push(newCandidateList);
+    }
+
     // Make sure  
     const uniqueSetOfLists = [];
-    for(var candidateList of singleListOfCandidateValueSets){
+    for(var candidateList of listsWithNoDuplicates){
         // Only append to uniqueSetOfLists if candidateList isn't already in there
         if(!_.find(uniqueSetOfLists, function(thisList){ return _.isEqual(candidateList, thisList); })){
             uniqueSetOfLists.push(candidateList);
         }
     }
-
+    
     // Now, sort uniqueSetOfLists by length of each list
     uniqueSetOfLists.sort(function(a, b){ return b.length - a.length} );
 
