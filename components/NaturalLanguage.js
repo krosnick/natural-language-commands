@@ -2142,6 +2142,31 @@ class NaturalLanguage extends React.Component {
                     }
                 }
 
+                const paramValues = newValueXPathObjList.map(x => x.textCandidate);
+
+                // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
+                const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
+
+                // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
+                let bestMatchList = [];
+                for(let candidateList of candidateLists){
+                    const matchList = [];
+                    for(let valueObj of candidateList){
+                        for(let paramValue of paramValues){
+                            if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                // Update valueObj to use same text user had
+                                valueObj.textCandidate = paramValue;
+                                matchList.push(valueObj);
+                            }
+                        }
+                    }
+                    if(matchList.length > bestMatchList.length){
+                        bestMatchList = matchList;
+                    }
+                }
+                //console.log("first bestMatchList", bestMatchList);
+                newValueXPathObjList = bestMatchList;
+
                 let xPathSuffix;
                 if(rowPrefix){
                     // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
