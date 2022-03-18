@@ -3950,7 +3950,8 @@ class NaturalLanguage extends React.Component {
                                 )
                             }
                         </div>
-                        {stepsForAllProgramVersions.length > 0 ? (
+                        {/* Hide 'Generated program' section during demonstration (so that the demo NL template + 'stop recording' button is closer to the website area) */}
+                        {stepsForAllProgramVersions.length > 0 && this.state.demoIndexInRecordingMode === null ? (
                             <div
                                 className={styles.section}
                             >
