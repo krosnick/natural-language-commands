@@ -1,5 +1,7 @@
 import _ from 'lodash';
 
+import * as fontoxpath from 'fontoxpath';
+
 export function indexOfCaseInsensitive(list, value){
     //let found = false;
     let foundIndex = -1;
@@ -196,9 +198,9 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
     for(let index = 1; index <= numRows; index++){
         const filledInTemplateXPath = newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", index);
         if(filledInTemplateXPath.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
-            const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-            if(result.snapshotItem(0)){
-                let textCandidate = result.snapshotItem(0).textContent;
+            const result = fontoxpath.evaluateXPathToNodes(filledInTemplateXPath, document.documentElement);
+            if(result[0]){
+                let textCandidate = result[0].textContent;
                 //if(valuesWithoutXPath.includes(textCandidate)){
                 if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
                     newMatchesFound.push(textCandidate);
@@ -248,7 +250,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
     }
     let xPathPrefix = objWithXPath.templateXPath;
     let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
-    let curNode = document.evaluate(objWithXPath.xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+    let curNode = fontoxpath.evaluateXPathToNodes(objWithXPath.xPath, document.documentElement)[0];
     //console.log("curNode", curNode);
     // Traverse up through the DOM until we hit the top part of the xpath that is the same across all param values (i.e., above [INSERT-ROW-INDEX-HERE])
     // We do want to keep going up until [INSERT-ROW-INDEX-HERE] because we really do want to try to make each step a class or attribute instead of index
@@ -276,7 +278,9 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         // Try using a class instead of an index
         const classList = curNode.classList;
         for(let className of classList){
-            const nodeXPathSubstring1 = `/*[contains(@class, '${className}')]`;
+            //const nodeXPathSubstring1 = `/*[contains(@class, '${className}')]`;
+            //const nodeXPathSubstring1 = `/*[contains(concat(' ', normalize-space(@class), ' '), '${className}')]`;
+            const nodeXPathSubstring1 = `/*[count(index-of(tokenize(@class, ' ' ), '${className}')) = 1]`;
             const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath, numRows);
             candidateChanges.push(attempt1);
 
@@ -374,9 +378,9 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
             for(let index = 1; index <= numRows; index++){
                 const filledInTemplateXPath = bestCandidateForThisLevel.newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", index);
                 try{
-                    const result = document.evaluate(filledInTemplateXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                    if(result.snapshotItem(0)){
-                        let textCandidate = result.snapshotItem(0).textContent.toLowerCase();
+                    const result = fontoxpath.evaluateXPathToNodes(filledInTemplateXPath, document.documentElement);
+                    if(result[0]){
+                        let textCandidate = result[0].textContent.toLowerCase();
                         // If this xpath match corresponds to one of the user specified values, update it in bestSoFar
                         if(bestSoFar[textCandidate]){
                             bestSoFar[textCandidate].xPath = filledInTemplateXPath;
@@ -441,19 +445,19 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
     //var parentNodesContainingKeyword = document.evaluate(`//text()[contains(., \"${positiveExamplesList[0]}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     // Adapted from https://stackoverflow.com/questions/8474031/case-insensitive-xpath-contains-possible/23388974
     //var parentNodesContainingKeyword = document.evaluate(`//text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    var parentNodesContainingKeyword = document.evaluate(`${embeddedWebsitePrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    var parentNodesContainingKeyword = fontoxpath.evaluateXPathToNodes(`${embeddedWebsitePrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document.documentElement);
     
-    for(let matchingItemIndex = 0; matchingItemIndex < parentNodesContainingKeyword.snapshotLength; matchingItemIndex++){
+    for(let matchingItemIndex = 0; matchingItemIndex < parentNodesContainingKeyword.length; matchingItemIndex++){
         // If we don't care about whether it's an exact string match, then always proceed
         // If we do care that it is an exact string match, then check that before proceeding
-        if(!exactStringBoolean || parentNodesContainingKeyword.snapshotItem(matchingItemIndex).textContent.toLowerCase() === positiveExamplesList[0].toLowerCase()){
-            var parentNodeOfTextNodeXPath = getXPathForElement(parentNodesContainingKeyword.snapshotItem(matchingItemIndex), document);
+        if(!exactStringBoolean || parentNodesContainingKeyword[matchingItemIndex].textContent.toLowerCase() === positiveExamplesList[0].toLowerCase()){
+            var parentNodeOfTextNodeXPath = getXPathForElement(parentNodesContainingKeyword[matchingItemIndex], document);
             
             if(!parentNodeOfTextNodeXPath.includes("script") && !parentNodeOfTextNodeXPath.includes("style")){ // We don't want to include text that's within a <script> node
                 // Use parentNodeOfTextNodeXPath as the full xpath (and then we can call textContent on the result)
                 
                 // Now, traverse up through the DOM
-                var ancestorNode = parentNodesContainingKeyword.snapshotItem(matchingItemIndex);
+                var ancestorNode = parentNodesContainingKeyword[matchingItemIndex];
                 var possibleExtractions = [];
                 while(ancestorNode.parentNode && ancestorNode.parentNode.parentNode){ // i.e., until we reach the top of the document
                     // For each of ancestorNode's siblings, try querying the partial selector and see if there's a match (and if the match is "meaningful"?)
@@ -472,9 +476,9 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
                         if(!siblingNodeXPath.includes("script") && !siblingNodeXPath.includes("style")){ // We don't want to include text that's within a <script> node
                             var xPathDownSiblingToQuery = siblingNodeXPath + xPathDiff;
 
-                            var candidate = document.evaluate(xPathDownSiblingToQuery, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                            if(candidate.snapshotItem(0)){
-                                var textCandidate = candidate.snapshotItem(0).textContent;
+                            var candidate = fontoxpath.evaluateXPathToNodes(xPathDownSiblingToQuery, document.documentElement);
+                            if(candidate[0]){
+                                var textCandidate = candidate[0].textContent;
                                 if(textCandidate !== ""){
                                     // using * so that later we can loop through all children at the level
                                     values.push({ textCandidate, xPath: xPathDownSiblingToQuery, templateXPath: `${ancestorNodeParentXPath}/*[INSERT-ROW-INDEX-HERE]${xPathDiff}`, commonXPathPrefix: ancestorNodeParentXPath, commonXPathSuffix: xPathDiff } );

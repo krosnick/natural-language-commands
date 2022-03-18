@@ -15,6 +15,7 @@ import MonacoEditor from "@monaco-editor/react";
 import tfjs from '@tensorflow/tfjs';
 import { load } from '@tensorflow-models/universal-sentence-encoder';
 import * as acorn from 'acorn';
+import * as fontoxpath from 'fontoxpath';
 
 const embeddedWebsiteXPathPrefix = '//*[@clone]';
 
@@ -2057,7 +2058,7 @@ class NaturalLanguage extends React.Component {
                     //console.log("targetXPath", targetXPath);
                     
                     /*// If page changes, drastically, not sure if this will actually be the original element. Yeah it isn't...
-                    const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    const clickedElement = document.evaluate(targetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                     console.log("clickedElement", clickedElement);*/
 
                     //debugger;
@@ -2233,7 +2234,7 @@ class NaturalLanguage extends React.Component {
                     if(rowPrefix){
                         // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
                         rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
-                        const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                        const parentOfRowsElement = fontoxpath.evaluateXPathToNodes(rowPrefix, document.documentElement)[0];
                         const numRows = parentOfRowsElement.children.length;
                         
                         // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
@@ -2347,7 +2348,7 @@ class NaturalLanguage extends React.Component {
                             
                             // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
                             let newXPath;
-                            const stringMatches = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                            const stringMatches = fontoxpath.evaluateXPathToNodes(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document.documentElement);
                             // A lot of this adapted from below; should make helper function
                             if(xPathSuffix){
                                 let newSuffix = xPathSuffix;
@@ -2357,8 +2358,8 @@ class NaturalLanguage extends React.Component {
                                 }
                                 // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
                                 // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
-                                for(let snapshotIndex = 0; snapshotIndex < stringMatches.snapshotLength; snapshotIndex++){
-                                    const node = stringMatches.snapshotItem(snapshotIndex);
+                                for(let snapshotIndex = 0; snapshotIndex < stringMatches.length; snapshotIndex++){
+                                    const node = stringMatches[snapshotIndex];
                                     const xPath = getXPathForElement(node, document);
                                     if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
                                         // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
@@ -2367,7 +2368,7 @@ class NaturalLanguage extends React.Component {
                                             const xPathToTry = xPathPrefix + newSuffix;
                                             // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
                                             try{
-                                                const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                                const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
                                                 if(node){
                                                     const indexBasedXPath = getXPathForElement(node, document);
                                                     if(indexBasedXPath === xPath){
@@ -2391,7 +2392,7 @@ class NaturalLanguage extends React.Component {
                                     }
                                 }
                             }else{
-                                const matchingNode = stringMatches.snapshotItem(0);
+                                const matchingNode = stringMatches[0];
                                 newXPath = getXPathForElement(matchingNode, document);
                             }
 
@@ -2434,7 +2435,7 @@ class NaturalLanguage extends React.Component {
                                     //console.log("xPathToTry", xPathToTry);
                                     // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
                                     try{
-                                        const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                        const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
                                         //console.log("node", node);
                                         if(node){
                                             const indexBasedXPath = getXPathForElement(node, document);

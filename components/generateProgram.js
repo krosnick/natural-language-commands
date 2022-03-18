@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { makeXPathsMoreRobust, indexOfCaseInsensitive } from './valueExtraction';
 
+import * as fontoxpath from 'fontoxpath';
+
 var operations = {
     click: function(domElement){
         domElement.click();
@@ -55,7 +57,7 @@ export async function executeProgram(programList, paramValuePairings){
                     element = programStep.getElement(paramValuePairings, programStep.targetXPath);
                 }else if(programStep.static){
                     // Make sure to use original xpath
-                    element = document.evaluate(programStep.originalTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    element = fontoxpath.evaluateXPathToNodes(programStep.originalTargetXPath, document.documentElement)[0];
                 }else if(programStep.relevantParam){
                     // Need to execute function with param value to get xPath
                     let relevantParam = programStep.relevantParam;
@@ -237,7 +239,7 @@ function computeSimilarityVector(element1, element2){
 // Given that the user has interacted with eventTargetXPath (likely a leaf node or close to it),
     // find its ancestors that are the most likely semantic rows/sections
 function getSiblingSimilarityScores(eventTargetXPath){
-    var targetElement = document.evaluate(eventTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+    var targetElement = fontoxpath.evaluateXPathToNodes(eventTargetXPath, document.documentElement)[0];
 
     // Starting at this level, and then for each level up until the top of the HTML DOM tree, calculate the likeliness score for each level (i.e., each set of siblings)
     var ancestorNode = targetElement;
@@ -377,7 +379,7 @@ function tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring
     let matchesDemoElement = true;
 
     const exampleDataObjFullXPath = exampleDataObj.exampleFullXPath;
-    const exampleDataObjNode = document.evaluate(exampleDataObjFullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+    const exampleDataObjNode = fontoxpath.evaluateXPathToNodes(exampleDataObjFullXPath, document.documentElement)[0];
     const indexBasedExampleDataObjFullXPath = getXPathForElement(exampleDataObjNode, document);
 
     let largestSnapshotLength = 0;
@@ -390,22 +392,23 @@ function tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring
         
         // See if full xpath for this combo is valid
         const fullXPath = generatedRowXPathPrefix + newFullXPathSuffix;
-        //console.log(`fullXPath for ${comboStringID}`, fullXPath);
+        console.log(`fullXPath for ${comboStringID}`, fullXPath);
 
         let domElement;
         try{
             if(fullXPath.indexOf("///") === -1){
-                const evalResult = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                const evalResult = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement);
                 // Make sure there is a result, but also for now we're only going to consider the xpath if it is unique;
                     // if returns multiple results, then there's a reasonably high chance we'll be returning the wrong thing, not what the user wants;
                     // however, this could be too selective? It's possible that we always want to return the ith result for all param/value combos, but we don't know what i is
-                /*if(evalResult.snapshotLength === 1){
-                    domElement = evalResult.snapshotItem(0);
+                /*if(evalResult.length === 1){
+                    domElement = evalResult[0];
                 }*/
 
-                domElement = evalResult.snapshotItem(0);
-                if(evalResult.snapshotLength > largestSnapshotLength){
-                    largestSnapshotLength = evalResult.snapshotLength;
+                console.log("evalResult", evalResult);
+                domElement = evalResult[0];
+                if(evalResult.length > largestSnapshotLength){
+                    largestSnapshotLength = evalResult.length;
                 }
             }
         }catch{
@@ -437,9 +440,11 @@ function tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring
             }
         }else{
             // This xpath wasn't "good" (either it returned no results, or it returned more than 1 result so not unique)
+            console.log("paramCombosWhereXPathIsValid", paramCombosWhereXPathIsValid);
+            console.log("comboStringID", comboStringID);
             if(paramCombosWhereXPathIsValid.includes(comboStringID)){
                 scenariosThatNoLongerWork.push(comboStringID);
-                //console.log("added to scenariosThatNoLongerWork");
+                console.log("added to scenariosThatNoLongerWork");
             }
         }
     }
@@ -473,7 +478,7 @@ function makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPath
         // Remove the last node
         xPathRelativeSuffixPrefix = xPathRelativeSuffixPrefix.substring(0, xPathRelativeSuffixPrefix.lastIndexOf("/"));
         let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
-        let curNode = document.evaluate(exampleDataObj.exampleFullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+        let curNode = fontoxpath.evaluateXPathToNodes(exampleDataObj.exampleFullXPath, document.documentElement)[0];
         //console.log("curNode", curNode);
         // While there are still param values where our xpath rule doesn't yield a node, and while we're still looking through the lower part of the xpath (i.e., xPathRelativeSuffixPrefix.length > 0)
         //while(curNode.parentNode && paramCombosWhereXPathIsNotValid.length > 0 && oldXPathRelativeSuffixPrefix.length > 0){
@@ -494,7 +499,9 @@ function makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPath
             // Try using a class instead of an index
             const classList = curNode.classList;
             for(let className of classList){
-                const nodeXPathSubstring1 = `/*[contains(@class, '${className}')]`;
+                //const nodeXPathSubstring1 = `/*[contains(@class, '${className}')]`;
+                //const nodeXPathSubstring1 = `/*[contains(concat(' ', normalize-space(@class), ' '), '${className}')]`;
+                const nodeXPathSubstring1 = `/*[count(index-of(tokenize(@class, ' ' ), '${className}')) = 1]`;
                 const attempt1 = tryAlternativeXPathSuffix(xPathRelativeSuffixPrefix, nodeXPathSubstring1, xPathSuffix, "class", paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, paramValueCombinations, exampleDataObj, checkIfThisIsDemoConfig);
                 candidateChanges.push(attempt1);
 
@@ -617,7 +624,7 @@ function makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPath
                     let domElement;
                     try{
                         if(fullXPath.indexOf("///") === -1){
-                            domElement = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            domElement = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement)[0];
                         }
                     }catch{
             
@@ -674,10 +681,10 @@ function getClassAttributeBasedVersionOfPrefix(indexBasedCommonXPathPrefix, full
         // We have a try/catch in case document.evaluate fails (e.g., if currentNodeXPath is invalid, like if it ends in a / because previously it ended in //)
         try{
             //console.log("currentNodeXPath", currentNodeXPath);
-            const result = document.evaluate(currentNodeXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            const result = fontoxpath.evaluateXPathToNodes(currentNodeXPath, document.documentElement);
             let currentNodeIndexedXPath;
-            for(let i = 0; i < result.snapshotLength; i++){
-                const currentNode = result.snapshotItem(i);
+            for(let i = 0; i < result.length; i++){
+                const currentNode = result[i];
                 //console.log("currentNode", currentNode);
                 currentNodeIndexedXPath = getXPathForElement(currentNode, document);
                 //console.log("currentNodeIndexedXPath", currentNodeIndexedXPath);
@@ -741,7 +748,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     // So to work around this, we want to take that possibly class/attributed-based xpath and get the corresponding index-based xpath,
                         // which we can then more meaningfully compare to eventObj.targetXPath
                     //console.log("xPath", xPath);
-                    const node = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    const node = fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0];
                     const indexBasedXPath = getXPathForElement(node, document);
                     //console.log("indexBasedXPath", indexBasedXPath);
                     //console.log("xPath", xPath);
@@ -822,7 +829,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             // Want to compare index-based xpath strings (we can't just use origValueXPath, because that could contain classes/attributes)
             console.log("origValueXPath", origValueXPath);
             console.log("demoTargetXPath", demoTargetXPath);
-            const node = document.evaluate(origValueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+            const node = fontoxpath.evaluateXPathToNodes(origValueXPath, document.documentElement)[0];
             const indexBasedXPath = getXPathForElement(node, document);
             console.log("indexBasedXPath", indexBasedXPath);
             const commonPrefixLength = getCommonPrefixLength(indexBasedXPath, demoTargetXPath);
@@ -871,7 +878,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     // See if full xpath for this combo is valid
                     const fullXPath = xPathPrefixToUse + xPathRelativeSuffixToInclude;
 
-                    const domElement = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    const domElement = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement)[0];
                     
                     if(domElement){
                         paramCombosWhereXPathIsValid.push(comboStringID);
@@ -961,7 +968,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 // See if is valid, i.e., returns a match
                 let domElement;
                 if(correspondingXPath){
-                    domElement = document.evaluate(correspondingXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    domElement = document.evaluate(correspondingXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                 }
                 if(domElement){
                     paramValuesWhereXPathIsValid.push(paramValue);
@@ -988,7 +995,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 //let xPathPrefix = demoTargetXPath;
                 let xPathRelativeSuffixPrefix = xPathRelativeSuffixToInclude;
                 let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
-                const curNode = document.evaluate(demoTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                const curNode = document.evaluate(demoTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                 // While there are still param values where our xpath rule doesn't yield a node, and while we're still looking through the lower part of the xpath (i.e., xPathRelativeSuffixPrefix.length > 0)
                 while(curNode.parentNode && paramValuesWhereXPathIsNotValid.length > 0 && xPathRelativeSuffixPrefix.length > 0){
 
@@ -1098,7 +1105,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             const newValueXPath = valueXPathPrefixToUse + bestCandidateForThisLevel.newFullXPathSuffix;
                             
                             const result = document.evaluate(newValueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                            if(result.snapshotItem(0)){
+                            if(result[0]){
                                 // This xPath is valid
                                 bestSoFar[value] = newValueXPath;
                                 if(paramValuesWhereXPathIsNotValid.includes(value)){
@@ -1138,7 +1145,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 static: false,
                 getElement: function(paramValuePairings, originalTargetXPath, inputValue){
                     // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                    const domElement = document.evaluate(generalizedXPathFunction(inputValue), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                    const domElement = fontoxpath.evaluateXPathToNodes(generalizedXPathFunction(inputValue), document.documentElement)[0];
                     return domElement;
                 },
                 originalTargetXPath: eventObj.targetXPath,
@@ -1200,8 +1207,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     }
                                     /*if(paramValuesAndXPaths[paramValues[i]] && paramValuesAndXPaths[paramValues[j]]){
                                         //const commonPrefixLength = getCommonPrefixLength(paramValuesAndXPaths[paramValues[i]], paramValuesAndXPaths[paramValues[j]]);
-                                        const indexBasedValue1XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[i]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0), document);
-                                        const indexBasedValue2XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[j]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0), document);
+                                        const indexBasedValue1XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[i]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0], document);
+                                        const indexBasedValue2XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[j]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0], document);
                                         const commonPrefixLength = getCommonPrefixLength(indexBasedValue1XPath, indexBasedValue2XPath);
                                         //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
                                         if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
@@ -1220,7 +1227,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     rowPrefix = rowPrefix.substring(0, lastSlashIndex);
                                 }
                     
-                                const paramRowElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                const paramRowElement = fontoxpath.evaluateXPathToNodes(rowPrefix, document.documentElement)[0];
                                 const numCols = paramRowElement.children.length;
                                 paramNumColDataOptions.push({
                                     paramName, paramRowElement, numCols
@@ -1274,7 +1281,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     const valueObj = paramValueObj[paramName];
                                     for(let [value, xPath] of Object.entries(valueObj)){
                                         if(xPath){ // because could be null/undefined
-                                            let indexBasedXPath = getXPathForElement(document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0), document);
+                                            let indexBasedXPath = getXPathForElement(fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0], document);
                                             let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, paramColItemXPath);
                                             if(commonPrefixLength > longestCommonPrefixLengthSoFar){
                                                 longestCommonPrefixLengthSoFar = commonPrefixLength;
@@ -1290,7 +1297,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     if(valuesLongestCommonPrefixLengthSoFar.length === 1){
                                         const valueXPath = valueObj[valuesLongestCommonPrefixLengthSoFar[0]];
                                         //console.log("valueXPath", valueXPath);
-                                        const valueNode = document.evaluate(valueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                        const valueNode = fontoxpath.evaluateXPathToNodes(valueXPath, document.documentElement)[0];
                                         console.log("valueNode", valueNode);
                                         console.log("valueNode.textContent", valueNode.textContent);
                                         //console.log("expectedValue", expectedValue);
@@ -1353,7 +1360,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 //paramColData.paramName
                                 // Assume we have an xpath for inputValue
                                 const paramValueXPath = paramValueObj[paramColData.paramName][inputValue];
-                                const paramRowElement = document.evaluate(paramXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                const paramRowElement = fontoxpath.evaluateXPathToNodes(paramXPath, document.documentElement)[0];
                                 let closestChild;
                                 let closestChildXPath = "";
                                 let longestCommonPrefix = "";
@@ -1365,7 +1372,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     //console.log("childXPath", childXPath)
                                     
                                     //const commonPrefixLength = getCommonPrefixLength(paramValueXPath, childXPath);
-                                    let indexBasedXPath = getXPathForElement(document.evaluate(paramValueXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0), document);
+                                    let indexBasedXPath = getXPathForElement(fontoxpath.evaluateXPathToNodes(paramValueXPath, document.documentElement)[0], document);
                                     let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, childXPath);
                                     if(commonPrefixLength > longestCommonPrefix){
                                         closestChild = paramRowElement.children[childIndex];
@@ -1378,7 +1385,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 // Then, use that index for identifying xPath suffix
                     
                                 const colParentXPath = rowXPathPrefix + middlePortionOfXPath;
-                                const colParentElement = document.evaluate(colParentXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                const colParentElement = fontoxpath.evaluateXPathToNodes(colParentXPath, document.documentElement)[0];
                                 const colElement = colParentElement.children[closestChildIndex];
                                 const colXPath = getXPathForElement(colElement, document);
                                 const colXPathSuffix = colXPath.substring(rowXPathPrefix.length);
@@ -1442,14 +1449,14 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             let paramValue = currentParamValuePairings[paramName];
 
                             // Check if paramValue appears as text in this row
-                            var nodesContainingTextValue = document.evaluate(`${rowXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${paramValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                            if(nodesContainingTextValue.snapshotLength > 0){
+                            var nodesContainingTextValue = fontoxpath.evaluateXPathToNodes(`${rowXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${paramValue.toLowerCase()}\")] /..`, document.documentElement);
+                            if(nodesContainingTextValue.length > 0){
                                 // For now, let's require that the strings are equal (to avoid the issue of seeing the string 'age' in 'beverage')
-                                if(nodesContainingTextValue.snapshotItem(0).textContent.toLowerCase() === paramValue.toLowerCase()){
+                                if(nodesContainingTextValue[0].textContent.toLowerCase() === paramValue.toLowerCase()){
                                     paramValuesFound.push({
                                         paramName,
                                         paramValue,
-                                        valueNode: nodesContainingTextValue.snapshotItem(0) // for now just using 1st match (probably only 1 match); but should we investigate this more?
+                                        valueNode: nodesContainingTextValue[0] // for now just using 1st match (probably only 1 match); but should we investigate this more?
                                     });
                                 }
                             }
@@ -1491,11 +1498,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
 
                         for(let node of rowsToConsider){
                             const rowXPath = getXPathForElement(node, document);
-                            const valueNodeToCheck = document.evaluate(`${rowXPath}${filterNodeXPathSuffix}`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
                             if(valueNodeToCheck && valueNodeToCheck.textContent.toLowerCase() === paramValuesFound[0].paramValue.toLowerCase()){
                                 newRowsToConsider.push(node);
                             }
-                            //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                         }
                         rowsToConsider = newRowsToConsider;
                     }else{
@@ -1540,7 +1547,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     //console.log("middlePortionOfXPath", middlePortionOfXPath);
                                     const thisRowColParentXPath = rowXPathPrefix + middlePortionOfXPath;
                                     //console.log("thisRowColParentXPath", thisRowColParentXPath);
-                                    const thisRowColParent = document.evaluate(thisRowColParentXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                    const thisRowColParent = fontoxpath.evaluateXPathToNodes(thisRowColParentXPath, document.documentElement)[0];
                                     //console.log("thisRowColParent", thisRowColParent);
                                     // Just double check that this row has a col at that index (could be an edge case, like an ad in the middle of the page, or footer at the bottom of the data)
                                     if(thisRowColParent.children[colIndex]){
@@ -1649,7 +1656,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 };
                             }
                             //console.log("paramValues", paramValues);
-                            const originalRowNode = document.evaluate(rowXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            const originalRowNode = fontoxpath.evaluateXPathToNodes(rowXPath, document.documentElement)[0];
                             const parentNode = originalRowNode.parentNode;
                             //console.log("parentNode", parentNode);
                             const parentNodeXPath = getXPathForElement(parentNode, document);
@@ -1660,7 +1667,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 //console.log(`rowXPath for ${filterValueForRowSelection}`, rowXPath);
                                 //console.log(`filterNodeXPathSuffix for ${filterValueForRowSelection}`, filterNodeXPathSuffix);
                                 //console.log(`attempted valueNode full xpath for ${filterValueForRowSelection}`, `${rowXPath}${filterNodeXPathSuffix}`);
-                                const valueNodeToCheck = document.evaluate(`${rowXPath}${filterNodeXPathSuffix}`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
                                 if(valueNodeToCheck && indexOfCaseInsensitive(paramValues, valueNodeToCheck.textContent) > -1){
                                     // The text found is one of the parameter values; aka, the xpath formula works for this param value
                                     const paramValue = paramValues[indexOfCaseInsensitive(paramValues, valueNodeToCheck.textContent)];
@@ -1671,7 +1678,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                         templateXPath: `${parentNodeXPath}/*[INSERT-ROW-INDEX-HERE]${filterNodeXPathSuffix}`
                                     }
                                 }
-                                //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                             }
                             const valueAndXPathObjList = Object.values(valueAndXPathObjMap);
                             //console.log("valueAndXPathObjList", valueAndXPathObjList);
@@ -1696,7 +1703,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         generateRowXPathPrefix = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection){
                             //console.log("generateRowXPathPrefix");
                             // Loop through the row siblings and find (the first one) that has filterValueForRowSelection at filterNodeXPathSuffix
-                            const originalRowNode = document.evaluate(rowXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            const originalRowNode = fontoxpath.evaluateXPathToNodes(rowXPath, document.documentElement)[0];
                             const parentNode = originalRowNode.parentNode;
                             const siblingNodes = parentNode.children;
                             
@@ -1710,12 +1717,12 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     //console.log(`rowXPath for ${filterValueForRowSelection}`, rowXPath);
                                     //console.log(`filterNodeXPathSuffix for ${filterValueForRowSelection}`, filterNodeXPathSuffix);
                                     //console.log(`attempted valueNode full xpath for ${filterValueForRowSelection}`, `${rowXPath}${filterNodeXPathSuffix}`);
-                                    const valueNodeToCheck = document.evaluate(`${rowXPath}${filterNodeXPathSuffix}`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                    const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
                                     if(valueNodeToCheck && valueNodeToCheck.textContent.toLowerCase() === filterValueForRowSelection.toLowerCase()){
                                         // Found a matching row
                                         newRowsToConsider.push(node);
                                     }
-                                    //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                    //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                                 }
                                 rowsToConsider = newRowsToConsider;
                             }
@@ -1733,7 +1740,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 const allValues = [];
                                 for(let rowIndex = 0; rowIndex < rowsToConsider.length; rowIndex++){
                                     const rowXPath = getXPathForElement(rowsToConsider[rowIndex], document);
-                                    const colValueNodeToCheck = document.evaluate(`${rowXPath}${colXPathSuffix}`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                    const colValueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${colXPathSuffix}`, document.documentElement)[0];
                                     if(colValueNodeToCheck && !isNaN(colValueNodeToCheck.textContent)){ // First want to make sure this node exists and then that text is a number
                                         allValues.push(parseFloat(colValueNodeToCheck.textContent));
                                     }else{
@@ -1859,7 +1866,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                         const fullXPath = generatedRowXPathPrefix + generatedColXPathSuffix;
                                         //console.log(`fullXPath for ${comboStringID}`, fullXPath);
 
-                                        const domElement = document.evaluate(fullXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                        const domElement = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement)[0];
                                         
                                         if(domElement){
                                             paramCombosWhereXPathIsValid.push(comboStringID);
@@ -1948,7 +1955,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             static: true,
                             getElement: function(paramValuePairings, xPath){
                                 // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                                const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                const domElement = fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0];
                                 return domElement;
                             },
                             uuid: uuidv4()
@@ -1965,8 +1972,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             static: false,
                             getElement: function(paramValuePairings, originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol){
                                 // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                                //const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                                const domElement = document.evaluate(generalizedXPathFunction(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                //const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
+                                const domElement = fontoxpath.evaluateXPathToNodes(generalizedXPathFunction(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol), document.documentElement)[0];
                                 return domElement;
                             },
                             originalTargetXPath: eventObj.targetXPath,
@@ -1985,7 +1992,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         static: true,
                         getElement: function(paramValuePairings, xPath){
                             // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                            const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                            const domElement = fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0];
                             return domElement;
                         },
                         uuid: uuidv4()
@@ -2008,7 +2015,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 
                 // Get access to this element in the DOM, then query its ancestors to find the closest <table> node, then get th[tdNumber] and see if that corresponds to a param (do similar to above, looking for a param/value whose xPath is closest)
                 // TODO, should include an embeddedWebsitePrefix like here -- //document.evaluate(`${embeddedWebsitePrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${positiveExamplesList[0].toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                var tdDOMElement = document.evaluate(eventTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                var tdDOMElement = document.evaluate(eventTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                 var tableElement = tdDOMElement.closest("table");
                 var tableHeaders = tableElement.querySelectorAll("th");
                 var relevantHeader = tableHeaders[tdNumber-1]; // because tdNumber is 1-indexed
@@ -2037,7 +2044,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     static: true,
                     getElement: function(paramValuePairings, xPath){
                         // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
-                        const domElement = document.evaluate(xPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                        const domElement = fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0];
                         return domElement;
                     },
                     uuid: uuidv4()
