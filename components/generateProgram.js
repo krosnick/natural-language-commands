@@ -1466,7 +1466,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     let generateSuperlativeColXPathSuffix;
                     // Now, need to identify if a superlative is also relevant to choosing this row; if already filtered and rowsToConsider is length 1, then don't check for superlative
                     // TODO - instead of using superlativeParameters and constantSuperlatives, use some equivalent of paramsNotYetUsed
-                    if(rowColData.colData && rowsToConsider.length > 1 && superlativeParameters.length > 0 || constantSuperlatives.length > 0){
+                    if(rowColData.colData && rowsToConsider.length > 1 && (superlativeParameters.length > 0 || constantSuperlatives.length > 0)){
                         // Can only do this if we can identify columns
                         
                         const colParentXPath = getXPathForElement(rowColData.colData.levelParent, document);

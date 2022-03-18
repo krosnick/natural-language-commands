@@ -3489,38 +3489,42 @@ class NaturalLanguage extends React.Component {
             }
 
             if(programListNode){
-                // Loop through program steps
-                for(let stepObj of programListNode.elements){
-                    const programStep = {};
-                    
-                    console.log("stepObj", stepObj);
-                    // Loop through properties
-                    for(let propertyObj of stepObj.properties){
-                        console.log("propertyObj", propertyObj);
+                // Loop through programs
+                for(let programObj of programListNode.elements){
+                    // Loop through program steps
+                    for(let stepObj of programObj.elements){
+                        const programStep = {};
+                        
+                        console.log("stepObj", stepObj);
+                        // Loop through properties
+                        for(let propertyObj of stepObj.properties){
+                            console.log("propertyObj", propertyObj);
 
-                        const keyObj = propertyObj.key;
-                        const valueObj = propertyObj.value;
+                            const keyObj = propertyObj.key;
+                            const valueObj = propertyObj.value;
 
-                        if(valueObj.type === "FunctionExpression"){
-                            const body = valueObj.body;
-                            const bodyString = value.substring(body.start, body.end);
+                            if(valueObj.type === "FunctionExpression"){
+                                const body = valueObj.body;
+                                const bodyString = value.substring(body.start, body.end);
 
-                            const params = valueObj.params;
-                            let paramString = "";
-                            for(let param of params){
-                                paramString += param.name + ", ";
+                                const params = valueObj.params;
+                                let paramString = "";
+                                for(let param of params){
+                                    paramString += param.name + ", ";
+                                }
+
+                                const func = new Function(paramString, bodyString);
+                                programStep[keyObj.value] = func;
+                            }else{
+                                // it's a string, undefined, etc; literal or similar
+                                programStep[keyObj.value] = valueObj.value;
                             }
-
-                            const func = new Function(paramString, bodyString);
-                            programStep[keyObj.value] = func;
-                        }else{
-                            // it's a string, undefined, etc; literal or similar
-                            programStep[keyObj.value] = valueObj.value;
                         }
+                        
+                        program.push(programStep);
                     }
-                    
-                    program.push(programStep);
                 }
+                
                 console.log("updated program obj", program);
 
             }
