@@ -2102,7 +2102,7 @@ class NaturalLanguage extends React.Component {
                 specificallyForParamUuid: "",
                 specificallyForValue: "",
             });
-            generatedProgramClone.push(null);
+            generatedProgramClone.push({ program: null });
         }else{
             demonstrationsClone[demoIndexToUpdate] = {
                 eventSequence: [],
@@ -2110,14 +2110,15 @@ class NaturalLanguage extends React.Component {
                 specificallyForParamUuid: "",
                 specificallyForValue: "",
             };
-            generatedProgramClone[demoIndexToUpdate] = null;
+            generatedProgramClone[demoIndexToUpdate] = { program: null };
         }
+
+        console.log("handleCreateDemo generatedProgramClone", generatedProgramClone);
 
         this.setState({
             demonstrations: demonstrationsClone,
             demoIndexInCreateMode: demoIndexToUpdate === null ? demonstrationsClone.length-1 : demoIndexToUpdate,
-            generatedProgram: generatedProgramClone,
-            currentProgramCode: null, //  TODO, this shouldn't be empty, should still contain code for other demos
+            generatedProgram: generatedProgramClone    
         });
     }
 
@@ -2546,13 +2547,14 @@ class NaturalLanguage extends React.Component {
     }
 
     generateCodeStringFromProgramObj(program){
+        console.log("generateCodeStringFromProgramObj operating on", program);
         let currentProgramCode;
             
         const paramValueObj = this.getParamValueData().paramValueObj;
 
         let programString = "[\n";
         for(let programVersion of program){
-            if(programVersion){
+            if(programVersion && programVersion.program){
                 programString += "[\n";
                 for(let programStep of programVersion.program){
                     let programStepString = "{\n";
@@ -2892,7 +2894,7 @@ class NaturalLanguage extends React.Component {
         for(let demo of this.state.demonstrations){
             const demoParamValueDataUsed = demo.paramValueDataUsed;
             console.log("demoParamValueDataUsed", demoParamValueDataUsed);
-            if(!_.isEqual(currentParamValueData, demoParamValueDataUsed)){
+            if(demoParamValueDataUsed && !_.isEqual(currentParamValueData, demoParamValueDataUsed)){
                 console.log("not equal");
                 alertUserToReDemo = true;
             }
@@ -3465,8 +3467,8 @@ class NaturalLanguage extends React.Component {
     }
 
     handleEditorChange(value, event) {
-        console.log("handleEditorChange");
-
+        console.log("handleEditorChange value", value);
+        
         // Try/catch, for handling syntax error in code (e.g., if user is in middle of typing)
         try {
             const codeAST = acorn.parse(value, {
@@ -3474,7 +3476,7 @@ class NaturalLanguage extends React.Component {
                 locations: true
             });
 
-            //console.log("codeAST", codeAST);
+            console.log("codeAST", codeAST);
             
             // Reconstruct "program" list
             const program = [];
@@ -3487,42 +3489,46 @@ class NaturalLanguage extends React.Component {
                     programListNode = node.declarations[0].init;
                 }
             }
-
+            
             if(programListNode){
                 // Loop through programs
                 for(let programObj of programListNode.elements){
                     // Loop through program steps
-                    const programVersion = [];
-                    for(let stepObj of programObj.elements){
-                        const programStep = {};
-                        
-                        console.log("stepObj", stepObj);
-                        // Loop through properties
-                        for(let propertyObj of stepObj.properties){
-                            console.log("propertyObj", propertyObj);
+                    let programVersion = [];
 
-                            const keyObj = propertyObj.key;
-                            const valueObj = propertyObj.value;
-
-                            if(valueObj.type === "FunctionExpression"){
-                                const body = valueObj.body;
-                                const bodyString = value.substring(body.start, body.end);
-
-                                const params = valueObj.params;
-                                let paramString = "";
-                                for(let param of params){
-                                    paramString += param.name + ", ";
+                    // Check just to make sure this program isn't null
+                    if(programObj && programObj.elements){
+                        for(let stepObj of programObj.elements){
+                            const programStep = {};
+                            
+                            // Loop through properties
+                            for(let propertyObj of stepObj.properties){
+                                
+                                const keyObj = propertyObj.key;
+                                const valueObj = propertyObj.value;
+    
+                                if(valueObj.type === "FunctionExpression"){
+                                    const body = valueObj.body;
+                                    const bodyString = value.substring(body.start, body.end);
+    
+                                    const params = valueObj.params;
+                                    let paramString = "";
+                                    for(let param of params){
+                                        paramString += param.name + ", ";
+                                    }
+    
+                                    const func = new Function(paramString, bodyString);
+                                    programStep[keyObj.value] = func;
+                                }else{
+                                    // it's a string, undefined, etc; literal or similar
+                                    programStep[keyObj.value] = valueObj.value;
                                 }
-
-                                const func = new Function(paramString, bodyString);
-                                programStep[keyObj.value] = func;
-                            }else{
-                                // it's a string, undefined, etc; literal or similar
-                                programStep[keyObj.value] = valueObj.value;
                             }
+                            
+                            programVersion.push(programStep);
                         }
-                        
-                        programVersion.push(programStep);
+                    }else{
+                        programVersion = null;
                     }
                     program.push(programVersion);
                 }
@@ -3541,36 +3547,39 @@ class NaturalLanguage extends React.Component {
             for(let programVersionIndex = 0; programVersionIndex < program.length; programVersionIndex++){
                 const programVersion = program[programVersionIndex];
                 const updatedProgramVersion = [];
-                for(let programStep of programVersion){
-                    if(programStep.uuid){
-                        // find programStep.uuid in this.state.generatedProgram.program
-                        let correspondingOldProgramStep;
-                        for(let oldProgramStep of this.state.generatedProgram[programVersionIndex].program){
-                            if(oldProgramStep.uuid === programStep.uuid){
-                                correspondingOldProgramStep = oldProgramStep;
-                                break;
+                // Check just to make sure this program isn't null
+                if(programVersion){
+                    for(let programStep of programVersion){
+                        if(programStep.uuid){
+                            // find programStep.uuid in this.state.generatedProgram.program
+                            let correspondingOldProgramStep;
+                            for(let oldProgramStep of this.state.generatedProgram[programVersionIndex].program){
+                                if(oldProgramStep.uuid === programStep.uuid){
+                                    correspondingOldProgramStep = oldProgramStep;
+                                    break;
+                                }
                             }
-                        }
-                        if(correspondingOldProgramStep){
-                            // Potentially reuse parts of correspondingOldProgramStep
-                            // Want to keep all literal values from programStep
-                            // If customGetElement is true, then want to use new getElement from programStep; otherwise, use getElement from correspondingOldProgramStep
-                                // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
-                            if(!programStep.customGetElement){
-                                programStep.getElement = correspondingOldProgramStep.getElement;
-                                console.log("using existing getElement");
+                            if(correspondingOldProgramStep){
+                                // Potentially reuse parts of correspondingOldProgramStep
+                                // Want to keep all literal values from programStep
+                                // If customGetElement is true, then want to use new getElement from programStep; otherwise, use getElement from correspondingOldProgramStep
+                                    // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
+                                if(!programStep.customGetElement){
+                                    programStep.getElement = correspondingOldProgramStep.getElement;
+                                    console.log("using existing getElement");
+                                }
+                                updatedProgramVersion.push(programStep);
+                            }else{
+                                // There isn't a corresponding program step from last version of program, so just include this new program step as is
+                                updatedProgramVersion.push(programStep);
                             }
-                            updatedProgramVersion.push(programStep);
                         }else{
-                            // There isn't a corresponding program step from last version of program, so just include this new program step as is
+                            // no uuid for this program step, so we'll just include this program step as is (i.e., use the new getElement func that was just created)
                             updatedProgramVersion.push(programStep);
                         }
-                    }else{
-                        // no uuid for this program step, so we'll just include this program step as is (i.e., use the new getElement func that was just created)
-                        updatedProgramVersion.push(programStep);
                     }
+                    generatedProgramClone[programVersionIndex].program = updatedProgramVersion;
                 }
-                generatedProgramClone[programVersionIndex].program = updatedProgramVersion;
             }
 
             //console.log("generatedProgramClone", generatedProgramClone);

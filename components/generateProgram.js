@@ -46,49 +46,56 @@ export async function executeProgram(programList, paramValuePairings){
         programToRun = programList[0];
     }
     
-    for(let programStep of programToRun.program){
-        try {
-            let element;
-            if(programStep.targetXPath){
-                // Concrete xPath to perform operation on
-                element = programStep.getElement(paramValuePairings, programStep.targetXPath);
-            }else if(programStep.static){
-                // Make sure to use original xpath
-                element = document.evaluate(programStep.originalTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-            }else if(programStep.relevantParam){
-                // Need to execute function with param value to get xPath
-                let relevantParam = programStep.relevantParam;
-                element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
-            }else{
-                let filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
-                let colParamValueForSuperlativeForRowSelection = paramValuePairings[programStep.colParamForSuperlativeForRowSelection];
-                let superlativeValueForRowSelection = paramValuePairings[programStep.superlativeParamForRowSelection] || programStep.constantSuperlativeValueForRowSelection;
-                let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
-                element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol);
-            }
-
-            // Should throw an error if no xpath found, etc
-
-            // Perform operation on xPath
-            if(operations[programStep.eventType]){
-                await delayFor(3000); // Let's wait 1000ms between each click
-                const returnValue = operations[programStep.eventType](element);
-                if(returnValue){ // because some operations won't return anything
-                    valuesToReturn.push({
-                        message: returnValue,
-                        type: "output"
-                    });
+    if(programToRun && programToRun.program){
+        for(let programStep of programToRun.program){
+            try {
+                let element;
+                if(programStep.targetXPath){
+                    // Concrete xPath to perform operation on
+                    element = programStep.getElement(paramValuePairings, programStep.targetXPath);
+                }else if(programStep.static){
+                    // Make sure to use original xpath
+                    element = document.evaluate(programStep.originalTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                }else if(programStep.relevantParam){
+                    // Need to execute function with param value to get xPath
+                    let relevantParam = programStep.relevantParam;
+                    element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
+                }else{
+                    let filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
+                    let colParamValueForSuperlativeForRowSelection = paramValuePairings[programStep.colParamForSuperlativeForRowSelection];
+                    let superlativeValueForRowSelection = paramValuePairings[programStep.superlativeParamForRowSelection] || programStep.constantSuperlativeValueForRowSelection;
+                    let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
+                    element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol);
                 }
-            }
-        } catch (error) {
-            // An error happened, let's return it
-            return [
-                {
-                    message: "Program failed for this set of values",
-                    type: "error"
+    
+                // Should throw an error if no xpath found, etc
+    
+                // Perform operation on xPath
+                if(operations[programStep.eventType]){
+                    await delayFor(3000); // Let's wait 1000ms between each click
+                    const returnValue = operations[programStep.eventType](element);
+                    if(returnValue){ // because some operations won't return anything
+                        valuesToReturn.push({
+                            message: returnValue,
+                            type: "output"
+                        });
+                    }
                 }
-            ];
+            } catch (error) {
+                // An error happened, let's return it
+                return [
+                    {
+                        message: "Program failed for this set of values",
+                        type: "error"
+                    }
+                ];
+            }
         }
+    }else{
+        valuesToReturn.push({
+            message: "Please create a main demonstration",
+            type: "error"
+        });
     }
     return valuesToReturn;
 }
