@@ -2552,7 +2552,7 @@ class NaturalLanguage extends React.Component {
 
         let programString = "[\n";
         for(let programVersion of program){
-            if(program){
+            if(programVersion){
                 programString += "[\n";
                 for(let programStep of programVersion.program){
                     let programStepString = "{\n";
@@ -2692,13 +2692,13 @@ class NaturalLanguage extends React.Component {
         });
     }
 
-    handleProgramStepInfluencedByChange(staticOrInferred, step_index){
+    handleProgramStepInfluencedByChange(staticOrInferred, step_index, programVersion_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
         if(staticOrInferred === "static"){
-            generatedProgramClone[0].program[step_index].static = true;
+            generatedProgramClone[programVersion_index].program[step_index].static = true;
         }else{
             // inferred
-            generatedProgramClone[0].program[step_index].static = false;
+            generatedProgramClone[programVersion_index].program[step_index].static = false;
         }
 
         // Need to update code string to reflect program change we just made
@@ -3492,6 +3492,7 @@ class NaturalLanguage extends React.Component {
                 // Loop through programs
                 for(let programObj of programListNode.elements){
                     // Loop through program steps
+                    const programVersion = [];
                     for(let stepObj of programObj.elements){
                         const programStep = {};
                         
@@ -3521,8 +3522,9 @@ class NaturalLanguage extends React.Component {
                             }
                         }
                         
-                        program.push(programStep);
+                        programVersion.push(programStep);
                     }
+                    program.push(programVersion);
                 }
                 
                 console.log("updated program obj", program);
@@ -3534,41 +3536,45 @@ class NaturalLanguage extends React.Component {
             // For each step in program, find the corresponding step in this.state.generatedProgram.program and reuse "getElement" unless customGetElement is true
             // update program
             
-            const updatedProgram = [];
+            const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
 
-            for(let programStep of program){
-                if(programStep.uuid){
-                    // find programStep.uuid in this.state.generatedProgram.program
-                    let correspondingOldProgramStep;
-                    for(let oldProgramStep of this.state.generatedProgram[0].program){
-                        if(oldProgramStep.uuid === programStep.uuid){
-                            correspondingOldProgramStep = oldProgramStep;
-                            break;
+            for(let programVersionIndex = 0; programVersionIndex < program.length; programVersionIndex++){
+                const programVersion = program[programVersionIndex];
+                const updatedProgramVersion = [];
+                for(let programStep of programVersion){
+                    if(programStep.uuid){
+                        // find programStep.uuid in this.state.generatedProgram.program
+                        let correspondingOldProgramStep;
+                        for(let oldProgramStep of this.state.generatedProgram[programVersionIndex].program){
+                            if(oldProgramStep.uuid === programStep.uuid){
+                                correspondingOldProgramStep = oldProgramStep;
+                                break;
+                            }
                         }
-                    }
-                    if(correspondingOldProgramStep){
-                        // Potentially reuse parts of correspondingOldProgramStep
-                        // Want to keep all literal values from programStep
-                        // If customGetElement is true, then want to use new getElement from programStep; otherwise, use getElement from correspondingOldProgramStep
-                            // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
-                        if(!programStep.customGetElement){
-                            programStep.getElement = correspondingOldProgramStep.getElement;
-                            console.log("using existing getElement");
+                        if(correspondingOldProgramStep){
+                            // Potentially reuse parts of correspondingOldProgramStep
+                            // Want to keep all literal values from programStep
+                            // If customGetElement is true, then want to use new getElement from programStep; otherwise, use getElement from correspondingOldProgramStep
+                                // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
+                            if(!programStep.customGetElement){
+                                programStep.getElement = correspondingOldProgramStep.getElement;
+                                console.log("using existing getElement");
+                            }
+                            updatedProgramVersion.push(programStep);
+                        }else{
+                            // There isn't a corresponding program step from last version of program, so just include this new program step as is
+                            updatedProgramVersion.push(programStep);
                         }
-                        updatedProgram.push(programStep);
                     }else{
-                        // There isn't a corresponding program step from last version of program, so just include this new program step as is
-                        updatedProgram.push(programStep);
+                        // no uuid for this program step, so we'll just include this program step as is (i.e., use the new getElement func that was just created)
+                        updatedProgramVersion.push(programStep);
                     }
-                }else{
-                    // no uuid for this program step, so we'll just include this program step as is (i.e., use the new getElement func that was just created)
-                    updatedProgram.push(programStep);
                 }
+                generatedProgramClone[programVersionIndex].program = updatedProgramVersion;
             }
 
-            const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-            generatedProgramClone[0].program = updatedProgram;
-
+            //console.log("generatedProgramClone", generatedProgramClone);
+            
             this.setState({
                 currentProgramCode: value,
                 generatedProgram: generatedProgramClone
@@ -3644,14 +3650,14 @@ class NaturalLanguage extends React.Component {
                                                         <input
                                                             type="radio"
                                                             log-this-element=""
-                                                            name={`inferred_influencedBy_${step_index}`}
-                                                            id={`inferred_influencedBy_${step_index}`}
+                                                            name={`inferred_influencedBy_${step_index}_${programVersion_index}`}
+                                                            id={`inferred_influencedBy_${step_index}_${programVersion_index}`}
                                                             value="inferred"
                                                             checked={!step.static}
-                                                            onChange={() => this.handleProgramStepInfluencedByChange("inferred", step_index)}
+                                                            onChange={() => this.handleProgramStepInfluencedByChange("inferred", step_index, programVersion_index)}
                                                             disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                         />
-                                                        <label htmlFor={`inferred_influencedBy_${step_index}`}>
+                                                        <label htmlFor={`inferred_influencedBy_${step_index}_${programVersion_index}`}>
                                                             <span
                                                                 //className={styles.importantPieceOfInfo}
                                                             >
@@ -3731,14 +3737,14 @@ class NaturalLanguage extends React.Component {
                                                         <input
                                                             type="radio"
                                                             log-this-element=""
-                                                            name={`static_influencedBy_${step_index}`}
-                                                            id={`static_influencedBy_${step_index}`}
+                                                            name={`static_influencedBy_${step_index}_${programVersion_index}`}
+                                                            id={`static_influencedBy_${step_index}_${programVersion_index}`}
                                                             value="static"
                                                             checked={step.static}
-                                                            onChange={() => this.handleProgramStepInfluencedByChange("static", step_index)}
+                                                            onChange={() => this.handleProgramStepInfluencedByChange("static", step_index, programVersion_index)}
                                                             disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                         />
-                                                        <label htmlFor={`static_influencedBy_${step_index}`}>
+                                                        <label htmlFor={`static_influencedBy_${step_index}_${programVersion_index}`}>
                                                             <span
                                                                 className={styles.importantPieceOfInfo}
                                                             >

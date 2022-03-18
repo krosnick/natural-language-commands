@@ -34,7 +34,7 @@ export async function executeProgram(programList, paramValuePairings){
         // Check if this programOption has specificallyForParamName/specificallyForValue
             // and if they match what's in paramValuePairings, then use this programOption.
         // Just use the first match we find (it's possible there are multiple, in which case we aren't going try to combine the programs in any way; this is just a limitation)
-        if(programOption.specificallyForParamName && paramValuePairings[programOption.specificallyForParamName] === programOption.specificallyForValue){
+        if(programOption && programOption.specificallyForParamName && paramValuePairings[programOption.specificallyForParamName] === programOption.specificallyForValue){
             programToRun = programOption;
             break;
         }
