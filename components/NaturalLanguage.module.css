@@ -362,3 +362,27 @@
 .runtimeError {
     color: red;
 }
+
+.specialParam {
+    background-color: lightyellow;
+}
+
+.specialParamText {
+    font-size: medium;
+    background-color: lightyellow;
+}
+
+.paramTemplate {
+    position: relative;
+}
+
+.paramNameLabel {
+    position: absolute;
+    left: 0px;
+    top: 23px;
+    font-style: italic;
+}
+
+.margin {
+    margin: 20px;
+}

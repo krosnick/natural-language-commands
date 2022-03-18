@@ -307,7 +307,8 @@ class TemplateFreeformParam extends React.Component {
                 size={Math.max(this.props.paramName.length, 20)}
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                disabled={!this.props.valuesEditable}
+                className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid || this.props.demoIndexInRecordingMode !== null}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
             >
             </input>
@@ -335,7 +336,8 @@ class TemplateEnumerationParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                disabled={!this.props.valuesEditable}
+                className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid || this.props.demoIndexInRecordingMode !== null}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -371,7 +373,8 @@ class TemplateSuperlativeParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                disabled={!this.props.valuesEditable}
+                className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid || this.props.demoIndexInRecordingMode !== null}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -978,6 +981,8 @@ class TemplateParamTextItem extends React.Component {
             if(this.props.paramTypeData.type === "freeform"){
                 paramTemplate = <TemplateFreeformParam
                                             uuid={this.props.uuid}     
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -994,6 +999,8 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTemplate = <TemplateEnumerationParam
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1011,6 +1018,8 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "superlative"){
                 paramTemplate = <TemplateSuperlativeParam
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1026,7 +1035,9 @@ class TemplateParamTextItem extends React.Component {
                                         />;
             }else if(this.props.paramTypeData.type === "flag"){
                 paramTemplate = <TemplateFlagParam
-                                            uuid={this.props.uuid}           
+                                            uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}         
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1042,6 +1053,8 @@ class TemplateParamTextItem extends React.Component {
                                             dateRestriction={this.props.paramTypeData.dateRestriction}
                                             otherDataValue={this.props.paramTypeData.otherDataValue}
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             uuidInEditMode={this.props.uuidInEditMode}
@@ -1058,6 +1071,8 @@ class TemplateParamTextItem extends React.Component {
                                             rangeStart={this.props.paramTypeData.rangeStart}
                                             rangeEnd={this.props.paramTypeData.rangeEnd}
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             uuidInEditMode={this.props.uuidInEditMode}
@@ -1070,7 +1085,19 @@ class TemplateParamTextItem extends React.Component {
             }
         }
 
-        return paramTemplate;
+        //return paramTemplate;
+        return (
+            <span
+                className={styles.paramTemplate}
+            >
+                {paramTemplate}
+                <span
+                    className={styles.paramNameLabel}
+                >
+                    {this.props.paramName}
+                </span>
+            </span>
+        );
     }
 }
 
@@ -1127,10 +1154,10 @@ class NaturalLanguage extends React.Component {
             userFeedback: "",
             incompleteFormParamIDs: [],
             demonstrations: [],
-            inCreateNewDemoMode: false,
-            inRecordingDemoMode: false,
+            demoIndexInCreateMode: null,
+            demoIndexInRecordingMode: null,
             triggerWebsiteReload: Math.random(),
-            generatedProgram: null,
+            generatedProgram: [],
             paramValuePairsForRunningProgram: {},
             websiteSelectedTextObject: null,
             programOutput: null,
@@ -2001,8 +2028,8 @@ class NaturalLanguage extends React.Component {
         console.log("handleEmbeddedWebsiteEvent", e);
         console.log("window.getSelection()", window.getSelection());
 
-        // Only process/capture events if user is currently in demo mode
-        if(this.state.inCreateNewDemoMode && this.state.inRecordingDemoMode){
+        // Only process/capture events if user is currently in demo mode (so when demoIndexInCreateMode and demoIndexInRecordingMode are demo indices, not null)
+        if(this.state.demoIndexInCreateMode !== null && this.state.demoIndexInRecordingMode !== null){
             // For now only process "click" events
             if(e.type === "click"){
                 console.log("handleEmbeddedWebsiteEvent e.target", e.target);
@@ -2037,16 +2064,8 @@ class NaturalLanguage extends React.Component {
                     
                     // Handle events here. Process them. Store in React state as part of the demonstration, etc
                     const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-                    /*const demonstrationIndex = 0; // later on this should be a variable value
-                    if(demonstrationsClone.length === demonstrationIndex){
-                        // First event for this demonstration, so add a list for it
-                        demonstrationsClone.push([]);
-                    }*/
-                    const demonstrationIndex = demonstrationsClone.length - 1;
                     // for now let's just include the whole event; later on if we want to store event sequence in db, we'll need to make sure it's serializable
-                    //demonstrationsClone[demonstrationIndex].push(e);
-                    //demonstrationsClone[demonstrationIndex].eventSequence.push(e);
-                    demonstrationsClone[demonstrationIndex].eventSequence.push({
+                    demonstrationsClone[this.state.demoIndexInRecordingMode].eventSequence.push({
                         originalEventObj: e,
                         targetXPath,
                         eventType: e.type
@@ -2064,8 +2083,7 @@ class NaturalLanguage extends React.Component {
         // Add event associated with this.state.websiteSelectedTextObject to current demo event sequence
         const targetXPath = getXPathForElement(this.state.websiteSelectedTextObject.event.target, document);
         const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        const demonstrationIndex = demonstrationsClone.length - 1;
-        demonstrationsClone[demonstrationIndex].eventSequence.push({
+        demonstrationsClone[this.state.demoIndexInRecordingMode].eventSequence.push({
             originalEventObj: this.state.websiteSelectedTextObject.event,
             targetXPath,
             eventType: "print"
@@ -2076,132 +2094,127 @@ class NaturalLanguage extends React.Component {
         });
     }
 
-    handleCreateDemo(){
-        // Create new demo object. Currently only allowing 1 demo per program,
-            // so user will either be creating it for the first time, or overwriting their existing one
-        
-        // Want to clear program too, in case this is a redo (and program existed already)
-        this.setState({
-            demonstrations: [
-                {
-                    eventSequence: [],
-                    paramValuePairs: {}
-                }
-            ],
-            inCreateNewDemoMode: true,
-            generatedProgram: null,
-            currentProgramCode: null,
-        });
-    }
-
-    cancelNewDemo(){
-        // User doesn't want to create this demo, so remove the last obj that was recently added to demonstrations
+    handleCreateDemo(demoIndexToUpdate){
+        // Create new demo object
+        // If demoIndexToUpdate is given, then clear the data for that demo
+        // If demoIndexToUpdate is null, just add a new demo obj
         const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        demonstrationsClone.splice(demonstrationsClone.length-1, 1);
+        const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+        console.log("handleCreateDemo demoIndexToUpdate", demoIndexToUpdate)
+        if(demoIndexToUpdate === null){
+            demonstrationsClone.push({
+                eventSequence: [],
+                paramValuePairs: {},
+                specificallyForParamUuid: "",
+                specificallyForValue: "",
+            });
+            generatedProgramClone.push({ program: null });
+        }else{
+            demonstrationsClone[demoIndexToUpdate] = {
+                eventSequence: [],
+                paramValuePairs: {},
+                specificallyForParamUuid: "",
+                specificallyForValue: "",
+            };
+            generatedProgramClone[demoIndexToUpdate] = { program: null };
+        }
+
+        console.log("handleCreateDemo generatedProgramClone", generatedProgramClone);
 
         this.setState({
             demonstrations: demonstrationsClone,
-            inCreateNewDemoMode: false
+            demoIndexInCreateMode: demoIndexToUpdate === null ? demonstrationsClone.length-1 : demoIndexToUpdate,
+            generatedProgram: generatedProgramClone    
         });
     }
 
-    handleStartRecordingDemo(){
+    cancelNewDemo(demoIndex){
+        // User doesn't want to create this demo, so remove the last obj that was recently added to demonstrations
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+
+        if(this.state.demonstrations.length > 1 && demoIndex === 0){
+            // Still need to have a placeholder for the main demo (because there are other demos after it) so just clear the obj
+            demonstrationsClone[demoIndex] = {
+                eventSequence: [],
+                specificallyForParamUuid: "",
+                //specificallyForParamName: "",
+                specificallyForValue: "",
+                paramValuePairs: {}
+            };
+            generatedProgramClone[demoIndex] = null;
+        }else{
+            // This is a refinement demo, so we'll just get rid of it
+            demonstrationsClone.splice(demoIndex, 1);
+            generatedProgramClone.splice(demoIndex, 1);
+        }
+
+        this.setState({
+            demonstrations: demonstrationsClone,
+            generatedProgram: generatedProgramClone,
+            demoIndexInCreateMode: null
+        });
+    }
+
+    handleStartRecordingDemo(demoIndex){
         console.log("handleStartRecordingDemo");
         // Reload embedded website page, to ensure clean slate when user starts performing demo
         this.forceReRenderEmbeddedWebsite();
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
-        // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
-        for(let item of Object.values(idToItemClone)){
-            if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
-                // This item is a param. Run makeXPathsMoreRobust on its values and update 
+        
+        // For now at least, only try to make xpaths more robust before recording/re-recording the main demo (demoIndex === 0)
+            // We don't want to do this for refinement demos (demoIndex > 0) because if that changes the xpaths, that could break the existing program for the main demo
+            // (e.g., maybe main demo relied certain param value xpath suffixes, which now don't exist because the xpaths are different)
+        // However, this could be a problem if the user edits param values in between making the main demo and refinement demos.
+            // When a program is generated for a refinement demo, the xpaths will be null.
+        // In general, it's a bad idea that we allow the user to edit params/values after some demos have been created; will lead to inconsistencies and break things
+            // we should just disallow users from editing params/values once they start demonstrations.
+        // Or ideally we should regenerate the program automatically each time the params/values change. Currently we can't do this because we aren't storing demo DOM state,
+            // and not able to query it with document.evaluate
+        if(demoIndex === 0){
+            // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
+            for(let item of Object.values(idToItemClone)){
+                if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
+                    // This item is a param. Run makeXPathsMoreRobust on its values and update 
 
-                let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
-                let rowPrefix;
-                for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
-                    for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
-                        if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
-                            const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
-                            //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
-                            if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
-                                commonPrefixLengthAmongstXPaths = commonPrefixLength;
-                                rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+                    let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
+                    let rowPrefix;
+                    for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
+                        for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
+                            if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
+                                const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
+                                //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
+                                if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
+                                    commonPrefixLengthAmongstXPaths = commonPrefixLength;
+                                    rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+                                }
                             }
                         }
                     }
-                }
-                
-                // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
-                //let newValueXPathObjList = item.paramTypeData.possibleValues;
-                let newValueXPathObjList = [];
+                    
+                    // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
+                    //let newValueXPathObjList = item.paramTypeData.possibleValues;
+                    let newValueXPathObjList = [];
 
-                // If an item in possibleValues is an empty string, don't include it
-                for(let possibleValueObj of item.paramTypeData.possibleValues){
-                    if(possibleValueObj.textCandidate.trim().length > 0){
-                        newValueXPathObjList.push(possibleValueObj);
-                    }
-                }
-
-                const paramValues = newValueXPathObjList.map(x => x.textCandidate);
-
-                // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
-                const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
-
-                // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
-                let bestMatchList = [];
-                for(let candidateList of candidateLists){
-                    const matchList = [];
-                    for(let valueObj of candidateList){
-                        for(let paramValue of paramValues){
-                            if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
-                                // Update valueObj to use same text user had
-                                valueObj.textCandidate = paramValue;
-                                matchList.push(valueObj);
-                            }
+                    // If an item in possibleValues is an empty string, don't include it
+                    for(let possibleValueObj of item.paramTypeData.possibleValues){
+                        if(possibleValueObj.textCandidate.trim().length > 0){
+                            newValueXPathObjList.push(possibleValueObj);
                         }
                     }
-                    if(matchList.length > bestMatchList.length){
-                        bestMatchList = matchList;
-                    }
-                }
-                //console.log("first bestMatchList", bestMatchList);
-                newValueXPathObjList = bestMatchList;
 
-                let xPathSuffix;
-                if(rowPrefix){
-                    // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
-                    rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
-                    const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                    const numRows = parentOfRowsElement.children.length;
-                    
-                    // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
-                    const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
-                    newValueXPathObjList = result.newValueXPathObjList;
-                    xPathSuffix = result.xPathSuffix;
-                    console.log("newValueXPathObjList", newValueXPathObjList);
-                }
+                    const paramValues = newValueXPathObjList.map(x => x.textCandidate);
 
-                // Now, see if there are still any param values that have a null xpath, and try to fill those in
-                    
-                let paramValuesWithNullXPathToStillTry = [];
-                for(let valueObj of newValueXPathObjList){
-                    if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
-                        paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
-                    }
-                }
-                //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
-                // Now, use getCandidateLists to fill in xpaths
-                while(paramValuesWithNullXPathToStillTry.length > 0){
-                    // Seed with first value in paramValuesWithNullXPathToStillTry
-                    const candidateLists = getCandidateLists([paramValuesWithNullXPathToStillTry[0].trim()], false, embeddedWebsiteXPathPrefix);
-                    //console.log("candidateLists to fill in xpaths", candidateLists);
+                    // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
+                    const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
 
                     // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
                     let bestMatchList = [];
                     for(let candidateList of candidateLists){
                         const matchList = [];
                         for(let valueObj of candidateList){
-                            for(let paramValue of paramValuesWithNullXPathToStillTry){
+                            for(let paramValue of paramValues){
                                 if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
                                     // Update valueObj to use same text user had
                                     valueObj.textCandidate = paramValue;
@@ -2212,194 +2225,244 @@ class NaturalLanguage extends React.Component {
                         if(matchList.length > bestMatchList.length){
                             bestMatchList = matchList;
                         }
+                    }
+                    //console.log("first bestMatchList", bestMatchList);
+                    newValueXPathObjList = bestMatchList;
+
+                    let xPathSuffix;
+                    if(rowPrefix){
+                        // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
+                        rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
+                        const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                        const numRows = parentOfRowsElement.children.length;
+                        
+                        // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
+                        const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                        newValueXPathObjList = result.newValueXPathObjList;
+                        xPathSuffix = result.xPathSuffix;
+                        console.log("newValueXPathObjList", newValueXPathObjList);
+                    }
+
+                    // Now, see if there are still any param values that have a null xpath, and try to fill those in
+                        
+                    let paramValuesWithNullXPathToStillTry = [];
+                    for(let valueObj of newValueXPathObjList){
+                        if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
+                            paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
+                        }
+                    }
+                    //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
+                    // Now, use getCandidateLists to fill in xpaths
+                    while(paramValuesWithNullXPathToStillTry.length > 0){
+                        // Seed with first value in paramValuesWithNullXPathToStillTry
+                        const candidateLists = getCandidateLists([paramValuesWithNullXPathToStillTry[0].trim()], false, embeddedWebsiteXPathPrefix);
+                        //console.log("candidateLists to fill in xpaths", candidateLists);
+
+                        // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
+                        let bestMatchList = [];
+                        for(let candidateList of candidateLists){
+                            const matchList = [];
+                            for(let valueObj of candidateList){
+                                for(let paramValue of paramValuesWithNullXPathToStillTry){
+                                    if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                        // Update valueObj to use same text user had
+                                        valueObj.textCandidate = paramValue;
+                                        matchList.push(valueObj);
+                                    }
+                                }
+                            }
+                            if(matchList.length > bestMatchList.length){
+                                bestMatchList = matchList;
+                            }
+                            if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
+                                // We've found all the values
+                                break;
+                            }
+                        }
+                        console.log("bestMatchList", bestMatchList);
+
+                        // Update newValueXPathObjList objects based on bestMatchList
+                        for(let match of bestMatchList){
+                            // Find obj in newValueXPathObjList corresponding to match and replace it
+                            for(let i = 0; i < newValueXPathObjList.length; i++){
+                                const existingValueObj = newValueXPathObjList[i];
+                                if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
+                                    match.textCandidate = existingValueObj.textCandidate;
+                                    newValueXPathObjList[i] = match;
+                                }
+                            }
+                        }
+
                         if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
-                            // We've found all the values
+                            // We've found all the values, so break out of while loop
                             break;
                         }
-                    }
-                    console.log("bestMatchList", bestMatchList);
 
-                    // Update newValueXPathObjList objects based on bestMatchList
-                    for(let match of bestMatchList){
-                        // Find obj in newValueXPathObjList corresponding to match and replace it
-                        for(let i = 0; i < newValueXPathObjList.length; i++){
-                            const existingValueObj = newValueXPathObjList[i];
-                            if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
-                                match.textCandidate = existingValueObj.textCandidate;
-                                newValueXPathObjList[i] = match;
-                            }
+                        if(bestMatchList.length === 0){
+                            // The value we seeded with ([paramValuesWithNullXPathToStillTry[0]) actually can't be found on the page anywhere
+                                // Let's just remove it from paramValuesWithNullXPathToStillTry so we can try with remaining values (since we're never going to find a match for this value)
+
+                            // Update paramValuesWithNullXPathToStillTry to remove the first item
+                            paramValuesWithNullXPathToStillTry.splice(0, 1);
                         }
-                    }
 
-                    if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
-                        // We've found all the values, so break out of while loop
-                        break;
-                    }
-
-                    if(bestMatchList.length === 0){
-                        // The value we seeded with ([paramValuesWithNullXPathToStillTry[0]) actually can't be found on the page anywhere
-                            // Let's just remove it from paramValuesWithNullXPathToStillTry so we can try with remaining values (since we're never going to find a match for this value)
-
-                        // Update paramValuesWithNullXPathToStillTry to remove the first item
-                        paramValuesWithNullXPathToStillTry.splice(0, 1);
-                    }
-
-                    // There are still param values without an xpath, so we need to return to top of loop and try with remaining values
-                    // Update paramValuesWithNullXPathToStillTry to remove values that are in bestMatchList
-                    for(let match of bestMatchList){
-                        for(let i = 0; i < paramValuesWithNullXPathToStillTry.length; i++){
-                            let paramValue = paramValuesWithNullXPathToStillTry[i];
-                            if(match.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
-                                // A match has been found for paramValue, so remove paramValue from paramValuesWithNullXPathToStillTry
-                                paramValuesWithNullXPathToStillTry.splice(i, 1);
-                                break; // break out of inner loop because found value correspond to match value, and move on to next match value to look for
-                            }
-                        }
-                    }
-                }
-
-                // Check and see if there are still values in newValueXPathObjList without an xpath
-                    // We should try a more refined search now for these strings.
-                    // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
-                    // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
-                
-                let commonXPathPrefix;
-                // Compute commonXPathPrefix
-                for(let valueObj of newValueXPathObjList){
-                    if(valueObj.xPath){
-                        if(commonXPathPrefix === undefined){
-                            commonXPathPrefix = valueObj.xPath;
-                        }
-                        const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
-                        commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-
-                        // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
-                        commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                    }
-                }
-                console.log("commonXPathPrefix", commonXPathPrefix);
-
-                for(let valueObj of newValueXPathObjList){
-                    // Check if this value has an xpath
-                    if(!valueObj.xPath){
-                        
-                        // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
-                        let newXPath;
-                        const stringMatches = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                        // A lot of this adapted from below; should make helper function
-                        if(xPathSuffix){
-                            let newSuffix = xPathSuffix;
-                            // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
-                            if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
-                                newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
-                            }
-                            // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
-                            // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
-                            for(let snapshotIndex = 0; snapshotIndex < stringMatches.snapshotLength; snapshotIndex++){
-                                const node = stringMatches.snapshotItem(snapshotIndex);
-                                const xPath = getXPathForElement(node, document);
-                                if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
-                                    // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
-                                    let xPathPrefix = xPath;
-                                    while(xPathPrefix.length > 0){
-                                        const xPathToTry = xPathPrefix + newSuffix;
-                                        // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
-                                        try{
-                                            const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                                            if(node){
-                                                const indexBasedXPath = getXPathForElement(node, document);
-                                                if(indexBasedXPath === xPath){
-                                                    // This means that xPathToTry was valid and does match the original xPath
-                                                    // Let's set newXPath and break out of loop
-                                                    newXPath = xPathToTry;
-                                                    break;
-                                                }
-                                            }
-                                        }catch{
-                                        }
-                                        // Update xPathPrefix
-                                        xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
-                                    }
-                                }else{
-                                    // newSuffix is the suffix, so just use this
-                                    newXPath = xPath;
-                                }
-                                if(newXPath){
-                                    break;
+                        // There are still param values without an xpath, so we need to return to top of loop and try with remaining values
+                        // Update paramValuesWithNullXPathToStillTry to remove values that are in bestMatchList
+                        for(let match of bestMatchList){
+                            for(let i = 0; i < paramValuesWithNullXPathToStillTry.length; i++){
+                                let paramValue = paramValuesWithNullXPathToStillTry[i];
+                                if(match.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                    // A match has been found for paramValue, so remove paramValue from paramValuesWithNullXPathToStillTry
+                                    paramValuesWithNullXPathToStillTry.splice(i, 1);
+                                    break; // break out of inner loop because found value correspond to match value, and move on to next match value to look for
                                 }
                             }
-                        }else{
-                            const matchingNode = stringMatches.snapshotItem(0);
-                            newXPath = getXPathForElement(matchingNode, document);
                         }
+                    }
 
-                        if(newXPath){
-                            // Update commonXPathPrefix
-                            const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
+                    // Check and see if there are still values in newValueXPathObjList without an xpath
+                        // We should try a more refined search now for these strings.
+                        // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
+                        // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
+                    
+                    let commonXPathPrefix;
+                    // Compute commonXPathPrefix
+                    for(let valueObj of newValueXPathObjList){
+                        if(valueObj.xPath){
+                            if(commonXPathPrefix === undefined){
+                                commonXPathPrefix = valueObj.xPath;
+                            }
+                            const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
                             commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-                            
+
                             // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
                             commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                            
-                            // Update in newValueXPathObjList
-                            valueObj.xPath = newXPath;
                         }
-                        console.log("newXPath", newXPath);
                     }
-                }
+                    console.log("commonXPathPrefix", commonXPathPrefix);
 
-                // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
-                    // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
-                    // This is important because at program execution time we sometimes remove a suffix from param value xpaths (for matchingParam), so we want to try to adjust all our param value xpaths to have that suffix (if it's a valid xpath)
-                if(xPathSuffix){
-                    let newSuffix = xPathSuffix;
-                    // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
-                    if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
-                        newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
-                    }
-                    //console.log("xPathSuffix", xPathSuffix);
-                    //console.log("newSuffix", newSuffix)
                     for(let valueObj of newValueXPathObjList){
-                        // Check if this param value xpath has newSuffix at the end
-                        const xPath = valueObj.xPath;
-                        if(xPath && xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
-                            // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
-                            let xPathPrefix = xPath;
-                            while(xPathPrefix.length > 0){
-                                //console.log("xPathPrefix", xPathPrefix);
-                                //console.log("newSuffix",newSuffix);
-                                const xPathToTry = xPathPrefix + newSuffix;
-                                //console.log("xPathToTry", xPathToTry);
-                                // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
-                                try{
-                                    const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                                    //console.log("node", node);
-                                    if(node){
-                                        const indexBasedXPath = getXPathForElement(node, document);
-                                        if(indexBasedXPath === xPath){
-                                            // This means that xPathToTry was valid and does match the original xPath
-                                            // Let's update our valueObj and then break out of loop
-                                            valueObj.xPath = xPathToTry;
-                                            break;
-                                        }
-                                    }
-                                }catch{
+                        // Check if this value has an xpath
+                        if(!valueObj.xPath){
+                            
+                            // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
+                            let newXPath;
+                            const stringMatches = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                            // A lot of this adapted from below; should make helper function
+                            if(xPathSuffix){
+                                let newSuffix = xPathSuffix;
+                                // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                                if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                                    newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
                                 }
-                                // Update xPathPrefix
-                                xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
+                                // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
+                                for(let snapshotIndex = 0; snapshotIndex < stringMatches.snapshotLength; snapshotIndex++){
+                                    const node = stringMatches.snapshotItem(snapshotIndex);
+                                    const xPath = getXPathForElement(node, document);
+                                    if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
+                                        // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                                        let xPathPrefix = xPath;
+                                        while(xPathPrefix.length > 0){
+                                            const xPathToTry = xPathPrefix + newSuffix;
+                                            // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                            try{
+                                                const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                                if(node){
+                                                    const indexBasedXPath = getXPathForElement(node, document);
+                                                    if(indexBasedXPath === xPath){
+                                                        // This means that xPathToTry was valid and does match the original xPath
+                                                        // Let's set newXPath and break out of loop
+                                                        newXPath = xPathToTry;
+                                                        break;
+                                                    }
+                                                }
+                                            }catch{
+                                            }
+                                            // Update xPathPrefix
+                                            xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                        }
+                                    }else{
+                                        // newSuffix is the suffix, so just use this
+                                        newXPath = xPath;
+                                    }
+                                    if(newXPath){
+                                        break;
+                                    }
+                                }
+                            }else{
+                                const matchingNode = stringMatches.snapshotItem(0);
+                                newXPath = getXPathForElement(matchingNode, document);
+                            }
+
+                            if(newXPath){
+                                // Update commonXPathPrefix
+                                const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
+                                commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
+                                
+                                // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+                                commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
+                                
+                                // Update in newValueXPathObjList
+                                valueObj.xPath = newXPath;
+                            }
+                            console.log("newXPath", newXPath);
+                        }
+                    }
+
+                    // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
+                        // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
+                        // This is important because at program execution time we sometimes remove a suffix from param value xpaths (for matchingParam), so we want to try to adjust all our param value xpaths to have that suffix (if it's a valid xpath)
+                    if(xPathSuffix){
+                        let newSuffix = xPathSuffix;
+                        // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                        if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                            newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
+                        }
+                        //console.log("xPathSuffix", xPathSuffix);
+                        //console.log("newSuffix", newSuffix)
+                        for(let valueObj of newValueXPathObjList){
+                            // Check if this param value xpath has newSuffix at the end
+                            const xPath = valueObj.xPath;
+                            if(xPath && (xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length)){
+                                // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                                let xPathPrefix = xPath;
+                                while(xPathPrefix.length > 0){
+                                    //console.log("xPathPrefix", xPathPrefix);
+                                    //console.log("newSuffix",newSuffix);
+                                    const xPathToTry = xPathPrefix + newSuffix;
+                                    //console.log("xPathToTry", xPathToTry);
+                                    // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                    try{
+                                        const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                        //console.log("node", node);
+                                        if(node){
+                                            const indexBasedXPath = getXPathForElement(node, document);
+                                            if(indexBasedXPath === xPath){
+                                                // This means that xPathToTry was valid and does match the original xPath
+                                                // Let's update our valueObj and then break out of loop
+                                                valueObj.xPath = xPathToTry;
+                                                break;
+                                            }
+                                        }
+                                    }catch{
+                                    }
+                                    // Update xPathPrefix
+                                    xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                }
                             }
                         }
                     }
+
+                    console.log("updated newValueXPathObjList", newValueXPathObjList);
+
+                    idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
                 }
-
-                console.log("updated newValueXPathObjList", newValueXPathObjList);
-
-                idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
             }
         }
 
         this.setState({
-            inRecordingDemoMode: true,
+            demoIndexInRecordingMode: demoIndex,
             idToItem: idToItemClone
         });
     }
@@ -2427,6 +2490,57 @@ class NaturalLanguage extends React.Component {
             }
         }
         return constantSuperlatives;
+    }
+
+    getDemoParamsNotYetFilledIn(demoIndex){
+        const thisDemoParamValuePairs = this.state.demonstrations[demoIndex].paramValuePairs;
+        let thisDemoFilledInParamUuids = Object.keys(thisDemoParamValuePairs);
+
+        // Filter out the ones whose value is <${paramName}>, because that's just the default value
+        thisDemoFilledInParamUuids = thisDemoFilledInParamUuids.filter(uuid => thisDemoParamValuePairs[uuid] && thisDemoParamValuePairs[uuid].paramValue !== `<${thisDemoParamValuePairs[uuid].paramName}>`);
+
+        // Need to look at what all the params are for the NL and see which ones aren't in thisDemoParamValuePairs
+        const allParamUuids = Object.keys(this.getParamIDNameValueData().paramValueObj);
+        
+        // Identify all param uuids that are in allParamUuids but not in thisDemoFilledInParamUuids
+        const paramUuidsMissing = _.difference(allParamUuids, thisDemoFilledInParamUuids);
+        return paramUuidsMissing;
+    }
+
+    areAnyDemoParamsNotFilledIn(demoIndex){
+        return this.getDemoParamsNotYetFilledIn(demoIndex).length > 0;
+    }
+
+    // Similar to getParamValueData; just created a new version for now because i don't want to break getParamValueData
+    getParamIDNameValueData(){
+        let paramValueObj = {};
+        let superlativeParameters = [];
+        for(let item of Object.values(this.state.idToItem)){
+            if(item.paramTypeData){
+                // This item is a param. Add this param name and its param values/xpaths to paramValueObj
+                const paramValues = {};
+                for(let valueObj of item.paramTypeData.possibleValues){
+                    const paramValue = valueObj.textCandidate;
+                    const xPath = valueObj.xPath;
+                    paramValues[paramValue] = xPath;
+                }
+                const paramName = item.paramName;
+                const uuid = item.uuid;
+                paramValueObj[uuid] = {
+                    uuid,
+                    paramName,
+                    paramValues
+                };
+                if(item.paramTypeData.type === "superlative"){
+                    // ideally should only be 1 superlative in the NL; not sure if we can meaningfully support multiple? not enough semantic input from user
+                    superlativeParameters.push(paramName);
+                }
+            }
+        }
+        return {
+            paramValueObj,
+            superlativeParameters
+        };
     }
 
     getParamValueData(){
@@ -2458,23 +2572,32 @@ class NaturalLanguage extends React.Component {
     }
 
     generateCodeStringFromProgramObj(program){
+        console.log("generateCodeStringFromProgramObj operating on", program);
         let currentProgramCode;
             
         const paramValueObj = this.getParamValueData().paramValueObj;
 
         let programString = "[\n";
-        for(let programStep of program){
-            let programStepString = "{\n";
-            for(let [key, value] of Object.entries(programStep)){
-                if(typeof(value) === "string"){
-                    programStepString += `"${key}": "${value}",\n`;
-                }else{
-                    programStepString += `"${key}": ${value},\n`;
+        for(let programVersion of program){
+            if(programVersion && programVersion.program){
+                programString += "[\n";
+                for(let programStep of programVersion.program){
+                    let programStepString = "{\n";
+                    for(let [key, value] of Object.entries(programStep)){
+                        if(typeof(value) === "string"){
+                            programStepString += `"${key}": "${value}",\n`;
+                        }else{
+                            programStepString += `"${key}": ${value},\n`;
+                        }
+                        //programStepString += key + ": " + value + ", ";
+                    }
+                    programStepString += "}";
+                    programString += programStepString + ",\n";
                 }
-                //programStepString += key + ": " + value + ", ";
+                programString += "],\n";
+            }else{
+                programString += "null,\n";
             }
-            programStepString += "}";
-            programString += programStepString + ",\n";
         }
         programString += "]";
 
@@ -2485,52 +2608,61 @@ class NaturalLanguage extends React.Component {
         return currentProgramCode;
     }
 
-    handleStopRecordingDemo(){
+    handleStopRecordingDemo(demo_index){
         // Update mode state variables, and also generate program or update existing program
-        
-        let generatedProgram = this.state.generatedProgram;
+        console.log("handleStopRecordingDemo");
+        console.log("demo_index", demo_index);
+        //let generatedProgram = this.state.generatedProgram;
+        let generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
         let currentProgramCode;
         let demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        if(this.state.demonstrations.length === 1){
-            // Only 1 demo so far. Let's use this 1 demo to generate a program
-            const demoIndex = 0;
-            const demoObj = this.state.demonstrations[demoIndex];
-            
-            let demoEventSequence = demoObj.eventSequence;
-            
-            let currentParamValuePairings = {};
-            for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
+        //if(this.state.demonstrations.length === 1){
+        const demoObj = this.state.demonstrations[demo_index];
+        
+        let demoEventSequence = demoObj.eventSequence;
+        
+        let currentParamValuePairings = {};
+        for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
+            // Don't include this param/value if this demo is specifically for this param/value
+            // When we generate the program, we want to operate as if this param doesn't exist, so don't include it in currentParamValuePairings
+            if(!this.state.demonstrations[demo_index].specificallyForParamUuid || this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName !== paramNameValueObj.paramName){
                 const paramName = paramNameValueObj.paramName;
                 const paramValue = paramNameValueObj.paramValue;
                 currentParamValuePairings[paramName] = paramValue;
             }
-            console.log("currentParamValuePairings", currentParamValuePairings);
-
-            const { paramValueObj, superlativeParameters } = this.getParamValueData();
-            
-            const constantSuperlatives = this.getConstantSuperlatives();
-            
-            generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
-            console.log("generatedProgram", generatedProgram);
-
-            currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgram.program);
-
-            // Want to note what the param value data was that was used during the demo;
-                // later on when user runs program, we want to see if the param value data at that time is what it was at the time of the demo(s);
-                // if it's different, then we'll want to warn user that they should probably re-demo so we can generate updated program
-            demonstrationsClone[demoIndex].paramValueDataUsed = this.getParamValueData();
-        }else{
-            // Multiple demos. Currently we don't know how to generalize from multiple demos,
-                // so for now we just won't update the program
         }
+        console.log("currentParamValuePairings", currentParamValuePairings);
+
+        const { paramValueObj, superlativeParameters } = this.getParamValueData();
+        
+        const constantSuperlatives = this.getConstantSuperlatives();
+        
+        //generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
+        const programResult = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
+        
+        // If this demo is for a specific param/value, attach this info to the program obj, so that at execution we can figure out which program to run
+        if(this.state.demonstrations[demo_index].specificallyForParamUuid){
+            programResult.specificallyForParamName = this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName;
+            programResult.specificallyForValue = this.state.demonstrations[demo_index].specificallyForValue;
+        }
+        
+        generatedProgramClone[demo_index] = programResult;
+        console.log("generatedProgramClone", generatedProgramClone);
+
+        currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
+
+        // Want to note what the param value data was that was used during the demo;
+            // later on when user runs program, we want to see if the param value data at that time is what it was at the time of the demo(s);
+            // if it's different, then we'll want to warn user that they should probably re-demo so we can generate updated program
+        demonstrationsClone[demo_index].paramValueDataUsed = this.getParamValueData();
 
         this.setState({
-            generatedProgram,
+            generatedProgram: generatedProgramClone,
             demonstrations: demonstrationsClone,
             //currentProgramCode: "var x = 1; // sample code",
             currentProgramCode,
-            inRecordingDemoMode: false,
-            inCreateNewDemoMode: false, // for now, we'll also exit demo mode
+            demoIndexInRecordingMode: null,
+            demoIndexInCreateMode: null, // for now, we'll also exit demo mode
             websiteSelectedTextObject: null
         });
 
@@ -2556,12 +2688,12 @@ class NaturalLanguage extends React.Component {
         }, 1000, this);
     }
 
-    removeProgramStep(step_index){
+    removeProgramStep(step_index, programVersion_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-        generatedProgramClone.program.splice(step_index, 1);
+        generatedProgramClone[programVersion_index].program.splice(step_index, 1);
 
         // Need to update code string to reflect program change we just made
-        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program);
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
 
         this.setState({
             currentProgramCode,
@@ -2578,26 +2710,26 @@ class NaturalLanguage extends React.Component {
         }, 1000, this);
     }
 
-    removeDemoStep(demo_index){
+    removeDemoStep(step_index, demo_index){
         const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        demonstrationsClone[0].eventSequence.splice(demo_index, 1);
+        demonstrationsClone[demo_index].eventSequence.splice(step_index, 1);
 
         this.setState({
             demonstrations: demonstrationsClone
         });
     }
 
-    handleProgramStepInfluencedByChange(staticOrInferred, step_index){
+    handleProgramStepInfluencedByChange(staticOrInferred, step_index, programVersion_index){
         const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
         if(staticOrInferred === "static"){
-            generatedProgramClone.program[step_index].static = true;
+            generatedProgramClone[programVersion_index].program[step_index].static = true;
         }else{
             // inferred
-            generatedProgramClone.program[step_index].static = false;
+            generatedProgramClone[programVersion_index].program[step_index].static = false;
         }
 
         // Need to update code string to reflect program change we just made
-        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone.program);
+        const currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
 
         this.setState({
             currentProgramCode,
@@ -2619,7 +2751,7 @@ class NaturalLanguage extends React.Component {
     handleTemplateParamValueChange(e, paramUuid, demoIndex){
         const newParamValue = e.target.value;
         const paramName = this.state.idToItem[paramUuid].paramName;
-
+        
         if(demoIndex === "runningProgram"){
             // We're rendering this template not for a demo but for running the generated program
             const paramValuePairsClone = _.cloneDeep(this.state.paramValuePairsForRunningProgram);
@@ -2643,6 +2775,25 @@ class NaturalLanguage extends React.Component {
                 demonstrations: demonstrationsClone
             });
         }
+    }
+
+    handleRefinementDemoUpdate(e, demo_index, attributeToUpdate){
+        const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+        demonstrationsClone[demo_index][attributeToUpdate] = e.target.value;
+
+        if(attributeToUpdate === "specificallyForParamUuid"){
+            // Clear value, because user just changed param, so current value wouldn't make sense
+            demonstrationsClone[demo_index]["specificallyForValue"] = "";
+        }else if(attributeToUpdate === "specificallyForValue"){
+            // Update param value for NL template
+            // Wait a second, so that this setState doesn't conflict with one below
+            setTimeout(function(context){
+                context.handleTemplateParamValueChange(e, demonstrationsClone[demo_index]["specificallyForParamUuid"], demo_index);
+            }, 0, this);
+        }
+        this.setState({
+            demonstrations: demonstrationsClone
+        });
     }
 
     handleUpdateFreeformNLQuery(e){
@@ -2768,7 +2919,7 @@ class NaturalLanguage extends React.Component {
         for(let demo of this.state.demonstrations){
             const demoParamValueDataUsed = demo.paramValueDataUsed;
             console.log("demoParamValueDataUsed", demoParamValueDataUsed);
-            if(!_.isEqual(currentParamValueData, demoParamValueDataUsed)){
+            if(demoParamValueDataUsed && !_.isEqual(currentParamValueData, demoParamValueDataUsed)){
                 console.log("not equal");
                 alertUserToReDemo = true;
             }
@@ -2801,7 +2952,7 @@ class NaturalLanguage extends React.Component {
                         paramToValueObj[paramName] = paramValue;
                     }
     
-                    const programOutput = await executeProgram(context.state.generatedProgram.program, paramToValueObj);
+                    const programOutput = await executeProgram(context.state.generatedProgram, paramToValueObj);
                     console.log("programOutput", programOutput);
                     context.setState({
                         programOutput,
@@ -2897,6 +3048,8 @@ class NaturalLanguage extends React.Component {
                         <TemplateParamTextItem
                             //text={textItem.text}
                             uuid={textItem.uuid}
+                            demoIndexInRecordingMode = {this.state.demoIndexInRecordingMode}
+                            specificallyForParamUuid={this.state.demonstrations[demoIndex] ? this.state.demonstrations[demoIndex].specificallyForParamUuid : null}
                             paramName={textItem.paramName}
                             paramValue={paramValuePairs[textItem.uuid] ? paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
                             paramTypeData={textItem.paramTypeData}
@@ -3149,13 +3302,18 @@ class NaturalLanguage extends React.Component {
                         key = {e_index}
                         className={styles.step}
                     >
-                        <button
-                            onClick={() => this.removeDemoStep(e_index)}
-                            className={styles.removeValueButton}
-                            title="Delete"
-                        >
-                            x
-                        </button>
+                        {demo_index === this.state.demoIndexInCreateMode ? (
+                            // Only allow user to delete a demo step during creation mode
+                            <button
+                                onClick={() => this.removeDemoStep(e_index, demo_index)}
+                                className={styles.removeValueButton}
+                                title="Delete"
+                            >
+                                x
+                            </button>
+                        ):(
+                            ""
+                        )}
                         <div
                             className={styles.stepPieceOfInfo}
                         >
@@ -3180,18 +3338,18 @@ class NaturalLanguage extends React.Component {
                     </div>
                 );
             });
-            const nlTemplateEditable = demo_index === (demonstrations.length - 1) && this.state.inCreateNewDemoMode;
+            const nlTemplateEditable = demo_index === this.state.demoIndexInCreateMode;
             const demoNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, demo_index, nlTemplateEditable);
             return (
                 <div
                     key={demo_index}
                     className={styles.demonstration}
                 >
-                    {/* <div
+                    <div
                         className={styles.demonstrationName}
                     >
-                        Demonstration {demo_index + 1}
-                    </div> */}
+                        { demo_index === 0 ? "Main demonstration" : `Refinement demonstration ${demo_index}`}
+                    </div>
                     {!nlTemplateEditable ?
                         <button
                             className={styles.replayDemoButton}
@@ -3201,12 +3359,133 @@ class NaturalLanguage extends React.Component {
                         </button>
                         : ""
                     }
-                    <div>
-                        {demoNLTemplateItems}
-                    </div>
-                    <div>
-                        {events}
-                    </div>
+                    {demo_index > 0 ? (
+                        // This is a refinement demo, so user needs to choose param and value to make it for
+                        <div
+                            className={styles.margin}
+                        >
+                            <p>
+                                This demonstration will apply only for a particular parameter value. Indicate which parameter and value you want this demonstration to be for.
+                            </p>
+                            <div>
+                                <span>Parameter:</span>
+                                <select
+                                    log-this-element=""
+                                    value={this.state.demonstrations[demo_index].specificallyForParamUuid}
+                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParamUuid")}
+                                    disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
+                                >
+                                    <>
+                                        <option
+                                            value={""}
+                                        >
+                                            {"<Choose parameter>"}
+                                        </option>
+                                        {Object.entries(this.getParamIDNameValueData().paramValueObj).map(([key, data]) => {
+                                            return (
+                                                <option
+                                                    value={data.uuid}
+                                                >
+                                                    {data.paramName}
+                                                </option>
+                                            );
+                                        })}
+                                    </>
+                                </select>
+                            </div>
+                            <div>
+                                <span>Value:</span>
+                                <select
+                                    log-this-element=""
+                                    className={styles.specialParam}
+                                    value={this.state.demonstrations[demo_index].specificallyForValue}
+                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForValue")}
+                                    disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
+                                >
+                                    {this.state.demonstrations[demo_index].specificallyForParamUuid ? (
+                                        <>
+                                            <option
+                                                value={""}
+                                            >
+                                                {"<Choose value>"}
+                                            </option>
+                                            {Object.keys(this.getParamIDNameValueData().paramValueObj[this.state.demonstrations[demo_index].specificallyForParamUuid].paramValues).map((paramValue) => {
+                                                return (
+                                                    <option
+                                                        value={paramValue}
+                                                    >
+                                                        {paramValue}
+                                                    </option>
+                                                );
+                                            })}
+                                        </>
+                                    ):(
+                                        ""
+                                    )}
+                                </select>
+                            </div>
+                        </div>
+                    ):(
+                        ""
+                    )}
+                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParamUuid && this.state.demonstrations[demo_index].specificallyForValue ? (
+                        // Only let user edit param/values and record refinement demo if they've specified which specific param/value it is for
+                        <div>
+                            <div
+                                className={styles.margin}
+                            >
+                                {demoNLTemplateItems}
+                            </div>
+                            <div>
+                                {events}
+                            </div>
+                        </div>
+                    ):(
+                        ""
+                    )}
+                    {demo_index === this.state.demoIndexInCreateMode
+                        ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
+                        <>
+                            {this.state.demoIndexInRecordingMode !== null ? (
+                                <div>
+                                    <button
+                                        className={styles.stopRecordingButton}
+                                        onClick={() => this.handleStopRecordingDemo(demo_index)}
+                                    >Stop recording</button>
+                                </div>
+                            ) : (
+                                <div>
+                                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParamUuid && this.state.demonstrations[demo_index].specificallyForValue ? (
+                                        // For refinement demo, only show "Start recording" button if user has already set specificallyForParamUuid and specificallyForValue
+                                        <button
+                                            className={styles.startRecordingButton}
+                                            onClick={() => this.handleStartRecordingDemo(demo_index)}
+                                            disabled={this.areAnyDemoParamsNotFilledIn(demo_index)}
+                                        >Start recording</button>
+                                    ):(
+                                        ""
+                                    )}
+                                    <button
+                                        className={styles.cancelButton}
+                                        onClick={() => this.cancelNewDemo(demo_index)}
+                                    >Cancel</button>
+                                </div>
+                            )}
+                        </>
+                        ):(
+                            <>
+                                {events.length > 0 || (demo_index === 0 && this.state.demonstrations.length > 0 && events.length === 0) ? (
+                                    <button
+                                        className={styles.createDemoButton}
+                                        onClick={() => this.handleCreateDemo(demo_index)}
+                                        disabled={this.state.demoIndexInCreateMode !== null} // Shouldn't be able to redo demo if another demo is currently being created
+                                    >Redo demonstration</button>
+                                ):(
+                                    ""
+                                )}
+                            </>
+                        )
+                    }
                 </div>
             );
         });
@@ -3215,8 +3494,8 @@ class NaturalLanguage extends React.Component {
     }
 
     handleEditorChange(value, event) {
-        console.log("handleEditorChange");
-
+        console.log("handleEditorChange value", value);
+        
         // Try/catch, for handling syntax error in code (e.g., if user is in middle of typing)
         try {
             const codeAST = acorn.parse(value, {
@@ -3224,7 +3503,7 @@ class NaturalLanguage extends React.Component {
                 locations: true
             });
 
-            //console.log("codeAST", codeAST);
+            console.log("codeAST", codeAST);
             
             // Reconstruct "program" list
             const program = [];
@@ -3237,40 +3516,50 @@ class NaturalLanguage extends React.Component {
                     programListNode = node.declarations[0].init;
                 }
             }
-
+            
             if(programListNode){
-                // Loop through program steps
-                for(let stepObj of programListNode.elements){
-                    const programStep = {};
-                    
-                    console.log("stepObj", stepObj);
-                    // Loop through properties
-                    for(let propertyObj of stepObj.properties){
-                        console.log("propertyObj", propertyObj);
+                // Loop through programs
+                for(let programObj of programListNode.elements){
+                    // Loop through program steps
+                    let programVersion = [];
 
-                        const keyObj = propertyObj.key;
-                        const valueObj = propertyObj.value;
-
-                        if(valueObj.type === "FunctionExpression"){
-                            const body = valueObj.body;
-                            const bodyString = value.substring(body.start, body.end);
-
-                            const params = valueObj.params;
-                            let paramString = "";
-                            for(let param of params){
-                                paramString += param.name + ", ";
+                    // Check just to make sure this program isn't null
+                    if(programObj && programObj.elements){
+                        for(let stepObj of programObj.elements){
+                            const programStep = {};
+                            
+                            // Loop through properties
+                            for(let propertyObj of stepObj.properties){
+                                
+                                const keyObj = propertyObj.key;
+                                const valueObj = propertyObj.value;
+    
+                                if(valueObj.type === "FunctionExpression"){
+                                    const body = valueObj.body;
+                                    const bodyString = value.substring(body.start, body.end);
+    
+                                    const params = valueObj.params;
+                                    let paramString = "";
+                                    for(let param of params){
+                                        paramString += param.name + ", ";
+                                    }
+    
+                                    const func = new Function(paramString, bodyString);
+                                    programStep[keyObj.value] = func;
+                                }else{
+                                    // it's a string, undefined, etc; literal or similar
+                                    programStep[keyObj.value] = valueObj.value;
+                                }
                             }
-
-                            const func = new Function(paramString, bodyString);
-                            programStep[keyObj.value] = func;
-                        }else{
-                            // it's a string, undefined, etc; literal or similar
-                            programStep[keyObj.value] = valueObj.value;
+                            
+                            programVersion.push(programStep);
                         }
+                    }else{
+                        programVersion = null;
                     }
-                    
-                    program.push(programStep);
+                    program.push(programVersion);
                 }
+                
                 console.log("updated program obj", program);
 
             }
@@ -3280,41 +3569,48 @@ class NaturalLanguage extends React.Component {
             // For each step in program, find the corresponding step in this.state.generatedProgram.program and reuse "getElement" unless customGetElement is true
             // update program
             
-            const updatedProgram = [];
+            const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
 
-            for(let programStep of program){
-                if(programStep.uuid){
-                    // find programStep.uuid in this.state.generatedProgram.program
-                    let correspondingOldProgramStep;
-                    for(let oldProgramStep of this.state.generatedProgram.program){
-                        if(oldProgramStep.uuid === programStep.uuid){
-                            correspondingOldProgramStep = oldProgramStep;
-                            break;
+            for(let programVersionIndex = 0; programVersionIndex < program.length; programVersionIndex++){
+                const programVersion = program[programVersionIndex];
+                const updatedProgramVersion = [];
+                // Check just to make sure this program isn't null
+                if(programVersion){
+                    for(let programStep of programVersion){
+                        if(programStep.uuid){
+                            // find programStep.uuid in this.state.generatedProgram.program
+                            let correspondingOldProgramStep;
+                            for(let oldProgramStep of this.state.generatedProgram[programVersionIndex].program){
+                                if(oldProgramStep.uuid === programStep.uuid){
+                                    correspondingOldProgramStep = oldProgramStep;
+                                    break;
+                                }
+                            }
+                            if(correspondingOldProgramStep){
+                                // Potentially reuse parts of correspondingOldProgramStep
+                                // Want to keep all literal values from programStep
+                                // If customGetElement is true, then want to use new getElement from programStep; otherwise, use getElement from correspondingOldProgramStep
+                                    // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
+                                if(!programStep.customGetElement){
+                                    programStep.getElement = correspondingOldProgramStep.getElement;
+                                    console.log("using existing getElement");
+                                }
+                                updatedProgramVersion.push(programStep);
+                            }else{
+                                // There isn't a corresponding program step from last version of program, so just include this new program step as is
+                                updatedProgramVersion.push(programStep);
+                            }
+                        }else{
+                            // no uuid for this program step, so we'll just include this program step as is (i.e., use the new getElement func that was just created)
+                            updatedProgramVersion.push(programStep);
                         }
                     }
-                    if(correspondingOldProgramStep){
-                        // Potentially reuse parts of correspondingOldProgramStep
-                        // Want to keep all literal values from programStep
-                        // If customGetElement is true, then want to use new getElement from programStep; otherwise, use getElement from correspondingOldProgramStep
-                            // (we'll assume that means user hasn't written a custom function, in which case we want to use the existing func with the existing context)
-                        if(!programStep.customGetElement){
-                            programStep.getElement = correspondingOldProgramStep.getElement;
-                            console.log("using existing getElement");
-                        }
-                        updatedProgram.push(programStep);
-                    }else{
-                        // There isn't a corresponding program step from last version of program, so just include this new program step as is
-                        updatedProgram.push(programStep);
-                    }
-                }else{
-                    // no uuid for this program step, so we'll just include this program step as is (i.e., use the new getElement func that was just created)
-                    updatedProgram.push(programStep);
+                    generatedProgramClone[programVersionIndex].program = updatedProgramVersion;
                 }
             }
 
-            const generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-            generatedProgramClone.program = updatedProgram;
-
+            //console.log("generatedProgramClone", generatedProgramClone);
+            
             this.setState({
                 currentProgramCode: value,
                 generatedProgram: generatedProgramClone
@@ -3337,203 +3633,224 @@ class NaturalLanguage extends React.Component {
         const domTextItems = this.renderItemsList(this.state.idToItem["root"].itemIDs);
         const demonstrationItems = this.renderDemonstrations(this.state.demonstrations);
         let runningProgramNLTemplateItems;
-        let programSteps;
+        let stepsForAllProgramVersions;
+        // Actually should do this logic per program version
         if(this.state.generatedProgram){
             // A generated program exists, so show the NL template for setting param/value pairs for running this program
             runningProgramNLTemplateItems = this.renderNLTemplateItemsList(this.state.idToItem["root"].itemIDs, "runningProgram", true);
             const paramValueObj = this.getParamValueData().paramValueObj;
             // Show a representation of the program
-            programSteps = this.state.generatedProgram.program.map((step, step_index) => {
-                // Should remove prefix before [clone]?
-                //const targetXPath = getXPathForElement(e.target, document);
-
-                /* const paramCheckboxes = Object.keys(paramValueObj).map((paramName, paramIndex) => {
-                    return (
-                        <div>
-                            <input
-                                type="checkbox"
-                                log-this-element=""
-                                name={`programStep_${step_index}_paramIndex_${paramIndex}`}
-                                id={`programStep_${step_index}_paramIndex_${paramIndex}`}
-                                value={paramName}
-                                checked={step.relevantParam === paramName || step.relevantParamForRow === paramName || step.relevantParamForCol === paramName}
-                            />
-                            <label htmlFor={`programStep_${step_index}_paramIndex_${paramIndex}`}>{paramName}</label>
-                        </div>
-                    );
-                }); */
-
-                return (
-                    <div
-                        key = {step_index}
-                        className={styles.step}
-                    >
-                        <button
-                            onClick={() => this.removeProgramStep(step_index)}
-                            className={styles.removeValueButton}
-                            title="Delete"
-                        >
-                            x
-                        </button>
-                        <div
-                            className={styles.stepPieceOfInfo}
-                        >
-                            Program step type: 
-                            <span
-                                className={styles.importantPieceOfInfo}
+            stepsForAllProgramVersions = this.state.generatedProgram.map((programVersion, programVersion_index) => {
+                if(programVersion && programVersion.program){
+                    let programSteps = programVersion.program.map((step, step_index) => {
+                        return (
+                            <div
+                                key = {step_index}
+                                className={styles.step}
                             >
-                                {step.eventType}
-                            </span>
-                        </div>
-                        {/* <div>Target xPath: {targetXPath}</div> */}
-                        <div
-                            className={styles.stepPieceOfInfo}
-                        >
-                            { step.customGetElement ? (
-                                <div
-                                    className={styles.importantPieceOfInfo}
+                                <button
+                                    onClick={() => this.removeProgramStep(step_index, programVersion_index)}
+                                    className={styles.removeValueButton}
+                                    title="Delete"
                                 >
-                                    Custom logic (see code)
-                                </div>
-                            ):(
-                                <>
-                                    {/* <div>
-                                        Influenced by the following parameters:
-                                    </div>
-                                    <div
-                                        //className={styles.importantPieceOfInfo}
+                                    x
+                                </button>
+                                <div
+                                    className={styles.stepPieceOfInfo}
+                                >
+                                    Program step type: 
+                                    <span
+                                        className={styles.importantPieceOfInfo}
                                     >
-                                        {paramCheckboxes}
-                                    </div> */}
-                                    <div>
-                                        Influenced by the following parameters:
-                                    </div>
-                                    { step.relevantParam || step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection || step.relevantParamForCol ?  (
-                                        <div>
+                                        {step.eventType}
+                                    </span>
+                                </div>
+                                {/* <div>Target xPath: {targetXPath}</div> */}
+                                <div
+                                    className={styles.stepPieceOfInfo}
+                                >
+                                    { step.customGetElement ? (
+                                        <div
+                                            className={styles.importantPieceOfInfo}
+                                        >
+                                            Custom logic (see code)
+                                        </div>
+                                    ):(
+                                        <>
                                             <div>
-                                                <input
-                                                    type="radio"
-                                                    log-this-element=""
-                                                    name={`inferred_influencedBy_${step_index}`}
-                                                    id={`inferred_influencedBy_${step_index}`}
-                                                    value="inferred"
-                                                    checked={!step.static}
-                                                    onChange={() => this.handleProgramStepInfluencedByChange("inferred", step_index)}
-                                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
-                                                />
-                                                <label htmlFor={`inferred_influencedBy_${step_index}`}>
-                                                    <span
-                                                        //className={styles.importantPieceOfInfo}
-                                                    >
-                                                        { step.relevantParam ?
+                                                Influenced by the following parameters:
+                                            </div>
+                                            { step.relevantParam || step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection || step.relevantParamForCol ?  (
+                                                <div>
+                                                    <div>
+                                                        <input
+                                                            type="radio"
+                                                            log-this-element=""
+                                                            name={`inferred_influencedBy_${step_index}_${programVersion_index}`}
+                                                            id={`inferred_influencedBy_${step_index}_${programVersion_index}`}
+                                                            value="inferred"
+                                                            checked={!step.static}
+                                                            onChange={() => this.handleProgramStepInfluencedByChange("inferred", step_index, programVersion_index)}
+                                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                        />
+                                                        <label htmlFor={`inferred_influencedBy_${step_index}_${programVersion_index}`}>
+                                                            <span
+                                                                //className={styles.importantPieceOfInfo}
+                                                            >
+                                                                { step.relevantParam ?
+                                                                    <span
+                                                                        className={styles.importantPieceOfInfo}
+                                                                    >
+                                                                        {step.relevantParam} &nbsp;&nbsp;&nbsp;
+                                                                    </span>
+                                                                : "" }
+                                                                {/* { step.filterParamForRowSelection ? <span> Row determined by: {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" } */}
+                                                                { step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
+                                                                    <div
+                                                                        className={styles.inferenceExplanationIndentation}
+                                                                    >
+                                                                        <div>
+                                                                            Row determined by:
+                                                                        </div>
+                                                                        <div
+                                                                            className={styles.inferenceExplanationIndentation}
+                                                                        >
+                                                                            {step.filterParamForRowSelection ?
+                                                                                <div>
+                                                                                    Filtered by:
+                                                                                    <span
+                                                                                        className={styles.importantPieceOfInfo}
+                                                                                    >
+                                                                                        {step.filterParamForRowSelection};
+                                                                                    </span>
+                                                                                </div>
+                                                                            :""}
+                                                                            {step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
+                                                                                <>
+                                                                                    Superlative: 
+                                                                                    {step.colParamForSuperlativeForRowSelection ?
+                                                                                        <span
+                                                                                            className={styles.importantPieceOfInfo}
+                                                                                        >
+                                                                                            {step.colParamForSuperlativeForRowSelection};
+                                                                                        </span>
+                                                                                    :""}
+                                                                                    {step.superlativeParamForRowSelection ?
+                                                                                        <span
+                                                                                            className={styles.importantPieceOfInfo}
+                                                                                        >
+                                                                                            {step.superlativeParamForRowSelection};
+                                                                                        </span>
+                                                                                    :""}
+                                                                                    {step.constantSuperlativeValueForRowSelection ?
+                                                                                        <span
+                                                                                            className={styles.importantPieceOfInfo}
+                                                                                        >
+                                                                                            {step.constantSuperlativeValueForRowSelection};
+                                                                                        </span>
+                                                                                    :""}
+                                                                                </>
+                                                                            :""}
+                                                                        </div>
+                                                                    </div>
+                                                                : "" }
+                                                                { step.relevantParamForCol ?
+                                                                    <span
+                                                                        className={styles.inferenceExplanationIndentation}
+                                                                    >
+                                                                        Column determined by:
+                                                                        <span
+                                                                            className={styles.importantPieceOfInfo}
+                                                                        >
+                                                                            {step.relevantParamForCol}
+                                                                        </span>
+                                                                    </span>
+                                                                : "" }
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                    <div>
+                                                        <input
+                                                            type="radio"
+                                                            log-this-element=""
+                                                            name={`static_influencedBy_${step_index}_${programVersion_index}`}
+                                                            id={`static_influencedBy_${step_index}_${programVersion_index}`}
+                                                            value="static"
+                                                            checked={step.static}
+                                                            onChange={() => this.handleProgramStepInfluencedByChange("static", step_index, programVersion_index)}
+                                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                        />
+                                                        <label htmlFor={`static_influencedBy_${step_index}_${programVersion_index}`}>
                                                             <span
                                                                 className={styles.importantPieceOfInfo}
                                                             >
-                                                                {step.relevantParam} &nbsp;&nbsp;&nbsp;
+                                                                None
                                                             </span>
-                                                        : "" }
-                                                        {/* { step.filterParamForRowSelection ? <span> Row determined by: {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" } */}
-                                                        { step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
-                                                            <div
-                                                                className={styles.inferenceExplanationIndentation}
-                                                            >
-                                                                <div>
-                                                                    Row determined by:
-                                                                </div>
-                                                                <div
-                                                                    className={styles.inferenceExplanationIndentation}
-                                                                >
-                                                                    {step.filterParamForRowSelection ?
-                                                                        <div>
-                                                                            Filtered by:
-                                                                            <span
-                                                                                className={styles.importantPieceOfInfo}
-                                                                            >
-                                                                                {step.filterParamForRowSelection};
-                                                                            </span>
-                                                                        </div>
-                                                                    :""}
-                                                                    {step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
-                                                                        <>
-                                                                            Superlative: 
-                                                                            {step.colParamForSuperlativeForRowSelection ?
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                >
-                                                                                    {step.colParamForSuperlativeForRowSelection};
-                                                                                </span>
-                                                                            :""}
-                                                                            {step.superlativeParamForRowSelection ?
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                >
-                                                                                    {step.superlativeParamForRowSelection};
-                                                                                </span>
-                                                                            :""}
-                                                                            {step.constantSuperlativeValueForRowSelection ?
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                >
-                                                                                    {step.constantSuperlativeValueForRowSelection};
-                                                                                </span>
-                                                                            :""}
-                                                                        </>
-                                                                    :""}
-                                                                </div>
-                                                            </div>
-                                                        : "" }
-                                                        { step.relevantParamForCol ?
-                                                            <span
-                                                                className={styles.inferenceExplanationIndentation}
-                                                            >
-                                                                Column determined by:
-                                                                <span
-                                                                    className={styles.importantPieceOfInfo}
-                                                                >
-                                                                    {step.relevantParamForCol}
-                                                                </span>
-                                                            </span>
-                                                        : "" }
-                                                    </span>
-                                                </label>
-                                            </div>
-                                            <div>
-                                                <input
-                                                    type="radio"
-                                                    log-this-element=""
-                                                    name={`static_influencedBy_${step_index}`}
-                                                    id={`static_influencedBy_${step_index}`}
-                                                    value="static"
-                                                    checked={step.static}
-                                                    onChange={() => this.handleProgramStepInfluencedByChange("static", step_index)}
-                                                    disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
-                                                />
-                                                <label htmlFor={`static_influencedBy_${step_index}`}>
+                                                            &nbsp; (static - simply replays recording)
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div>
                                                     <span
                                                         className={styles.importantPieceOfInfo}
                                                     >
                                                         None
                                                     </span>
                                                     &nbsp; (static - simply replays recording)
-                                                </label>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <span
-                                                className={styles.importantPieceOfInfo}
-                                            >
-                                                None
-                                            </span>
-                                            &nbsp; (static - simply replays recording)
-                                        </div>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
-                                </>
+                                </div>
+                            </div>
+                        );
+                    });
+                    return (
+                        <div
+                            className={styles.demonstration}
+                        >
+                            <div
+                                className={styles.demonstrationName}
+                            >
+                                {programVersion_index === 0 ? "Main program" : `Refinement program ${programVersion_index}`}
+                            </div>
+                            {this.state.demonstrations[programVersion_index].specificallyForParamUuid ? (
+                                // This is a refinement param, show parameter/value
+                                <div>
+                                    <p>Specifically for </p>
+                                    <p>Parameter:
+                                        <b
+                                            className={styles.specialParamText}
+                                        >
+                                            {this.state.idToItem[this.state.demonstrations[programVersion_index].specificallyForParamUuid].paramName}
+                                        </b>
+                                    </p>
+                                    <p>Value:
+                                        <b
+                                            className={styles.specialParamText}
+                                        >   
+                                            {this.state.demonstrations[programVersion_index].specificallyForValue}
+                                        </b>
+                                    </p>
+                                </div>
+                            ):(
+                                ""
                             )}
+                            <div>
+
+                            </div>
+                            <div>
+                                {programSteps}
+                            </div>
                         </div>
-                    </div>
-                );
+                    );
+                }else{
+                    return null;
+                }
             });
+            // Filter to make sure we're not including program versions that are null
+            stepsForAllProgramVersions = stepsForAllProgramVersions.filter(item => item !== null);
         }
         return (
             <div
@@ -3643,32 +3960,12 @@ class NaturalLanguage extends React.Component {
                             <p
                                 className={styles.sectionHeader}
                             >
-                                {/* Demonstrations */}
-                                Demonstration
+                                Demonstrations
                             </p>
                             {demonstrationItems}
-                            {this.state.inCreateNewDemoMode
+                            {this.state.demoIndexInCreateMode !== null
                                 ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
                                 <>
-                                    {this.state.inRecordingDemoMode ? (
-                                        <div>
-                                            <button
-                                                className={styles.stopRecordingButton}
-                                                onClick={() => this.handleStopRecordingDemo()}
-                                            >Stop recording</button>
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <button
-                                                className={styles.startRecordingButton}
-                                                onClick={() => this.handleStartRecordingDemo()}
-                                            >Start recording</button>
-                                            <button
-                                                className={styles.cancelButton}
-                                                onClick={() => this.cancelNewDemo()}
-                                            >Cancel</button>
-                                        </div>
-                                    )}
                                 </>
                                 ):( // Currently not in demo mode; show user 'create demo' button in case they want to create a demo
                                     <>
@@ -3676,20 +3973,21 @@ class NaturalLanguage extends React.Component {
                                             // No demo exists yet, user is creating for the first time
                                             <button
                                                 className={styles.createDemoButton}
-                                                onClick={() => this.handleCreateDemo()}
-                                            >Create demonstration</button>
+                                                onClick={() => this.handleCreateDemo(null)}
+                                            >Create main demonstration</button>
                                         ):(
                                             // A demo already exists; "redo" will overwrite it
                                             <button
                                                 className={styles.createDemoButton}
-                                                onClick={() => this.handleCreateDemo()}
-                                            >Redo demonstration</button>
+                                                onClick={() => this.handleCreateDemo(null)}
+                                            >Add a refinement demonstration</button>
                                         )}
                                     </>
                                 )
                             }
                         </div>
-                        {this.state.generatedProgram ? (
+                        {/* Hide 'Generated program' section during demonstration (so that the demo NL template + 'stop recording' button is closer to the website area) */}
+                        {stepsForAllProgramVersions.length > 0 && this.state.demoIndexInRecordingMode === null ? (
                             <div
                                 className={styles.section}
                             >
@@ -3707,7 +4005,7 @@ class NaturalLanguage extends React.Component {
                                         Partial program representation
                                     </p>
                                     <div>
-                                        {programSteps}
+                                        {stepsForAllProgramVersions}
                                     </div>
                                     <div>
                                         {this.state.showCodeEditor ? (

@@ -26,51 +26,76 @@ function delayFor(delay) {
 // INPUT
     // program - result from generateProgramAndIdentifyNeededDemos
     // paramValuePairings - { param: value } to plug into program
-export async function executeProgram(program, paramValuePairings){
+export async function executeProgram(programList, paramValuePairings){
     const valuesToReturn = [];
-    for(let programStep of program){
-        try {
-            let element;
-            if(programStep.targetXPath){
-                // Concrete xPath to perform operation on
-                element = programStep.getElement(paramValuePairings, programStep.targetXPath);
-            }else if(programStep.static){
-                // Make sure to use original xpath
-                element = document.evaluate(programStep.originalTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-            }else if(programStep.relevantParam){
-                // Need to execute function with param value to get xPath
-                let relevantParam = programStep.relevantParam;
-                element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
-            }else{
-                let filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
-                let colParamValueForSuperlativeForRowSelection = paramValuePairings[programStep.colParamForSuperlativeForRowSelection];
-                let superlativeValueForRowSelection = paramValuePairings[programStep.superlativeParamForRowSelection] || programStep.constantSuperlativeValueForRowSelection;
-                let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
-                element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol);
-            }
-
-            // Should throw an error if no xpath found, etc
-
-            // Perform operation on xPath
-            if(operations[programStep.eventType]){
-                await delayFor(3000); // Let's wait 1000ms between each click
-                const returnValue = operations[programStep.eventType](element);
-                if(returnValue){ // because some operations won't return anything
-                    valuesToReturn.push({
-                        message: returnValue,
-                        type: "output"
-                    });
-                }
-            }
-        } catch (error) {
-            // An error happened, let's return it
-            return [
-                {
-                    message: "Program failed for this set of values",
-                    type: "error"
-                }
-            ];
+    
+    let programToRun;
+    for(let programOption of programList){
+        // Check if this programOption has specificallyForParamName/specificallyForValue
+            // and if they match what's in paramValuePairings, then use this programOption.
+        // Just use the first match we find (it's possible there are multiple, in which case we aren't going try to combine the programs in any way; this is just a limitation)
+        if(programOption && programOption.specificallyForParamName && paramValuePairings[programOption.specificallyForParamName] === programOption.specificallyForValue){
+            programToRun = programOption;
+            break;
         }
+    }
+
+    if(!programToRun){
+        // No "refinement program" was found that matches what's in paramValuePairings,
+            // so let's use the "main program" (index 0)
+        programToRun = programList[0];
+    }
+    
+    if(programToRun && programToRun.program){
+        for(let programStep of programToRun.program){
+            try {
+                let element;
+                if(programStep.targetXPath){
+                    // Concrete xPath to perform operation on
+                    element = programStep.getElement(paramValuePairings, programStep.targetXPath);
+                }else if(programStep.static){
+                    // Make sure to use original xpath
+                    element = document.evaluate(programStep.originalTargetXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                }else if(programStep.relevantParam){
+                    // Need to execute function with param value to get xPath
+                    let relevantParam = programStep.relevantParam;
+                    element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
+                }else{
+                    let filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
+                    let colParamValueForSuperlativeForRowSelection = paramValuePairings[programStep.colParamForSuperlativeForRowSelection];
+                    let superlativeValueForRowSelection = paramValuePairings[programStep.superlativeParamForRowSelection] || programStep.constantSuperlativeValueForRowSelection;
+                    let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
+                    element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol);
+                }
+    
+                // Should throw an error if no xpath found, etc
+    
+                // Perform operation on xPath
+                if(operations[programStep.eventType]){
+                    await delayFor(3000); // Let's wait 1000ms between each click
+                    const returnValue = operations[programStep.eventType](element);
+                    if(returnValue){ // because some operations won't return anything
+                        valuesToReturn.push({
+                            message: returnValue,
+                            type: "output"
+                        });
+                    }
+                }
+            } catch (error) {
+                // An error happened, let's return it
+                return [
+                    {
+                        message: "Program failed for this set of values",
+                        type: "error"
+                    }
+                ];
+            }
+        }
+    }else{
+        valuesToReturn.push({
+            message: "Please create a main demonstration",
+            type: "error"
+        });
     }
     return valuesToReturn;
 }
@@ -1486,7 +1511,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     let generateSuperlativeColXPathSuffix;
                     // Now, need to identify if a superlative is also relevant to choosing this row; if already filtered and rowsToConsider is length 1, then don't check for superlative
                     // TODO - instead of using superlativeParameters and constantSuperlatives, use some equivalent of paramsNotYetUsed
-                    if(rowColData.colData && rowsToConsider.length > 1 && superlativeParameters.length > 0 || constantSuperlatives.length > 0){
+                    if(rowColData.colData && rowsToConsider.length > 1 && (superlativeParameters.length > 0 || constantSuperlatives.length > 0)){
                         // Can only do this if we can identify columns
                         
                         const colParentXPath = getXPathForElement(rowColData.colData.levelParent, document);
