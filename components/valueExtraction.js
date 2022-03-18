@@ -187,7 +187,9 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
     //console.log("parentXPath", parentXPath);
     //console.log("nodeXPathSubstring", nodeXPathSubstring);
     //console.log("xPathSuffix", xPathSuffix);
-    const newTemplateXPath = parentXPath + nodeXPathSubstring + xPathSuffix;
+    const prefixXPath = parentXPath + nodeXPathSubstring;
+    const newTemplateXPath = prefixXPath + xPathSuffix;
+    //const newTemplateXPath = parentXPath + nodeXPathSubstring + xPathSuffix;
     //console.log("newTemplateXPath", newTemplateXPath);
 
     // Try newTemplateXPath with different indices for INSERT-ROW-INDEX-HERE and see how many results we get and if they match our values
@@ -195,8 +197,11 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
     const newMatchesFound = [];
     let numExtraneousNodesFound = 0;
     //while(true){
+    let largestSnapshotLength = 0;
     for(let index = 1; index <= numRows; index++){
+        // Test new xpath
         const filledInTemplateXPath = newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", index);
+        console.log("filledInTemplateXPath", filledInTemplateXPath);
         if(filledInTemplateXPath.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
             const result = fontoxpath.evaluateXPathToNodes(filledInTemplateXPath, document.documentElement);
             if(result[0]){
@@ -211,7 +216,24 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
                 }
             }
         }
-        //index += 1;
+
+        // We also need to test prefixXPath (a prefix of the old xpath + the new generalized node string)
+            // Even if newTemplateXPath is unique, it's possible prefixXPath isn't, which could be a problem
+            // later when we remove a suffix from the param value xpath and then add a new suffix to it; if the first match for
+            // a non-unique xpath prefix isn't actually the right one, it might result in an invalid xpath when the suffix gets added to it
+            // (whereas if we had the correct match then adding the new suffix could work)
+        const filledInPrefixXPath = prefixXPath.replace("INSERT-ROW-INDEX-HERE", index);
+        console.log("filledInPrefixXPath", filledInPrefixXPath);
+        if(filledInPrefixXPath.substring(filledInPrefixXPath.length-1) !== "/" && filledInPrefixXPath.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
+            const result = fontoxpath.evaluateXPathToNodes(filledInPrefixXPath, document.documentElement);
+            if(result.length > 0){
+                // Keep track of the most matches; this will be a factor we consider when choosing the best xpath change
+                if(result.length > largestSnapshotLength){
+                    largestSnapshotLength = result.length;
+                }
+            }
+        }
+        
     }
 
     return {
@@ -219,7 +241,8 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
         numExtraneousNodesFound,
         nodeXPathSubstring,
         newTemplateXPath,
-        selectorType
+        selectorType,
+        largestSnapshotLength
     };
 }
 
@@ -335,16 +358,37 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         let bestCandidateForThisLevel;
 
         if(candidateChanges.length > 0){
-            const mostNewMatchesFound = candidateChanges[0].newMatchesFound.length;
+
+            /*const mostNewMatchesFound = candidateChanges[0].newMatchesFound.length;
 
             // Filter to only include candidates with mostNewMatchesFound; note it's ok if mostNewMatchesFound is 0; we still want to make a change to something more robust
-            candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound);
+            candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound);*/
+
             // We'd prefer a class or attribute change over insertSlash or replaceWithSlash if possible
             const filteredByClassOrAttribute = candidateChanges.filter(obj => obj.selectorType === "class" || obj.selectorType === "attribute");
             if(filteredByClassOrAttribute.length > 0){
                 candidateChanges = filteredByClassOrAttribute;
             }
+
+            // Sort in descending order of newMatchesFound.length
+            candidateChanges.sort(function(a, b){
+                return b.newMatchesFound.length - a.newMatchesFound.length;
+            });
+
+            // Filter to see if there is at least 1 largestSnapshotLength of length 1; if so, only consider these
+            const filteredBySnapshotLength = candidateChanges.filter(obj => obj.largestSnapshotLength === 1);
+            if(filteredBySnapshotLength.length > 0){
+                candidateChanges = filteredBySnapshotLength;
+            }
+
+            const mostNewMatchesFound = candidateChanges[0].newMatchesFound;
+            candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound.length);
             
+            // Sort in ascending order largestSnapshotLength (want to choose the one with the fewest matching nodes, aka, the least generic)
+            candidateChanges.sort(function(a, b){
+                return a.largestSnapshotLength.length - b.largestSnapshotLength.length;
+            });
+
             /*// Now sort in ascending order of numExtraneousNodesFound (we want the xpath with the highest mostNewMatchesFound and then the least numExtraneousNodesFound)
             candidateChanges.sort(function(a, b){
                 return a.numExtraneousNodesFound - b.numExtraneousNodesFound;

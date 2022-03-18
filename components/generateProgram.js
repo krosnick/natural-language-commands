@@ -3,6 +3,14 @@ import { makeXPathsMoreRobust, indexOfCaseInsensitive } from './valueExtraction'
 
 import * as fontoxpath from 'fontoxpath';
 
+/*setTimeout(() => {
+    let testMatches1 = fontoxpath.evaluateXPathToNodes(`/html/body[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]/*[count(index-of(tokenize(@class, ' ' ), 'card')) = 1]/*[count(index-of(tokenize(@class, ' ' ), 'item-details')) = 1]`, document.documentElement);
+    console.log("testMatches1", testMatches1);
+
+    let testMatches2 = fontoxpath.evaluateXPathToNodes(`/html/body[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]/*[count(index-of(tokenize(@class, ' ' ), 'card')) = 1]/*[count(index-of(tokenize(@class, ' ' ), 'item-details')) = 1]/*[count(index-of(tokenize(@class, ' ' ), 'cost-and-calories')) = 1]/*[count(index-of(tokenize(@class, ' ' ), 'mobile-calories')) = 1]`, document.documentElement);
+    console.log("testMatches2", testMatches2);
+}, 3000);*/
+
 var operations = {
     click: function(domElement){
         domElement.click();
