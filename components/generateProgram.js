@@ -40,12 +40,15 @@ export async function executeProgram(programList, paramValuePairings){
     const valuesToReturn = [];
     
     let programToRun;
-    for(let programOption of programList){
+    let selectedProgramIndex;
+    for(let i = 0; i < programList.length; i++){
+        let programOption = programList[i];
         // Check if this programOption has specificallyForParamName/specificallyForValue
             // and if they match what's in paramValuePairings, then use this programOption.
         // Just use the first match we find (it's possible there are multiple, in which case we aren't going try to combine the programs in any way; this is just a limitation)
         if(programOption && programOption.specificallyForParamName && paramValuePairings[programOption.specificallyForParamName] === programOption.specificallyForValue){
             programToRun = programOption;
+            selectedProgramIndex = i;
             break;
         }
     }
@@ -54,6 +57,7 @@ export async function executeProgram(programList, paramValuePairings){
         // No "refinement program" was found that matches what's in paramValuePairings,
             // so let's use the "main program" (index 0)
         programToRun = programList[0];
+        selectedProgramIndex = 0;
     }
     
     if(programToRun && programToRun.program){
@@ -107,7 +111,13 @@ export async function executeProgram(programList, paramValuePairings){
             type: "error"
         });
     }
-    return valuesToReturn;
+
+    const toReturn = {
+        selectedProgramIndex,
+        valuesToReturn
+    };
+
+    return toReturn;
 }
 
 export async function replayDemo(demoObj){

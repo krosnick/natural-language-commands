@@ -386,3 +386,7 @@
 .margin {
     margin: 20px;
 }
+
+.programOutputProgramIndexText {
+    color: gray;
+}

@@ -1162,6 +1162,7 @@ class NaturalLanguage extends React.Component {
             paramValuePairsForRunningProgram: {},
             websiteSelectedTextObject: null,
             programOutput: null,
+            programOutputProgramIndex: null,
             showCodeEditor: false,
             currentProgramCode: null,
             freeformNLQuery: "",
@@ -2952,11 +2953,13 @@ class NaturalLanguage extends React.Component {
                         const paramValue = paramNameValueObj.paramValue;
                         paramToValueObj[paramName] = paramValue;
                     }
-    
-                    const programOutput = await executeProgram(context.state.generatedProgram, paramToValueObj);
-                    console.log("programOutput", programOutput);
+                    
+                    const programExecutionResult = await executeProgram(context.state.generatedProgram, paramToValueObj);
+                    const programOutput = programExecutionResult.valuesToReturn;
+                    const programOutputProgramIndex = programExecutionResult.selectedProgramIndex;
                     context.setState({
                         programOutput,
+                        programOutputProgramIndex,
                         programRunInProgress: false
                     });
                 }, 2000, context);
@@ -3814,7 +3817,7 @@ class NaturalLanguage extends React.Component {
                             <div
                                 className={styles.demonstrationName}
                             >
-                                {programVersion_index === 0 ? "Main program" : `Refinement program ${programVersion_index}`}
+                                {programVersion_index === 0 ? "Main Program" : `Refinement Program ${programVersion_index}`}
                             </div>
                             {this.state.demonstrations[programVersion_index].specificallyForParamUuid ? (
                                 // This is a refinement param, show parameter/value
@@ -4110,7 +4113,14 @@ class NaturalLanguage extends React.Component {
                                         <div
                                             className={styles.programOutput}
                                         >
-                                            <div>Program output</div>
+                                            <div>
+                                                <span>Program output</span>
+                                                <span
+                                                    className={styles.programOutputProgramIndexText}
+                                                >
+                                                    &nbsp;(run using {this.state.programOutputProgramIndex === 0 ? "Main Program" : `Refinement Program ${this.state.programOutputProgramIndex}`})
+                                                </span>
+                                            </div>
                                             {this.state.programOutput.map(function(value){
                                                 if(value.type === "error"){
                                                     return (
