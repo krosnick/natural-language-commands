@@ -2683,9 +2683,9 @@ class NaturalLanguage extends React.Component {
         }, 1000, this);
     }
 
-    removeDemoStep(demo_index){
+    removeDemoStep(step_index, demo_index){
         const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        demonstrationsClone[0].eventSequence.splice(demo_index, 1);
+        demonstrationsClone[demo_index].eventSequence.splice(step_index, 1);
 
         this.setState({
             demonstrations: demonstrationsClone
@@ -3277,7 +3277,7 @@ class NaturalLanguage extends React.Component {
                         {demo_index === this.state.demoIndexInCreateMode ? (
                             // Only allow user to delete a demo step during creation mode
                             <button
-                                onClick={() => this.removeDemoStep(e_index)}
+                                onClick={() => this.removeDemoStep(e_index, demo_index)}
                                 className={styles.removeValueButton}
                                 title="Delete"
                             >
