@@ -307,8 +307,8 @@ class TemplateFreeformParam extends React.Component {
                 size={Math.max(this.props.paramName.length, 20)}
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                className={this.props.uuid === this.props.specificallyForParam? styles.specialParam : ""}
-                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
+                className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
             >
             </input>
@@ -336,8 +336,8 @@ class TemplateEnumerationParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                className={this.props.uuid === this.props.specificallyForParam? styles.specialParam : ""}
-                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
+                className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -373,8 +373,8 @@ class TemplateSuperlativeParam extends React.Component {
                 log-this-element=""
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
-                className={this.props.uuid === this.props.specificallyForParam? styles.specialParam : ""}
-                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParam}
+                className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -981,7 +981,7 @@ class TemplateParamTextItem extends React.Component {
             if(this.props.paramTypeData.type === "freeform"){
                 paramTemplate = <TemplateFreeformParam
                                             uuid={this.props.uuid}     
-                                            specificallyForParam={this.props.specificallyForParam}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -998,7 +998,7 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTemplate = <TemplateEnumerationParam
                                             uuid={this.props.uuid}
-                                            specificallyForParam={this.props.specificallyForParam}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1016,7 +1016,7 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "superlative"){
                 paramTemplate = <TemplateSuperlativeParam
                                             uuid={this.props.uuid}
-                                            specificallyForParam={this.props.specificallyForParam}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1033,7 +1033,7 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "flag"){
                 paramTemplate = <TemplateFlagParam
                                             uuid={this.props.uuid} 
-                                            specificallyForParam={this.props.specificallyForParam}         
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}         
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             //selectedText={this.props.text}
@@ -1049,7 +1049,7 @@ class TemplateParamTextItem extends React.Component {
                                             dateRestriction={this.props.paramTypeData.dateRestriction}
                                             otherDataValue={this.props.paramTypeData.otherDataValue}
                                             uuid={this.props.uuid}
-                                            specificallyForParam={this.props.specificallyForParam}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             uuidInEditMode={this.props.uuidInEditMode}
@@ -1066,7 +1066,7 @@ class TemplateParamTextItem extends React.Component {
                                             rangeStart={this.props.paramTypeData.rangeStart}
                                             rangeEnd={this.props.paramTypeData.rangeEnd}
                                             uuid={this.props.uuid}
-                                            specificallyForParam={this.props.specificallyForParam}
+                                            specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
                                             uuidInEditMode={this.props.uuidInEditMode}
@@ -2099,16 +2099,16 @@ class NaturalLanguage extends React.Component {
             demonstrationsClone.push({
                 eventSequence: [],
                 paramValuePairs: {},
-                specificallyForParam: "",
-                specificallyForParamValue: "",
+                specificallyForParamUuid: "",
+                specificallyForValue: "",
             });
             generatedProgramClone.push(null);
         }else{
             demonstrationsClone[demoIndexToUpdate] = {
                 eventSequence: [],
                 paramValuePairs: {},
-                specificallyForParam: "",
-                specificallyForParamValue: "",
+                specificallyForParamUuid: "",
+                specificallyForValue: "",
             };
             generatedProgramClone[demoIndexToUpdate] = null;
         }
@@ -2130,8 +2130,9 @@ class NaturalLanguage extends React.Component {
             // Still need to have a placeholder for the main demo (because there are other demos after it) so just clear the obj
             demonstrationsClone[demoIndex] = {
                 eventSequence: [],
-                specificallyForParam: null,
-                specificallyForParamValue: null,
+                specificallyForParamUuid: "",
+                //specificallyForParamName: "",
+                specificallyForValue: "",
                 paramValuePairs: {}
             };
             generatedProgramClone[demoIndex] = null;
@@ -2154,97 +2155,59 @@ class NaturalLanguage extends React.Component {
         this.forceReRenderEmbeddedWebsite();
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
-        // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
-        for(let item of Object.values(idToItemClone)){
-            if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
-                // This item is a param. Run makeXPathsMoreRobust on its values and update 
+        
+        // For now at least, only try to make xpaths more robust before recording/re-recording the main demo (demoIndex === 0)
+            // We don't want to do this for refinement demos (demoIndex > 0) because if that changes the xpaths, that could break the existing program for the main demo
+            // (e.g., maybe main demo relied certain param value xpath suffixes, which now don't exist because the xpaths are different)
+        // However, this could be a problem if the user edits param values in between making the main demo and refinement demos.
+            // When a program is generated for a refinement demo, the xpaths will be null.
+        // In general, it's a bad idea that we allow the user to edit params/values after some demos have been created; will lead to inconsistencies and break things
+            // we should just disallow users from editing params/values once they start demonstrations.
+        // Or ideally we should regenerate the program automatically each time the params/values change. Currently we can't do this because we aren't storing demo DOM state,
+            // and not able to query it with document.evaluate
+        if(demoIndex === 0){
+            // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
+            for(let item of Object.values(idToItemClone)){
+                if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
+                    // This item is a param. Run makeXPathsMoreRobust on its values and update 
 
-                let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
-                let rowPrefix;
-                for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
-                    for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
-                        if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
-                            const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
-                            //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
-                            if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
-                                commonPrefixLengthAmongstXPaths = commonPrefixLength;
-                                rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+                    let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
+                    let rowPrefix;
+                    for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
+                        for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
+                            if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
+                                const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
+                                //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
+                                if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
+                                    commonPrefixLengthAmongstXPaths = commonPrefixLength;
+                                    rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+                                }
                             }
                         }
                     }
-                }
-                
-                // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
-                //let newValueXPathObjList = item.paramTypeData.possibleValues;
-                let newValueXPathObjList = [];
+                    
+                    // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
+                    //let newValueXPathObjList = item.paramTypeData.possibleValues;
+                    let newValueXPathObjList = [];
 
-                // If an item in possibleValues is an empty string, don't include it
-                for(let possibleValueObj of item.paramTypeData.possibleValues){
-                    if(possibleValueObj.textCandidate.trim().length > 0){
-                        newValueXPathObjList.push(possibleValueObj);
-                    }
-                }
-
-                const paramValues = newValueXPathObjList.map(x => x.textCandidate);
-
-                // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
-                const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
-
-                // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
-                let bestMatchList = [];
-                for(let candidateList of candidateLists){
-                    const matchList = [];
-                    for(let valueObj of candidateList){
-                        for(let paramValue of paramValues){
-                            if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
-                                // Update valueObj to use same text user had
-                                valueObj.textCandidate = paramValue;
-                                matchList.push(valueObj);
-                            }
+                    // If an item in possibleValues is an empty string, don't include it
+                    for(let possibleValueObj of item.paramTypeData.possibleValues){
+                        if(possibleValueObj.textCandidate.trim().length > 0){
+                            newValueXPathObjList.push(possibleValueObj);
                         }
                     }
-                    if(matchList.length > bestMatchList.length){
-                        bestMatchList = matchList;
-                    }
-                }
-                //console.log("first bestMatchList", bestMatchList);
-                newValueXPathObjList = bestMatchList;
 
-                let xPathSuffix;
-                if(rowPrefix){
-                    // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
-                    rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
-                    const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                    const numRows = parentOfRowsElement.children.length;
-                    
-                    // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
-                    const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
-                    newValueXPathObjList = result.newValueXPathObjList;
-                    xPathSuffix = result.xPathSuffix;
-                    console.log("newValueXPathObjList", newValueXPathObjList);
-                }
+                    const paramValues = newValueXPathObjList.map(x => x.textCandidate);
 
-                // Now, see if there are still any param values that have a null xpath, and try to fill those in
-                    
-                let paramValuesWithNullXPathToStillTry = [];
-                for(let valueObj of newValueXPathObjList){
-                    if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
-                        paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
-                    }
-                }
-                //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
-                // Now, use getCandidateLists to fill in xpaths
-                while(paramValuesWithNullXPathToStillTry.length > 0){
-                    // Seed with first value in paramValuesWithNullXPathToStillTry
-                    const candidateLists = getCandidateLists([paramValuesWithNullXPathToStillTry[0].trim()], false, embeddedWebsiteXPathPrefix);
-                    //console.log("candidateLists to fill in xpaths", candidateLists);
+                    // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
+                    const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
 
                     // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
                     let bestMatchList = [];
                     for(let candidateList of candidateLists){
                         const matchList = [];
                         for(let valueObj of candidateList){
-                            for(let paramValue of paramValuesWithNullXPathToStillTry){
+                            for(let paramValue of paramValues){
                                 if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
                                     // Update valueObj to use same text user had
                                     valueObj.textCandidate = paramValue;
@@ -2255,189 +2218,239 @@ class NaturalLanguage extends React.Component {
                         if(matchList.length > bestMatchList.length){
                             bestMatchList = matchList;
                         }
+                    }
+                    //console.log("first bestMatchList", bestMatchList);
+                    newValueXPathObjList = bestMatchList;
+
+                    let xPathSuffix;
+                    if(rowPrefix){
+                        // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
+                        rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
+                        const parentOfRowsElement = document.evaluate(rowPrefix, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                        const numRows = parentOfRowsElement.children.length;
+                        
+                        // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
+                        const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                        newValueXPathObjList = result.newValueXPathObjList;
+                        xPathSuffix = result.xPathSuffix;
+                        console.log("newValueXPathObjList", newValueXPathObjList);
+                    }
+
+                    // Now, see if there are still any param values that have a null xpath, and try to fill those in
+                        
+                    let paramValuesWithNullXPathToStillTry = [];
+                    for(let valueObj of newValueXPathObjList){
+                        if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
+                            paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
+                        }
+                    }
+                    //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
+                    // Now, use getCandidateLists to fill in xpaths
+                    while(paramValuesWithNullXPathToStillTry.length > 0){
+                        // Seed with first value in paramValuesWithNullXPathToStillTry
+                        const candidateLists = getCandidateLists([paramValuesWithNullXPathToStillTry[0].trim()], false, embeddedWebsiteXPathPrefix);
+                        //console.log("candidateLists to fill in xpaths", candidateLists);
+
+                        // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
+                        let bestMatchList = [];
+                        for(let candidateList of candidateLists){
+                            const matchList = [];
+                            for(let valueObj of candidateList){
+                                for(let paramValue of paramValuesWithNullXPathToStillTry){
+                                    if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                        // Update valueObj to use same text user had
+                                        valueObj.textCandidate = paramValue;
+                                        matchList.push(valueObj);
+                                    }
+                                }
+                            }
+                            if(matchList.length > bestMatchList.length){
+                                bestMatchList = matchList;
+                            }
+                            if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
+                                // We've found all the values
+                                break;
+                            }
+                        }
+                        console.log("bestMatchList", bestMatchList);
+
+                        // Update newValueXPathObjList objects based on bestMatchList
+                        for(let match of bestMatchList){
+                            // Find obj in newValueXPathObjList corresponding to match and replace it
+                            for(let i = 0; i < newValueXPathObjList.length; i++){
+                                const existingValueObj = newValueXPathObjList[i];
+                                if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
+                                    match.textCandidate = existingValueObj.textCandidate;
+                                    newValueXPathObjList[i] = match;
+                                }
+                            }
+                        }
+
                         if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
-                            // We've found all the values
+                            // We've found all the values, so break out of while loop
                             break;
                         }
-                    }
-                    console.log("bestMatchList", bestMatchList);
 
-                    // Update newValueXPathObjList objects based on bestMatchList
-                    for(let match of bestMatchList){
-                        // Find obj in newValueXPathObjList corresponding to match and replace it
-                        for(let i = 0; i < newValueXPathObjList.length; i++){
-                            const existingValueObj = newValueXPathObjList[i];
-                            if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
-                                match.textCandidate = existingValueObj.textCandidate;
-                                newValueXPathObjList[i] = match;
-                            }
+                        if(bestMatchList.length === 0){
+                            // The value we seeded with ([paramValuesWithNullXPathToStillTry[0]) actually can't be found on the page anywhere
+                                // Let's just remove it from paramValuesWithNullXPathToStillTry so we can try with remaining values (since we're never going to find a match for this value)
+
+                            // Update paramValuesWithNullXPathToStillTry to remove the first item
+                            paramValuesWithNullXPathToStillTry.splice(0, 1);
                         }
-                    }
 
-                    if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
-                        // We've found all the values, so break out of while loop
-                        break;
-                    }
-
-                    if(bestMatchList.length === 0){
-                        // The value we seeded with ([paramValuesWithNullXPathToStillTry[0]) actually can't be found on the page anywhere
-                            // Let's just remove it from paramValuesWithNullXPathToStillTry so we can try with remaining values (since we're never going to find a match for this value)
-
-                        // Update paramValuesWithNullXPathToStillTry to remove the first item
-                        paramValuesWithNullXPathToStillTry.splice(0, 1);
-                    }
-
-                    // There are still param values without an xpath, so we need to return to top of loop and try with remaining values
-                    // Update paramValuesWithNullXPathToStillTry to remove values that are in bestMatchList
-                    for(let match of bestMatchList){
-                        for(let i = 0; i < paramValuesWithNullXPathToStillTry.length; i++){
-                            let paramValue = paramValuesWithNullXPathToStillTry[i];
-                            if(match.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
-                                // A match has been found for paramValue, so remove paramValue from paramValuesWithNullXPathToStillTry
-                                paramValuesWithNullXPathToStillTry.splice(i, 1);
-                                break; // break out of inner loop because found value correspond to match value, and move on to next match value to look for
-                            }
-                        }
-                    }
-                }
-
-                // Check and see if there are still values in newValueXPathObjList without an xpath
-                    // We should try a more refined search now for these strings.
-                    // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
-                    // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
-                
-                let commonXPathPrefix;
-                // Compute commonXPathPrefix
-                for(let valueObj of newValueXPathObjList){
-                    if(valueObj.xPath){
-                        if(commonXPathPrefix === undefined){
-                            commonXPathPrefix = valueObj.xPath;
-                        }
-                        const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
-                        commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-
-                        // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
-                        commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                    }
-                }
-                console.log("commonXPathPrefix", commonXPathPrefix);
-
-                for(let valueObj of newValueXPathObjList){
-                    // Check if this value has an xpath
-                    if(!valueObj.xPath){
-                        
-                        // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
-                        let newXPath;
-                        const stringMatches = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                        // A lot of this adapted from below; should make helper function
-                        if(xPathSuffix){
-                            let newSuffix = xPathSuffix;
-                            // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
-                            if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
-                                newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
-                            }
-                            // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
-                            // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
-                            for(let snapshotIndex = 0; snapshotIndex < stringMatches.snapshotLength; snapshotIndex++){
-                                const node = stringMatches.snapshotItem(snapshotIndex);
-                                const xPath = getXPathForElement(node, document);
-                                if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
-                                    // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
-                                    let xPathPrefix = xPath;
-                                    while(xPathPrefix.length > 0){
-                                        const xPathToTry = xPathPrefix + newSuffix;
-                                        // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
-                                        try{
-                                            const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                                            if(node){
-                                                const indexBasedXPath = getXPathForElement(node, document);
-                                                if(indexBasedXPath === xPath){
-                                                    // This means that xPathToTry was valid and does match the original xPath
-                                                    // Let's set newXPath and break out of loop
-                                                    newXPath = xPathToTry;
-                                                    break;
-                                                }
-                                            }
-                                        }catch{
-                                        }
-                                        // Update xPathPrefix
-                                        xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
-                                    }
-                                }else{
-                                    // newSuffix is the suffix, so just use this
-                                    newXPath = xPath;
-                                }
-                                if(newXPath){
-                                    break;
+                        // There are still param values without an xpath, so we need to return to top of loop and try with remaining values
+                        // Update paramValuesWithNullXPathToStillTry to remove values that are in bestMatchList
+                        for(let match of bestMatchList){
+                            for(let i = 0; i < paramValuesWithNullXPathToStillTry.length; i++){
+                                let paramValue = paramValuesWithNullXPathToStillTry[i];
+                                if(match.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                    // A match has been found for paramValue, so remove paramValue from paramValuesWithNullXPathToStillTry
+                                    paramValuesWithNullXPathToStillTry.splice(i, 1);
+                                    break; // break out of inner loop because found value correspond to match value, and move on to next match value to look for
                                 }
                             }
-                        }else{
-                            const matchingNode = stringMatches.snapshotItem(0);
-                            newXPath = getXPathForElement(matchingNode, document);
                         }
+                    }
 
-                        if(newXPath){
-                            // Update commonXPathPrefix
-                            const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
+                    // Check and see if there are still values in newValueXPathObjList without an xpath
+                        // We should try a more refined search now for these strings.
+                        // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
+                        // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
+                    
+                    let commonXPathPrefix;
+                    // Compute commonXPathPrefix
+                    for(let valueObj of newValueXPathObjList){
+                        if(valueObj.xPath){
+                            if(commonXPathPrefix === undefined){
+                                commonXPathPrefix = valueObj.xPath;
+                            }
+                            const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
                             commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-                            
+
                             // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
                             commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                            
-                            // Update in newValueXPathObjList
-                            valueObj.xPath = newXPath;
                         }
-                        console.log("newXPath", newXPath);
                     }
-                }
+                    console.log("commonXPathPrefix", commonXPathPrefix);
 
-                // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
-                    // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
-                    // This is important because at program execution time we sometimes remove a suffix from param value xpaths (for matchingParam), so we want to try to adjust all our param value xpaths to have that suffix (if it's a valid xpath)
-                if(xPathSuffix){
-                    let newSuffix = xPathSuffix;
-                    // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
-                    if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
-                        newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
-                    }
-                    //console.log("xPathSuffix", xPathSuffix);
-                    //console.log("newSuffix", newSuffix)
                     for(let valueObj of newValueXPathObjList){
-                        // Check if this param value xpath has newSuffix at the end
-                        const xPath = valueObj.xPath;
-                        if(xPath && xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
-                            // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
-                            let xPathPrefix = xPath;
-                            while(xPathPrefix.length > 0){
-                                //console.log("xPathPrefix", xPathPrefix);
-                                //console.log("newSuffix",newSuffix);
-                                const xPathToTry = xPathPrefix + newSuffix;
-                                //console.log("xPathToTry", xPathToTry);
-                                // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
-                                try{
-                                    const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
-                                    //console.log("node", node);
-                                    if(node){
-                                        const indexBasedXPath = getXPathForElement(node, document);
-                                        if(indexBasedXPath === xPath){
-                                            // This means that xPathToTry was valid and does match the original xPath
-                                            // Let's update our valueObj and then break out of loop
-                                            valueObj.xPath = xPathToTry;
-                                            break;
-                                        }
-                                    }
-                                }catch{
+                        // Check if this value has an xpath
+                        if(!valueObj.xPath){
+                            
+                            // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
+                            let newXPath;
+                            const stringMatches = document.evaluate(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                            // A lot of this adapted from below; should make helper function
+                            if(xPathSuffix){
+                                let newSuffix = xPathSuffix;
+                                // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                                if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                                    newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
                                 }
-                                // Update xPathPrefix
-                                xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
+                                // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
+                                for(let snapshotIndex = 0; snapshotIndex < stringMatches.snapshotLength; snapshotIndex++){
+                                    const node = stringMatches.snapshotItem(snapshotIndex);
+                                    const xPath = getXPathForElement(node, document);
+                                    if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
+                                        // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                                        let xPathPrefix = xPath;
+                                        while(xPathPrefix.length > 0){
+                                            const xPathToTry = xPathPrefix + newSuffix;
+                                            // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                            try{
+                                                const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                                if(node){
+                                                    const indexBasedXPath = getXPathForElement(node, document);
+                                                    if(indexBasedXPath === xPath){
+                                                        // This means that xPathToTry was valid and does match the original xPath
+                                                        // Let's set newXPath and break out of loop
+                                                        newXPath = xPathToTry;
+                                                        break;
+                                                    }
+                                                }
+                                            }catch{
+                                            }
+                                            // Update xPathPrefix
+                                            xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                        }
+                                    }else{
+                                        // newSuffix is the suffix, so just use this
+                                        newXPath = xPath;
+                                    }
+                                    if(newXPath){
+                                        break;
+                                    }
+                                }
+                            }else{
+                                const matchingNode = stringMatches.snapshotItem(0);
+                                newXPath = getXPathForElement(matchingNode, document);
+                            }
+
+                            if(newXPath){
+                                // Update commonXPathPrefix
+                                const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
+                                commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
+                                
+                                // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+                                commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
+                                
+                                // Update in newValueXPathObjList
+                                valueObj.xPath = newXPath;
+                            }
+                            console.log("newXPath", newXPath);
+                        }
+                    }
+
+                    // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
+                        // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
+                        // This is important because at program execution time we sometimes remove a suffix from param value xpaths (for matchingParam), so we want to try to adjust all our param value xpaths to have that suffix (if it's a valid xpath)
+                    if(xPathSuffix){
+                        let newSuffix = xPathSuffix;
+                        // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                        if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                            newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
+                        }
+                        //console.log("xPathSuffix", xPathSuffix);
+                        //console.log("newSuffix", newSuffix)
+                        for(let valueObj of newValueXPathObjList){
+                            // Check if this param value xpath has newSuffix at the end
+                            const xPath = valueObj.xPath;
+                            if(xPath && (xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length)){
+                                // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                                let xPathPrefix = xPath;
+                                while(xPathPrefix.length > 0){
+                                    //console.log("xPathPrefix", xPathPrefix);
+                                    //console.log("newSuffix",newSuffix);
+                                    const xPathToTry = xPathPrefix + newSuffix;
+                                    //console.log("xPathToTry", xPathToTry);
+                                    // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                    try{
+                                        const node = document.evaluate(xPathToTry, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0);
+                                        //console.log("node", node);
+                                        if(node){
+                                            const indexBasedXPath = getXPathForElement(node, document);
+                                            if(indexBasedXPath === xPath){
+                                                // This means that xPathToTry was valid and does match the original xPath
+                                                // Let's update our valueObj and then break out of loop
+                                                valueObj.xPath = xPathToTry;
+                                                break;
+                                            }
+                                        }
+                                    }catch{
+                                    }
+                                    // Update xPathPrefix
+                                    xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                }
                             }
                         }
                     }
+
+                    console.log("updated newValueXPathObjList", newValueXPathObjList);
+
+                    idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
                 }
-
-                console.log("updated newValueXPathObjList", newValueXPathObjList);
-
-                idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
             }
         }
 
@@ -2583,9 +2596,13 @@ class NaturalLanguage extends React.Component {
         
         let currentParamValuePairings = {};
         for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
-            const paramName = paramNameValueObj.paramName;
-            const paramValue = paramNameValueObj.paramValue;
-            currentParamValuePairings[paramName] = paramValue;
+            // Don't include this param/value if this demo is specifically for this param/value
+            // When we generate the program, we want to operate as if this param doesn't exist, so don't include it in currentParamValuePairings
+            if(!this.state.demonstrations[demo_index].specificallyForParamUuid || this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName !== paramNameValueObj.paramName){
+                const paramName = paramNameValueObj.paramName;
+                const paramValue = paramNameValueObj.paramValue;
+                currentParamValuePairings[paramName] = paramValue;
+            }
         }
         console.log("currentParamValuePairings", currentParamValuePairings);
 
@@ -2595,6 +2612,13 @@ class NaturalLanguage extends React.Component {
         
         //generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
         const programResult = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
+        
+        // If this demo is for a specific param/value, attach this info to the program obj, so that at execution we can figure out which program to run
+        if(this.state.demonstrations[demo_index].specificallyForParamUuid){
+            programResult.specificallyForParamName = this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName;
+            programResult.specificallyForValue = this.state.demonstrations[demo_index].specificallyForValue;
+        }
+        
         generatedProgramClone[demo_index] = programResult;
         console.log("generatedProgramClone", generatedProgramClone);
 
@@ -2730,14 +2754,14 @@ class NaturalLanguage extends React.Component {
         const demonstrationsClone = _.cloneDeep(this.state.demonstrations);
         demonstrationsClone[demo_index][attributeToUpdate] = e.target.value;
 
-        if(attributeToUpdate === "specificallyForParam"){
+        if(attributeToUpdate === "specificallyForParamUuid"){
             // Clear value, because user just changed param, so current value wouldn't make sense
-            demonstrationsClone[demo_index]["specificallyForParamValue"] = "";
-        }else if(attributeToUpdate === "specificallyForParamValue"){
+            demonstrationsClone[demo_index]["specificallyForValue"] = "";
+        }else if(attributeToUpdate === "specificallyForValue"){
             // Update param value for NL template
             // Wait a second, so that this setState doesn't conflict with one below
             setTimeout(function(context){
-                context.handleTemplateParamValueChange(e, demonstrationsClone[demo_index]["specificallyForParam"], demo_index);
+                context.handleTemplateParamValueChange(e, demonstrationsClone[demo_index]["specificallyForParamUuid"], demo_index);
             }, 0, this);
         }
         this.setState({
@@ -2901,7 +2925,7 @@ class NaturalLanguage extends React.Component {
                         paramToValueObj[paramName] = paramValue;
                     }
     
-                    const programOutput = await executeProgram(context.state.generatedProgram[0].program, paramToValueObj);
+                    const programOutput = await executeProgram(context.state.generatedProgram, paramToValueObj);
                     console.log("programOutput", programOutput);
                     context.setState({
                         programOutput,
@@ -2997,7 +3021,7 @@ class NaturalLanguage extends React.Component {
                         <TemplateParamTextItem
                             //text={textItem.text}
                             uuid={textItem.uuid}
-                            specificallyForParam={this.state.demonstrations[demoIndex] ? this.state.demonstrations[demoIndex].specificallyForParam : null}
+                            specificallyForParamUuid={this.state.demonstrations[demoIndex] ? this.state.demonstrations[demoIndex].specificallyForParamUuid : null}
                             paramName={textItem.paramName}
                             paramValue={paramValuePairs[textItem.uuid] ? paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
                             paramTypeData={textItem.paramTypeData}
@@ -3319,8 +3343,8 @@ class NaturalLanguage extends React.Component {
                                 <span>Parameter:</span>
                                 <select
                                     log-this-element=""
-                                    value={this.state.demonstrations[demo_index].specificallyForParam}
-                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParam")}
+                                    value={this.state.demonstrations[demo_index].specificallyForParamUuid}
+                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParamUuid")}
                                     disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
                                 >
                                     <>
@@ -3346,18 +3370,18 @@ class NaturalLanguage extends React.Component {
                                 <select
                                     log-this-element=""
                                     className={styles.specialParam}
-                                    value={this.state.demonstrations[demo_index].specificallyForParamValue}
-                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForParamValue")}
+                                    value={this.state.demonstrations[demo_index].specificallyForValue}
+                                    onChange={(e) => this.handleRefinementDemoUpdate(e, demo_index, "specificallyForValue")}
                                     disabled={this.state.demonstrations[demo_index].eventSequence.length > 0 || demo_index === this.state.demoIndexInRecordingMode}
                                 >
-                                    {this.state.demonstrations[demo_index].specificallyForParam ? (
+                                    {this.state.demonstrations[demo_index].specificallyForParamUuid ? (
                                         <>
                                             <option
                                                 value={""}
                                             >
                                                 {"<Choose value>"}
                                             </option>
-                                            {Object.keys(this.getParamIDNameValueData().paramValueObj[this.state.demonstrations[demo_index].specificallyForParam].paramValues).map((paramValue) => {
+                                            {Object.keys(this.getParamIDNameValueData().paramValueObj[this.state.demonstrations[demo_index].specificallyForParamUuid].paramValues).map((paramValue) => {
                                                 return (
                                                     <option
                                                         value={paramValue}
@@ -3376,7 +3400,7 @@ class NaturalLanguage extends React.Component {
                     ):(
                         ""
                     )}
-                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParam && this.state.demonstrations[demo_index].specificallyForParamValue ? (
+                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParamUuid && this.state.demonstrations[demo_index].specificallyForValue ? (
                         // Only let user edit param/values and record refinement demo if they've specified which specific param/value it is for
                         <div>
                             <div
@@ -3403,8 +3427,8 @@ class NaturalLanguage extends React.Component {
                                 </div>
                             ) : (
                                 <div>
-                                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParam && this.state.demonstrations[demo_index].specificallyForParamValue ? (
-                                        // For refinement demo, only show "Start recording" button if user has already set specificallyForParam and specificallyForParamValue
+                                    {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParamUuid && this.state.demonstrations[demo_index].specificallyForValue ? (
+                                        // For refinement demo, only show "Start recording" button if user has already set specificallyForParamUuid and specificallyForValue
                                         <button
                                             className={styles.startRecordingButton}
                                             onClick={() => this.handleStartRecordingDemo(demo_index)}
@@ -3745,7 +3769,7 @@ class NaturalLanguage extends React.Component {
                             >
                                 {programVersion_index === 0 ? "Main program" : `Refinement program ${programVersion_index}`}
                             </div>
-                            {this.state.demonstrations[programVersion_index].specificallyForParam ? (
+                            {this.state.demonstrations[programVersion_index].specificallyForParamUuid ? (
                                 // This is a refinement param, show parameter/value
                                 <div>
                                     <p>Specifically for </p>
@@ -3753,14 +3777,14 @@ class NaturalLanguage extends React.Component {
                                         <b
                                             className={styles.specialParamText}
                                         >
-                                            {this.state.idToItem[this.state.demonstrations[programVersion_index].specificallyForParam].paramName}
+                                            {this.state.idToItem[this.state.demonstrations[programVersion_index].specificallyForParamUuid].paramName}
                                         </b>
                                     </p>
                                     <p>Value:
                                         <b
                                             className={styles.specialParamText}
                                         >   
-                                            {this.state.demonstrations[programVersion_index].specificallyForParamValue}
+                                            {this.state.demonstrations[programVersion_index].specificallyForValue}
                                         </b>
                                     </p>
                                 </div>

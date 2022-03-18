@@ -26,9 +26,27 @@ function delayFor(delay) {
 // INPUT
     // program - result from generateProgramAndIdentifyNeededDemos
     // paramValuePairings - { param: value } to plug into program
-export async function executeProgram(program, paramValuePairings){
+export async function executeProgram(programList, paramValuePairings){
     const valuesToReturn = [];
-    for(let programStep of program){
+    
+    let programToRun;
+    for(let programOption of programList){
+        // Check if this programOption has specificallyForParamName/specificallyForValue
+            // and if they match what's in paramValuePairings, then use this programOption.
+        // Just use the first match we find (it's possible there are multiple, in which case we aren't going try to combine the programs in any way; this is just a limitation)
+        if(programOption.specificallyForParamName && paramValuePairings[programOption.specificallyForParamName] === programOption.specificallyForValue){
+            programToRun = programOption;
+            break;
+        }
+    }
+
+    if(!programToRun){
+        // No "refinement program" was found that matches what's in paramValuePairings,
+            // so let's use the "main program" (index 0)
+        programToRun = programList[0];
+    }
+    
+    for(let programStep of programToRun.program){
         try {
             let element;
             if(programStep.targetXPath){
