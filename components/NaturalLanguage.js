@@ -308,7 +308,7 @@ class TemplateFreeformParam extends React.Component {
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
                 className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
-                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid || this.props.demoIndexInRecordingMode !== null}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
             >
             </input>
@@ -337,7 +337,7 @@ class TemplateEnumerationParam extends React.Component {
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
                 className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
-                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid || this.props.demoIndexInRecordingMode !== null}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -374,7 +374,7 @@ class TemplateSuperlativeParam extends React.Component {
                 value={this.props.paramValue || defaultOption}
                 onChange={(e) => this.props.handleTemplateParamValueChange(e, this.props.uuid, this.props.demoIndex)}
                 className={this.props.uuid === this.props.specificallyForParamUuid? styles.specialParam : ""}
-                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid}
+                disabled={!this.props.valuesEditable || this.props.uuid === this.props.specificallyForParamUuid || this.props.demoIndexInRecordingMode !== null}
                 //disabled={this.props.uuidInEditMode || this.props.groupSelectionMode || this.props.viewOnlyMode}
                 //className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
             >
@@ -981,6 +981,7 @@ class TemplateParamTextItem extends React.Component {
             if(this.props.paramTypeData.type === "freeform"){
                 paramTemplate = <TemplateFreeformParam
                                             uuid={this.props.uuid}     
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
                                             specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
@@ -998,6 +999,7 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "enumeration"){
                 paramTemplate = <TemplateEnumerationParam
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
                                             specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
@@ -1016,6 +1018,7 @@ class TemplateParamTextItem extends React.Component {
             }else if(this.props.paramTypeData.type === "superlative"){
                 paramTemplate = <TemplateSuperlativeParam
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
                                             specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
@@ -1032,7 +1035,8 @@ class TemplateParamTextItem extends React.Component {
                                         />;
             }else if(this.props.paramTypeData.type === "flag"){
                 paramTemplate = <TemplateFlagParam
-                                            uuid={this.props.uuid} 
+                                            uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
                                             specificallyForParamUuid={this.props.specificallyForParamUuid}         
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
@@ -1049,6 +1053,7 @@ class TemplateParamTextItem extends React.Component {
                                             dateRestriction={this.props.paramTypeData.dateRestriction}
                                             otherDataValue={this.props.paramTypeData.otherDataValue}
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
                                             specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
@@ -1066,6 +1071,7 @@ class TemplateParamTextItem extends React.Component {
                                             rangeStart={this.props.paramTypeData.rangeStart}
                                             rangeEnd={this.props.paramTypeData.rangeEnd}
                                             uuid={this.props.uuid}
+                                            demoIndexInRecordingMode = {this.props.demoIndexInRecordingMode}
                                             specificallyForParamUuid={this.props.specificallyForParamUuid}
                                             paramName={this.props.paramName}
                                             paramValue={this.props.paramValue}
@@ -3023,6 +3029,7 @@ class NaturalLanguage extends React.Component {
                         <TemplateParamTextItem
                             //text={textItem.text}
                             uuid={textItem.uuid}
+                            demoIndexInRecordingMode = {this.state.demoIndexInRecordingMode}
                             specificallyForParamUuid={this.state.demonstrations[demoIndex] ? this.state.demonstrations[demoIndex].specificallyForParamUuid : null}
                             paramName={textItem.paramName}
                             paramValue={paramValuePairs[textItem.uuid] ? paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
