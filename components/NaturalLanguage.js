@@ -2492,6 +2492,25 @@ class NaturalLanguage extends React.Component {
         return constantSuperlatives;
     }
 
+    getDemoParamsNotYetFilledIn(demoIndex){
+        const thisDemoParamValuePairs = this.state.demonstrations[demoIndex].paramValuePairs;
+        let thisDemoFilledInParamUuids = Object.keys(thisDemoParamValuePairs);
+
+        // Filter out the ones whose value is <${paramName}>, because that's just the default value
+        thisDemoFilledInParamUuids = thisDemoFilledInParamUuids.filter(uuid => thisDemoParamValuePairs[uuid] && thisDemoParamValuePairs[uuid].paramValue !== `<${thisDemoParamValuePairs[uuid].paramName}>`);
+
+        // Need to look at what all the params are for the NL and see which ones aren't in thisDemoParamValuePairs
+        const allParamUuids = Object.keys(this.getParamIDNameValueData().paramValueObj);
+        
+        // Identify all param uuids that are in allParamUuids but not in thisDemoFilledInParamUuids
+        const paramUuidsMissing = _.difference(allParamUuids, thisDemoFilledInParamUuids);
+        return paramUuidsMissing;
+    }
+
+    areAnyDemoParamsNotFilledIn(demoIndex){
+        return this.getDemoParamsNotYetFilledIn(demoIndex).length > 0;
+    }
+
     // Similar to getParamValueData; just created a new version for now because i don't want to break getParamValueData
     getParamIDNameValueData(){
         let paramValueObj = {};
@@ -3441,6 +3460,7 @@ class NaturalLanguage extends React.Component {
                                         <button
                                             className={styles.startRecordingButton}
                                             onClick={() => this.handleStartRecordingDemo(demo_index)}
+                                            disabled={this.areAnyDemoParamsNotFilledIn(demo_index)}
                                         >Start recording</button>
                                     ):(
                                         ""
