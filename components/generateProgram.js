@@ -1209,41 +1209,57 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         //currentParamValuePairings, paramValueObj
                         let paramNumColDataOptions = [];
                         for(let paramName of Object.keys(currentParamValuePairings)){
+                            // Find the most popular common pairwise xpath prefix between param value xpaths.
+                                // We want the rowPrefix that we use below to point to the parent of the column elements
+                                // Since we're basically relying on just a single demonstration, we want to choose the rowPrefix
+                                // that gives us the largest number of columns, so let's choose the rowPrefix to be the common pairwise
+                                // xpath that is most common.
+                                // This will help us avoid choosing a rowPrefix that is too high up, which would be caused by an outlier
+                                // param value xpath that is somewhere totally different on the page; we don't want this outlier to prevent us
+                                // from making an inference that works in most cases.
                             const paramValuesAndXPaths = paramValueObj[paramName];
                             const paramValues = Object.keys(paramValuesAndXPaths);
-                            let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
-                            let rowPrefix;
+                            const rowXPathOptions = {};
                             for(let i = 0; i < paramValues.length-1; i++){
                                 for(let j = i+1; j < paramValues.length; j++){
                                     if(paramValuesAndXPaths[paramValues[i]] && paramValuesAndXPaths[paramValues[j]]){
                                         const commonPrefixLength = getCommonPrefixLength(paramValuesAndXPaths[paramValues[i]], paramValuesAndXPaths[paramValues[j]]);
-                                        //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
-                                        if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
-                                            commonPrefixLengthAmongstXPaths = commonPrefixLength;
-                                            rowPrefix = paramValuesAndXPaths[paramValues[i]].substring(0, commonPrefixLengthAmongstXPaths);
+                                        const commonPrefix = paramValuesAndXPaths[paramValues[i]].substring(0, commonPrefixLength);
+                                        if(rowXPathOptions[commonPrefix]){
+                                            // Increment
+                                            rowXPathOptions[commonPrefix] = rowXPathOptions[commonPrefix] + 1;
+                                        }else{
+                                            // Add it to map for first time
+                                            rowXPathOptions[commonPrefix] = 1;
                                         }
                                     }
-                                    /*if(paramValuesAndXPaths[paramValues[i]] && paramValuesAndXPaths[paramValues[j]]){
-                                        //const commonPrefixLength = getCommonPrefixLength(paramValuesAndXPaths[paramValues[i]], paramValuesAndXPaths[paramValues[j]]);
-                                        const indexBasedValue1XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[i]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0], document);
-                                        const indexBasedValue2XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[j]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0], document);
-                                        const commonPrefixLength = getCommonPrefixLength(indexBasedValue1XPath, indexBasedValue2XPath);
-                                        //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
-                                        if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
-                                            commonPrefixLengthAmongstXPaths = commonPrefixLength;
-                                            rowPrefix = getClassAttributeBasedVersionOfPrefix(indexBasedValue1XPath, paramValuesAndXPaths[paramValues[i]]);
-                                            //rowPrefix = paramValuesAndXPaths[paramValues[i]].substring(0, commonPrefixLengthAmongstXPaths);
-                                        }
-                                    }*/
+                                    // if(paramValuesAndXPaths[paramValues[i]] && paramValuesAndXPaths[paramValues[j]]){
+                                    //     //const commonPrefixLength = getCommonPrefixLength(paramValuesAndXPaths[paramValues[i]], paramValuesAndXPaths[paramValues[j]]);
+                                    //     const indexBasedValue1XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[i]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0], document);
+                                    //     const indexBasedValue2XPath = getXPathForElement(document.evaluate(paramValuesAndXPaths[paramValues[j]], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0], document);
+                                    //     const commonPrefixLength = getCommonPrefixLength(indexBasedValue1XPath, indexBasedValue2XPath);
+                                    //     //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
+                                    //     if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
+                                    //         commonPrefixLengthAmongstXPaths = commonPrefixLength;
+                                    //         rowPrefix = getClassAttributeBasedVersionOfPrefix(indexBasedValue1XPath, paramValuesAndXPaths[paramValues[i]]);
+                                    //         //rowPrefix = paramValuesAndXPaths[paramValues[i]].substring(0, commonPrefixLengthAmongstXPaths);
+                                    //     }
+                                    // }
                                 }
                             }
-                    
+                            //console.log("rowXPathOptions", rowXPathOptions);
+                            const mostCommonPairwisePrefixCount = Math.max(...Object.values(rowXPathOptions));
+                            //console.log("mostCommonPairwisePrefixCount", mostCommonPairwisePrefixCount);
+                            // Filter to only include the most common
+                            const mostCommonPairwisePrefixOptions = Object.keys(rowXPathOptions).filter(xPathOption => rowXPathOptions[xPathOption] === mostCommonPairwisePrefixCount);
+                            //console.log("mostCommonPairwisePrefixOptions", mostCommonPairwisePrefixOptions);
+                            // Choose the most common xpath (or if there are multiple common xpaths, just choose one of them)
+                            let rowPrefix = mostCommonPairwisePrefixOptions[0];
+                            console.log("rowPrefix for cols", rowPrefix);
                             if(rowPrefix){
-                                // For rowPrefix - Need to make sure it isn't an incomplete node at the end. If the last char isn't a / or a ], then need to trim the end
-                                if(rowPrefix.charAt(rowPrefix.length-1) !== '/' && rowPrefix.charAt(rowPrefix.length-1) !== ']'){
-                                    const lastSlashIndex = rowPrefix.lastIndexOf('/');
-                                    rowPrefix = rowPrefix.substring(0, lastSlashIndex);
-                                }
+                                // For rowPrefix - Need to make sure it isn't an incomplete node at the end, or even just a slash at the end. If the last char isn't a ], then need to trim the end
+                                const lastSlashIndex = rowPrefix.lastIndexOf('/');
+                                rowPrefix = rowPrefix.substring(0, lastSlashIndex);
                     
                                 const paramRowElement = fontoxpath.evaluateXPathToNodes(rowPrefix, document.documentElement)[0];
                                 const numCols = paramRowElement.children.length;
@@ -1257,8 +1273,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         paramNumColDataOptions.sort(function(a, b){
                             return Math.abs(a.numCols - valueRowNumCols) - Math.abs(b.numCols - valueRowNumCols);
                         });
-                    
-                    
+                        
                         // Be smarter about which item from paramNumColDataOptions we choose
                         // Filter paramNumColDataOptions to include only ones with smallest differential
                         //const necessaryColNum = paramNumColDataOptions[0].numCols;
@@ -1283,16 +1298,13 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 const paramName = paramNumColDataOption.paramName;
                                 console.log("paramName", paramName);
                                 const expectedValue = currentParamValuePairings[paramName];
-                                console.log("expectedValue", expectedValue);
-                        
+                                
                                 // Check col colIndexOptionObject.dataValueColIndex of param row to see if value is expectedValue
                                 if(paramNumColDataOption.paramRowElement.children.length > colIndexOptionObject.dataValueColIndex){
                                     const paramColItem = paramNumColDataOption.paramRowElement.children[colIndexOptionObject.dataValueColIndex];
                                     const paramColItemXPath = getXPathForElement(paramColItem, document);
-                        
-                                    // Find the param value (from paramValueObj[param]) whose xpath is closest to paramColItem's xpath
-                                    // TODO
-                        
+                                    
+                                    // Find the param value (from paramValueObj[param]) whose xpath is closest to paramColItem's xpath                        
                                     let longestCommonPrefixLengthSoFar = 0;
                                     let valuesLongestCommonPrefixLengthSoFar = [];
                                     
@@ -1314,21 +1326,12 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     // Don't consider if more than 1 value whose xpath is "close" to paramColItemXPath
                                     if(valuesLongestCommonPrefixLengthSoFar.length === 1){
                                         const valueXPath = valueObj[valuesLongestCommonPrefixLengthSoFar[0]];
-                                        //console.log("valueXPath", valueXPath);
                                         const valueNode = fontoxpath.evaluateXPathToNodes(valueXPath, document.documentElement)[0];
-                                        console.log("valueNode", valueNode);
-                                        console.log("valueNode.textContent", valueNode.textContent);
-                                        //console.log("expectedValue", expectedValue);
-                                        //if(valueNode.textContent === expectedValue){
                                         if(valueNode.textContent.trim().toLowerCase() === expectedValue.trim().toLowerCase()){
                                             // Should consider this param/value option
                                             possibleParamOptions.push(paramNumColDataOption);
                                         }
                                     }
-                                    
-                                    /*if(paramColItem.textContent === expectedValue){ // is 'equal to' too strict?
-                                        possibleParamOptions.push(paramNumColDataOption);
-                                    }*/
                                 }
                             }
                             console.log("possibleParamOptions", possibleParamOptions);
