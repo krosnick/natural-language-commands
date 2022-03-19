@@ -3861,6 +3861,11 @@ class NaturalLanguage extends React.Component {
                                                                         Column determined by:
                                                                         <span
                                                                             className={styles.importantPieceOfInfo}
+                                                                            style={
+                                                                                {
+                                                                                    backgroundColor: this.getParamColor(step.relevantParamForCol)
+                                                                                }
+                                                                            }
                                                                         >
                                                                             {step.relevantParamForCol}
                                                                         </span>
