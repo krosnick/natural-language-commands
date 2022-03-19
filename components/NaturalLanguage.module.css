@@ -277,6 +277,12 @@
     margin: 10px;
 }
 
+.aboutToRecordButton {
+    background-color: #b9b9b9;
+    font-size: large;
+    margin: 10px;
+}
+
 .stopRecordingButton {
     background-color: #ff8282;
     font-size: large;

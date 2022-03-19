@@ -1,6 +1,6 @@
 import React, {useRef, useState} from 'react';
 import { withRouter } from 'next/router';
-import _ from 'lodash';
+import _, { set } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import styles from './NaturalLanguage.module.css';
 import ChipotleClone from './website_clones/ChipotleClone';
@@ -1163,6 +1163,7 @@ class NaturalLanguage extends React.Component {
             demonstrations: [],
             demoIndexInCreateMode: null,
             demoIndexInRecordingMode: null,
+            demoIndexInAboutToRecordMode: null,
             triggerWebsiteReload: Math.random(),
             generatedProgram: [],
             paramValuePairsForRunningProgram: {},
@@ -2205,112 +2206,72 @@ class NaturalLanguage extends React.Component {
 
     handleStartRecordingDemo(demoIndex){
         console.log("handleStartRecordingDemo");
+        
         // Reload embedded website page, to ensure clean slate when user starts performing demo
         this.forceReRenderEmbeddedWebsite();
-
-        const idToItemClone = _.cloneDeep(this.state.idToItem);
         
-        // For now at least, only try to make xpaths more robust before recording/re-recording the main demo (demoIndex === 0)
-            // We don't want to do this for refinement demos (demoIndex > 0) because if that changes the xpaths, that could break the existing program for the main demo
-            // (e.g., maybe main demo relied certain param value xpath suffixes, which now don't exist because the xpaths are different)
-        // However, this could be a problem if the user edits param values in between making the main demo and refinement demos.
-            // When a program is generated for a refinement demo, the xpaths will be null.
-        // In general, it's a bad idea that we allow the user to edit params/values after some demos have been created; will lead to inconsistencies and break things
-            // we should just disallow users from editing params/values once they start demonstrations.
-        // Or ideally we should regenerate the program automatically each time the params/values change. Currently we can't do this because we aren't storing demo DOM state,
-            // and not able to query it with document.evaluate
-        if(demoIndex === 0){
-            // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
-            for(let item of Object.values(idToItemClone)){
-                if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
-                    // This item is a param. Run makeXPathsMoreRobust on its values and update 
+        // Set demoIndexInAboutToRecordMode to this demoIndex (since the below xpath computations takes some time,
+            // we'll update 'start recording' button to show 'wait a moment...' and in gray, so user knows to wait and can see that their click did do something;
+            // otherwise they'll be confused that it lags in turning to 'stop recording')
+        this.setState({
+            demoIndexInAboutToRecordMode: demoIndex
+        });
 
-                    let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
-                    let rowPrefix;
-                    for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
-                        for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
-                            if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
-                                const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
-                                //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
-                                if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
-                                    commonPrefixLengthAmongstXPaths = commonPrefixLength;
-                                    rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+        setTimeout(() => {
+            const idToItemClone = _.cloneDeep(this.state.idToItem);
+            
+            // For now at least, only try to make xpaths more robust before recording/re-recording the main demo (demoIndex === 0)
+                // We don't want to do this for refinement demos (demoIndex > 0) because if that changes the xpaths, that could break the existing program for the main demo
+                // (e.g., maybe main demo relied certain param value xpath suffixes, which now don't exist because the xpaths are different)
+            // However, this could be a problem if the user edits param values in between making the main demo and refinement demos.
+                // When a program is generated for a refinement demo, the xpaths will be null.
+            // In general, it's a bad idea that we allow the user to edit params/values after some demos have been created; will lead to inconsistencies and break things
+                // we should just disallow users from editing params/values once they start demonstrations.
+            // Or ideally we should regenerate the program automatically each time the params/values change. Currently we can't do this because we aren't storing demo DOM state,
+                // and not able to query it with document.evaluate
+            if(demoIndex === 0){
+                // Before recording demo, for each parameter, check values and see if we can make xpaths more robust (so that we have an xpath template that matches all/as many values as possible)
+                for(let item of Object.values(idToItemClone)){
+                    if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
+                        // This item is a param. Run makeXPathsMoreRobust on its values and update 
+
+                        let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
+                        let rowPrefix;
+                        for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
+                            for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
+                                if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
+                                    const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
+                                    //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
+                                    if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
+                                        commonPrefixLengthAmongstXPaths = commonPrefixLength;
+                                        rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+                                    }
                                 }
                             }
                         }
-                    }
-                    
-                    // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
-                    //let newValueXPathObjList = item.paramTypeData.possibleValues;
-                    let newValueXPathObjList = [];
+                        
+                        // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
+                        //let newValueXPathObjList = item.paramTypeData.possibleValues;
+                        let newValueXPathObjList = [];
 
-                    // If an item in possibleValues is an empty string, don't include it
-                    for(let possibleValueObj of item.paramTypeData.possibleValues){
-                        if(possibleValueObj.textCandidate.trim().length > 0){
-                            newValueXPathObjList.push(possibleValueObj);
-                        }
-                    }
-
-                    const paramValues = newValueXPathObjList.map(x => x.textCandidate);
-
-                    // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
-                    const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
-
-                    // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
-                    let bestMatchList = [];
-                    for(let candidateList of candidateLists){
-                        const matchList = [];
-                        for(let valueObj of candidateList){
-                            for(let paramValue of paramValues){
-                                if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
-                                    // Update valueObj to use same text user had
-                                    valueObj.textCandidate = paramValue;
-                                    matchList.push(valueObj);
-                                }
+                        // If an item in possibleValues is an empty string, don't include it
+                        for(let possibleValueObj of item.paramTypeData.possibleValues){
+                            if(possibleValueObj.textCandidate.trim().length > 0){
+                                newValueXPathObjList.push(possibleValueObj);
                             }
                         }
-                        if(matchList.length > bestMatchList.length){
-                            bestMatchList = matchList;
-                        }
-                    }
-                    //console.log("first bestMatchList", bestMatchList);
-                    newValueXPathObjList = bestMatchList;
 
-                    let xPathSuffix;
-                    if(rowPrefix){
-                        // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
-                        rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
-                        const parentOfRowsElement = fontoxpath.evaluateXPathToNodes(rowPrefix, document.documentElement)[0];
-                        const numRows = parentOfRowsElement.children.length;
-                        
-                        // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
-                        const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
-                        newValueXPathObjList = result.newValueXPathObjList;
-                        xPathSuffix = result.xPathSuffix;
-                        console.log("newValueXPathObjList", newValueXPathObjList);
-                    }
+                        const paramValues = newValueXPathObjList.map(x => x.textCandidate);
 
-                    // Now, see if there are still any param values that have a null xpath, and try to fill those in
-                        
-                    let paramValuesWithNullXPathToStillTry = [];
-                    for(let valueObj of newValueXPathObjList){
-                        if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
-                            paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
-                        }
-                    }
-                    //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
-                    // Now, use getCandidateLists to fill in xpaths
-                    while(paramValuesWithNullXPathToStillTry.length > 0){
-                        // Seed with first value in paramValuesWithNullXPathToStillTry
-                        const candidateLists = getCandidateLists([paramValuesWithNullXPathToStillTry[0].trim()], false, embeddedWebsiteXPathPrefix);
-                        //console.log("candidateLists to fill in xpaths", candidateLists);
+                        // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
+                        const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
 
                         // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
                         let bestMatchList = [];
                         for(let candidateList of candidateLists){
                             const matchList = [];
                             for(let valueObj of candidateList){
-                                for(let paramValue of paramValuesWithNullXPathToStillTry){
+                                for(let paramValue of paramValues){
                                     if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
                                         // Update valueObj to use same text user had
                                         valueObj.textCandidate = paramValue;
@@ -2321,197 +2282,249 @@ class NaturalLanguage extends React.Component {
                             if(matchList.length > bestMatchList.length){
                                 bestMatchList = matchList;
                             }
+                        }
+                        //console.log("first bestMatchList", bestMatchList);
+                        newValueXPathObjList = bestMatchList;
+
+                        let xPathSuffix;
+                        if(rowPrefix){
+                            console.log("rowPrefix for numRows", rowPrefix);
+                            // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
+                            rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
+                            const parentOfRowsElement = fontoxpath.evaluateXPathToNodes(rowPrefix, document.documentElement)[0];
+                            const numRows = parentOfRowsElement.children.length;
+                            
+                            // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
+                            const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
+                            newValueXPathObjList = result.newValueXPathObjList;
+                            xPathSuffix = result.xPathSuffix;
+                            console.log("newValueXPathObjList", newValueXPathObjList);
+                        }
+
+                        // Now, see if there are still any param values that have a null xpath, and try to fill those in
+                            
+                        let paramValuesWithNullXPathToStillTry = [];
+                        for(let valueObj of newValueXPathObjList){
+                            if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
+                                paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
+                            }
+                        }
+                        //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
+                        // Now, use getCandidateLists to fill in xpaths
+                        while(paramValuesWithNullXPathToStillTry.length > 0){
+                            // Seed with first value in paramValuesWithNullXPathToStillTry
+                            const candidateLists = getCandidateLists([paramValuesWithNullXPathToStillTry[0].trim()], false, embeddedWebsiteXPathPrefix);
+                            //console.log("candidateLists to fill in xpaths", candidateLists);
+
+                            // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
+                            let bestMatchList = [];
+                            for(let candidateList of candidateLists){
+                                const matchList = [];
+                                for(let valueObj of candidateList){
+                                    for(let paramValue of paramValuesWithNullXPathToStillTry){
+                                        if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                            // Update valueObj to use same text user had
+                                            valueObj.textCandidate = paramValue;
+                                            matchList.push(valueObj);
+                                        }
+                                    }
+                                }
+                                if(matchList.length > bestMatchList.length){
+                                    bestMatchList = matchList;
+                                }
+                                if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
+                                    // We've found all the values
+                                    break;
+                                }
+                            }
+                            console.log("bestMatchList", bestMatchList);
+
+                            // Update newValueXPathObjList objects based on bestMatchList
+                            for(let match of bestMatchList){
+                                // Find obj in newValueXPathObjList corresponding to match and replace it
+                                for(let i = 0; i < newValueXPathObjList.length; i++){
+                                    const existingValueObj = newValueXPathObjList[i];
+                                    if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
+                                        match.textCandidate = existingValueObj.textCandidate;
+                                        newValueXPathObjList[i] = match;
+                                    }
+                                }
+                            }
+
                             if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
-                                // We've found all the values
+                                // We've found all the values, so break out of while loop
                                 break;
                             }
-                        }
-                        console.log("bestMatchList", bestMatchList);
 
-                        // Update newValueXPathObjList objects based on bestMatchList
-                        for(let match of bestMatchList){
-                            // Find obj in newValueXPathObjList corresponding to match and replace it
-                            for(let i = 0; i < newValueXPathObjList.length; i++){
-                                const existingValueObj = newValueXPathObjList[i];
-                                if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
-                                    match.textCandidate = existingValueObj.textCandidate;
-                                    newValueXPathObjList[i] = match;
-                                }
+                            if(bestMatchList.length === 0){
+                                // The value we seeded with ([paramValuesWithNullXPathToStillTry[0]) actually can't be found on the page anywhere
+                                    // Let's just remove it from paramValuesWithNullXPathToStillTry so we can try with remaining values (since we're never going to find a match for this value)
+
+                                // Update paramValuesWithNullXPathToStillTry to remove the first item
+                                paramValuesWithNullXPathToStillTry.splice(0, 1);
                             }
-                        }
 
-                        if(bestMatchList.length === paramValuesWithNullXPathToStillTry.length){
-                            // We've found all the values, so break out of while loop
-                            break;
-                        }
-
-                        if(bestMatchList.length === 0){
-                            // The value we seeded with ([paramValuesWithNullXPathToStillTry[0]) actually can't be found on the page anywhere
-                                // Let's just remove it from paramValuesWithNullXPathToStillTry so we can try with remaining values (since we're never going to find a match for this value)
-
-                            // Update paramValuesWithNullXPathToStillTry to remove the first item
-                            paramValuesWithNullXPathToStillTry.splice(0, 1);
-                        }
-
-                        // There are still param values without an xpath, so we need to return to top of loop and try with remaining values
-                        // Update paramValuesWithNullXPathToStillTry to remove values that are in bestMatchList
-                        for(let match of bestMatchList){
-                            for(let i = 0; i < paramValuesWithNullXPathToStillTry.length; i++){
-                                let paramValue = paramValuesWithNullXPathToStillTry[i];
-                                if(match.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
-                                    // A match has been found for paramValue, so remove paramValue from paramValuesWithNullXPathToStillTry
-                                    paramValuesWithNullXPathToStillTry.splice(i, 1);
-                                    break; // break out of inner loop because found value correspond to match value, and move on to next match value to look for
-                                }
-                            }
-                        }
-                    }
-
-                    // Check and see if there are still values in newValueXPathObjList without an xpath
-                        // We should try a more refined search now for these strings.
-                        // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
-                        // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
-                    
-                    let commonXPathPrefix;
-                    // Compute commonXPathPrefix
-                    for(let valueObj of newValueXPathObjList){
-                        if(valueObj.xPath){
-                            if(commonXPathPrefix === undefined){
-                                commonXPathPrefix = valueObj.xPath;
-                            }
-                            const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
-                            commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-
-                            // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
-                            commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                        }
-                    }
-                    console.log("commonXPathPrefix", commonXPathPrefix);
-
-                    for(let valueObj of newValueXPathObjList){
-                        // Check if this value has an xpath
-                        if(!valueObj.xPath){
-                            
-                            // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
-                            let newXPath;
-                            const stringMatches = fontoxpath.evaluateXPathToNodes(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document.documentElement);
-                            // A lot of this adapted from below; should make helper function
-                            if(xPathSuffix){
-                                let newSuffix = xPathSuffix;
-                                // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
-                                if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
-                                    newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
-                                }
-                                // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
-                                // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
-                                for(let snapshotIndex = 0; snapshotIndex < stringMatches.length; snapshotIndex++){
-                                    const node = stringMatches[snapshotIndex];
-                                    const xPath = getXPathForElement(node, document);
-                                    if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
-                                        // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
-                                        let xPathPrefix = xPath;
-                                        while(xPathPrefix.length > 0){
-                                            const xPathToTry = xPathPrefix + newSuffix;
-                                            // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
-                                            try{
-                                                const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
-                                                if(node){
-                                                    const indexBasedXPath = getXPathForElement(node, document);
-                                                    if(indexBasedXPath === xPath){
-                                                        // This means that xPathToTry was valid and does match the original xPath
-                                                        // Let's set newXPath and break out of loop
-                                                        newXPath = xPathToTry;
-                                                        break;
-                                                    }
-                                                }
-                                            }catch{
-                                            }
-                                            // Update xPathPrefix
-                                            xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
-                                        }
-                                    }else{
-                                        // newSuffix is the suffix, so just use this
-                                        newXPath = xPath;
-                                    }
-                                    if(newXPath){
-                                        break;
+                            // There are still param values without an xpath, so we need to return to top of loop and try with remaining values
+                            // Update paramValuesWithNullXPathToStillTry to remove values that are in bestMatchList
+                            for(let match of bestMatchList){
+                                for(let i = 0; i < paramValuesWithNullXPathToStillTry.length; i++){
+                                    let paramValue = paramValuesWithNullXPathToStillTry[i];
+                                    if(match.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
+                                        // A match has been found for paramValue, so remove paramValue from paramValuesWithNullXPathToStillTry
+                                        paramValuesWithNullXPathToStillTry.splice(i, 1);
+                                        break; // break out of inner loop because found value correspond to match value, and move on to next match value to look for
                                     }
                                 }
-                            }else{
-                                const matchingNode = stringMatches[0];
-                                newXPath = getXPathForElement(matchingNode, document);
                             }
+                        }
 
-                            if(newXPath){
-                                // Update commonXPathPrefix
-                                const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
+                        // Check and see if there are still values in newValueXPathObjList without an xpath
+                            // We should try a more refined search now for these strings.
+                            // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
+                            // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
+                        
+                        let commonXPathPrefix;
+                        // Compute commonXPathPrefix
+                        for(let valueObj of newValueXPathObjList){
+                            if(valueObj.xPath){
+                                if(commonXPathPrefix === undefined){
+                                    commonXPathPrefix = valueObj.xPath;
+                                }
+                                const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
                                 commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-                                
+
                                 // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
                                 commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                                
-                                // Update in newValueXPathObjList
-                                valueObj.xPath = newXPath;
                             }
-                            console.log("newXPath", newXPath);
                         }
-                    }
+                        console.log("commonXPathPrefix", commonXPathPrefix);
 
-                    // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
-                        // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
-                        // This is important because at program execution time we sometimes remove a suffix from param value xpaths (for matchingParam), so we want to try to adjust all our param value xpaths to have that suffix (if it's a valid xpath)
-                    if(xPathSuffix){
-                        let newSuffix = xPathSuffix;
-                        // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
-                        if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
-                            newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
-                        }
-                        //console.log("xPathSuffix", xPathSuffix);
-                        //console.log("newSuffix", newSuffix)
                         for(let valueObj of newValueXPathObjList){
-                            // Check if this param value xpath has newSuffix at the end
-                            const xPath = valueObj.xPath;
-                            if(xPath && (xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length)){
-                                // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
-                                let xPathPrefix = xPath;
-                                while(xPathPrefix.length > 0){
-                                    //console.log("xPathPrefix", xPathPrefix);
-                                    //console.log("newSuffix",newSuffix);
-                                    const xPathToTry = xPathPrefix + newSuffix;
-                                    //console.log("xPathToTry", xPathToTry);
-                                    // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
-                                    try{
-                                        const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
-                                        //console.log("node", node);
-                                        if(node){
-                                            const indexBasedXPath = getXPathForElement(node, document);
-                                            if(indexBasedXPath === xPath){
-                                                // This means that xPathToTry was valid and does match the original xPath
-                                                // Let's update our valueObj and then break out of loop
-                                                valueObj.xPath = xPathToTry;
-                                                break;
-                                            }
-                                        }
-                                    }catch{
+                            // Check if this value has an xpath
+                            if(!valueObj.xPath){
+                                
+                                // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
+                                let newXPath;
+                                const stringMatches = fontoxpath.evaluateXPathToNodes(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document.documentElement);
+                                // A lot of this adapted from below; should make helper function
+                                if(xPathSuffix){
+                                    let newSuffix = xPathSuffix;
+                                    // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                                    if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                                        newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
                                     }
-                                    // Update xPathPrefix
-                                    xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                    // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
+                                    // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
+                                    for(let snapshotIndex = 0; snapshotIndex < stringMatches.length; snapshotIndex++){
+                                        const node = stringMatches[snapshotIndex];
+                                        const xPath = getXPathForElement(node, document);
+                                        if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
+                                            // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                                            let xPathPrefix = xPath;
+                                            while(xPathPrefix.length > 0){
+                                                const xPathToTry = xPathPrefix + newSuffix;
+                                                // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                                try{
+                                                    const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
+                                                    if(node){
+                                                        const indexBasedXPath = getXPathForElement(node, document);
+                                                        if(indexBasedXPath === xPath){
+                                                            // This means that xPathToTry was valid and does match the original xPath
+                                                            // Let's set newXPath and break out of loop
+                                                            newXPath = xPathToTry;
+                                                            break;
+                                                        }
+                                                    }
+                                                }catch{
+                                                }
+                                                // Update xPathPrefix
+                                                xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                            }
+                                        }else{
+                                            // newSuffix is the suffix, so just use this
+                                            newXPath = xPath;
+                                        }
+                                        if(newXPath){
+                                            break;
+                                        }
+                                    }
+                                }else{
+                                    const matchingNode = stringMatches[0];
+                                    newXPath = getXPathForElement(matchingNode, document);
+                                }
+
+                                if(newXPath){
+                                    // Update commonXPathPrefix
+                                    const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
+                                    commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
+                                    
+                                    // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+                                    commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
+                                    
+                                    // Update in newValueXPathObjList
+                                    valueObj.xPath = newXPath;
+                                }
+                                console.log("newXPath", newXPath);
+                            }
+                        }
+
+                        // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
+                            // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
+                            // This is important because at program execution time we sometimes remove a suffix from param value xpaths (for matchingParam), so we want to try to adjust all our param value xpaths to have that suffix (if it's a valid xpath)
+                        if(xPathSuffix){
+                            let newSuffix = xPathSuffix;
+                            // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                            if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                                newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
+                            }
+                            //console.log("xPathSuffix", xPathSuffix);
+                            //console.log("newSuffix", newSuffix)
+                            for(let valueObj of newValueXPathObjList){
+                                // Check if this param value xpath has newSuffix at the end
+                                const xPath = valueObj.xPath;
+                                if(xPath && (xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length)){
+                                    // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
+                                    let xPathPrefix = xPath;
+                                    while(xPathPrefix.length > 0){
+                                        //console.log("xPathPrefix", xPathPrefix);
+                                        //console.log("newSuffix",newSuffix);
+                                        const xPathToTry = xPathPrefix + newSuffix;
+                                        //console.log("xPathToTry", xPathToTry);
+                                        // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
+                                        try{
+                                            const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
+                                            //console.log("node", node);
+                                            if(node){
+                                                const indexBasedXPath = getXPathForElement(node, document);
+                                                if(indexBasedXPath === xPath){
+                                                    // This means that xPathToTry was valid and does match the original xPath
+                                                    // Let's update our valueObj and then break out of loop
+                                                    valueObj.xPath = xPathToTry;
+                                                    break;
+                                                }
+                                            }
+                                        }catch{
+                                        }
+                                        // Update xPathPrefix
+                                        xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
+                                    }
                                 }
                             }
                         }
+
+                        console.log("updated newValueXPathObjList", newValueXPathObjList);
+
+                        idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
                     }
-
-                    console.log("updated newValueXPathObjList", newValueXPathObjList);
-
-                    idToItemClone[item.uuid].paramTypeData.possibleValues = newValueXPathObjList;
                 }
             }
-        }
 
-        this.setState({
-            demoIndexInRecordingMode: demoIndex,
-            idToItem: idToItemClone
-        });
+            this.setState({
+                demoIndexInAboutToRecordMode: null,
+                demoIndexInRecordingMode: demoIndex,
+                idToItem: idToItemClone
+            });
+        }, 0);
     }
 
     findSuperlatives(nlString){
@@ -3515,11 +3528,20 @@ class NaturalLanguage extends React.Component {
                                 <div>
                                     {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParamUuid && this.state.demonstrations[demo_index].specificallyForValue ? (
                                         // For refinement demo, only show "Start recording" button if user has already set specificallyForParamUuid and specificallyForValue
-                                        <button
-                                            className={styles.startRecordingButton}
-                                            onClick={() => this.handleStartRecordingDemo(demo_index)}
-                                            disabled={this.areAnyDemoParamsNotFilledIn(demo_index)}
-                                        >Start recording</button>
+                                        <>
+                                        {this.state.demoIndexInAboutToRecordMode === demo_index ? (
+                                            <button
+                                                className={styles.aboutToRecordButton}
+                                                disabled={true}
+                                            >Wait a moment...</button>
+                                        ):(
+                                            <button
+                                                className={styles.startRecordingButton}
+                                                onClick={() => this.handleStartRecordingDemo(demo_index)}
+                                                disabled={this.areAnyDemoParamsNotFilledIn(demo_index)}
+                                            >Start recording</button>
+                                        )}
+                                        </>
                                     ):(
                                         ""
                                     )}
