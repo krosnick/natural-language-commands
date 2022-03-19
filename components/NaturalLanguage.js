@@ -2558,6 +2558,14 @@ class NaturalLanguage extends React.Component {
         return this.getDemoParamsNotYetFilledIn(demoIndex).length > 0;
     }
 
+    getParamColor(paramName){
+        for(let item of Object.values(this.state.idToItem)){
+            if(item.paramName === paramName){
+                return item.paramTypeData.color;
+            }
+        }
+    }
+
     // Similar to getParamValueData; just created a new version for now because i don't want to break getParamValueData
     getParamIDNameValueData(){
         let paramValueObj = {};
@@ -3750,6 +3758,11 @@ class NaturalLanguage extends React.Component {
                                                                 { step.relevantParam ?
                                                                     <span
                                                                         className={styles.importantPieceOfInfo}
+                                                                        style={
+                                                                            {
+                                                                                backgroundColor: this.getParamColor(step.relevantParam)
+                                                                            }
+                                                                        }
                                                                     >
                                                                         {step.relevantParam} &nbsp;&nbsp;&nbsp;
                                                                     </span>
@@ -3770,6 +3783,11 @@ class NaturalLanguage extends React.Component {
                                                                                     Filtered by:
                                                                                     <span
                                                                                         className={styles.importantPieceOfInfo}
+                                                                                        style={
+                                                                                            {
+                                                                                                backgroundColor: this.getParamColor(step.filterParamForRowSelection)
+                                                                                            }
+                                                                                        }
                                                                                     >
                                                                                         {step.filterParamForRowSelection};
                                                                                     </span>
@@ -3781,6 +3799,11 @@ class NaturalLanguage extends React.Component {
                                                                                     {step.colParamForSuperlativeForRowSelection ?
                                                                                         <span
                                                                                             className={styles.importantPieceOfInfo}
+                                                                                            style={
+                                                                                                {
+                                                                                                    backgroundColor: this.getParamColor(step.colParamForSuperlativeForRowSelection)
+                                                                                                }
+                                                                                            }
                                                                                         >
                                                                                             {step.colParamForSuperlativeForRowSelection};
                                                                                         </span>
@@ -3788,6 +3811,11 @@ class NaturalLanguage extends React.Component {
                                                                                     {step.superlativeParamForRowSelection ?
                                                                                         <span
                                                                                             className={styles.importantPieceOfInfo}
+                                                                                            style={
+                                                                                                {
+                                                                                                    backgroundColor: this.getParamColor(step.superlativeParamForRowSelection)
+                                                                                                }
+                                                                                            }
                                                                                         >
                                                                                             {step.superlativeParamForRowSelection};
                                                                                         </span>
