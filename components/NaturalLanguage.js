@@ -2209,7 +2209,7 @@ class NaturalLanguage extends React.Component {
         
         // Reload embedded website page, to ensure clean slate when user starts performing demo
         this.forceReRenderEmbeddedWebsite();
-        
+
         // Set demoIndexInAboutToRecordMode to this demoIndex (since the below xpath computations takes some time,
             // we'll update 'start recording' button to show 'wait a moment...' and in gray, so user knows to wait and can see that their click did do something;
             // otherwise they'll be confused that it lags in turning to 'stop recording')
@@ -3401,11 +3401,11 @@ class NaturalLanguage extends React.Component {
                         >
                             Element text: {e.originalEventObj.target.textContent}
                         </div>
-                        <div
+                        {/* <div
                             className={styles.stepPieceOfInfo}
                         >
                             Element tag name: {e.originalEventObj.target.tagName}
-                        </div>
+                        </div> */}
                     </div>
                 );
             });
