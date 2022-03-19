@@ -16,6 +16,7 @@ import tfjs from '@tensorflow/tfjs';
 import { load } from '@tensorflow-models/universal-sentence-encoder';
 import * as acorn from 'acorn';
 import * as fontoxpath from 'fontoxpath';
+import chroma from "chroma-js";
 
 const embeddedWebsiteXPathPrefix = '//*[@clone]';
 
@@ -1094,6 +1095,11 @@ class TemplateParamTextItem extends React.Component {
                 {paramTemplate}
                 <span
                     className={styles.paramNameLabel}
+                    style={
+                        {
+                            backgroundColor: this.props.color
+                        }
+                    }
                 >
                     {this.props.paramName}
                 </span>
@@ -1233,7 +1239,8 @@ class NaturalLanguage extends React.Component {
                                     possibleValues: [ { textCandidate: selectedText, xPath: null }],
                                     initialValuesSelected: undefined, // i.e., whether we're past the value extraction state
                                     candidateLists: undefined,
-                                    mostLeastAdjective: null
+                                    mostLeastAdjective: null,
+                                    color: null
                                 },
                                 paramAnnotatorCreated: false
                             };
@@ -1268,6 +1275,10 @@ class NaturalLanguage extends React.Component {
                                     itemIDsList.splice(i, 1, newItemOnLeft.uuid, newParamItem.uuid, newItemOnRight.uuid);
                                 }
                             }
+
+                            // Since we've added a new parameter, let's update our parameter colors
+                                // (to generate one for this new param, and to generate new ones for the rest of the params to ensure they're evenly spaced)
+                            this.updateParamColors(idToItemClone);
 
                             // Clear text selection
                             selectionObj.removeAllRanges();
@@ -1612,6 +1623,8 @@ class NaturalLanguage extends React.Component {
 
         const idToItemClone = _.cloneDeep(this.state.idToItem);
 
+        const isParam = this.state.idToItem[uuid].type === "param";
+
         // Need to merge this item with REGULAR text items on its immediate left and right (if they exist)
 
         const parentID = idToItemClone[uuid].parentID;
@@ -1705,6 +1718,12 @@ class NaturalLanguage extends React.Component {
             mergeIntoParent();
         }
 
+        if(isParam){
+            // Since we've removed a new parameter, let's update our parameter colors
+                // (to generate new ones for the rest of the params to ensure they're evenly spaced)
+            this.updateParamColors(idToItemClone);
+        }
+
         // Update to make sure we re-render
         this.setState({
             idToItem: idToItemClone,
@@ -1743,6 +1762,26 @@ class NaturalLanguage extends React.Component {
         //this.exitEditMode();
     }
 
+    updateParamColors(idToItemObj){
+        // Identify number of parameters
+        const parameterUuids = [];
+        for(let item of Object.values(idToItemObj)){
+            if(item.paramTypeData){
+                parameterUuids.push(item.uuid);
+            }
+        }
+        
+        // Then choose a distinct color per param that are evenly spread out
+        const numParams = parameterUuids.length;
+        for(let i = 0; i < numParams; i++){
+            const color = chroma(360 * i/numParams, 1, 0.86, 'hsl').hex();
+            //console.log(`color ${i}`, color);
+            idToItemObj[parameterUuids[i]].paramTypeData.color = color;
+        }
+
+        return idToItemObj;
+    }
+
     handleParamTypeChange(e, uuid){
         const target = e.target;
         console.log("handleParamTypeChange target", target);
@@ -1756,7 +1795,8 @@ class NaturalLanguage extends React.Component {
             initialValuesSelected: idToItemClone[uuid].paramTypeData.initialValuesSelected,
             candidateLists: idToItemClone[uuid].paramTypeData.candidateLists,
             possibleValues: idToItemClone[uuid].paramTypeData.possibleValues,
-            mostLeastAdjective: idToItemClone[uuid].paramTypeData.mostLeastAdjective
+            mostLeastAdjective: idToItemClone[uuid].paramTypeData.mostLeastAdjective,
+            color: idToItemClone[uuid].paramTypeData.color
             /* ,
             valuesExplicitlyAddedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyAddedByUser || [],
             valuesExplicitlyDeletedByUser: idToItemClone[uuid].paramTypeData.valuesExplicitlyDeletedByUser || [] */
@@ -1907,7 +1947,8 @@ class NaturalLanguage extends React.Component {
                 possibleValues: [],
                 initialValuesSelected: [], // i.e., whether we're past the value extraction state
                 candidateLists: [],
-                mostLeastAdjective: null
+                mostLeastAdjective: null,
+                color: null
             },
             paramAnnotatorCreated: true
         };
@@ -1920,6 +1961,10 @@ class NaturalLanguage extends React.Component {
         // Add to end of list
         itemIDsList.push(newParamItem.uuid);
         
+        // Since we've added a new parameter, let's update our parameter colors
+            // (to generate one for this new param, and to generate new ones for the rest of the params to ensure they're evenly spaced)
+        this.updateParamColors(idToItemClone);
+
         // Update whole textItems to make sure we re-render
         this.setState({
             idToItem: idToItemClone,
@@ -3053,6 +3098,7 @@ class NaturalLanguage extends React.Component {
                             //text={textItem.text}
                             uuid={textItem.uuid}
                             demoIndexInRecordingMode = {this.state.demoIndexInRecordingMode}
+                            color = {textItem.paramTypeData.color}
                             specificallyForParamUuid={this.state.demonstrations[demoIndex] ? this.state.demonstrations[demoIndex].specificallyForParamUuid : null}
                             paramName={textItem.paramName}
                             paramValue={paramValuePairs[textItem.uuid] ? paramValuePairs[textItem.uuid].paramValue : null } // have a backup value in case no value selected yet for this param
