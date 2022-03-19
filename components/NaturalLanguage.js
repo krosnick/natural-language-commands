@@ -1774,7 +1774,7 @@ class NaturalLanguage extends React.Component {
         // Then choose a distinct color per param that are evenly spread out
         const numParams = parameterUuids.length;
         for(let i = 0; i < numParams; i++){
-            const color = chroma(360 * i/numParams, 1, 0.86, 'hsl').hex();
+            const color = chroma(360 * i/numParams, 1, 0.95, 'hsl').hex();
             //console.log(`color ${i}`, color);
             idToItemObj[parameterUuids[i]].paramTypeData.color = color;
         }
