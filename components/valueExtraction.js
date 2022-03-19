@@ -15,6 +15,19 @@ export function indexOfCaseInsensitive(list, value){
     return foundIndex;
 }
 
+function getCommonPrefixLength(str1, str2){    
+    let longestLength = 0;
+    const shorterStrLength = Math.min(str1.length, str2.length);
+    for(let i = 0; i < shorterStrLength; i++){
+        if(str1.charAt(i) === str2.charAt(i)){
+            longestLength = i+1;
+        }else{
+            break;
+        }
+    }
+    return longestLength;
+}
+
 /*export function getCandidateLists(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix){
     const candidates = getCandidateValueSets(positiveExamplesList, exactStringBoolean, embeddedWebsitePrefix);
     
@@ -246,22 +259,145 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
     };
 }
 
-export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
+export function findClosestString(inputString, stringOptions){
+    let shortestDiffSoFar;
+    let bestStringOptionSoFar;
+    for(let stringOption of stringOptions){
+        let diff = null;
+        if(stringOption.trim().toLowerCase().indexOf(inputString.trim().toLowerCase()) > -1){
+            diff = stringOption.trim().toLowerCase().split(inputString.trim().toLowerCase()).join('');
+        }else if(inputString.indexOf(stringOption) > -1){
+            diff = inputString.trim().toLowerCase().split(stringOption.trim().toLowerCase()).join('');
+        }
+        if(diff !== null){
+            if(!bestStringOptionSoFar){
+                bestStringOptionSoFar = stringOption;
+                shortestDiffSoFar = diff;
+            }else if(diff.length < shortestDiffSoFar.length){
+                bestStringOptionSoFar = stringOption;
+                shortestDiffSoFar = diff;
+            }
+        }
+    }
+    return bestStringOptionSoFar;
+}
+
+//export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
+export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
     //console.log("makeXPathsMoreRobust", makeXPathsMoreRobust);
     //let numItemsWithXPath = 0;
     let valuesWithoutXPath = [];
     let valuesWithXPath = [];
     let objWithXPath; // to use as an example, as we go up through DOM
+
+    // objWithXPath
+    // Figure out the template with the shortest suffix after [INSERT-ROW-INDEX-HERE],
+        // then set objWithXPath to one of those value objects
+    let shortestSuffix;
+    let shortestSuffixValueObj;
     for(let obj of valueAndXPathObjList){
-        if(obj.xPath && obj.templateXPath){
-            objWithXPath = obj;
-            //numItemsWithXPath += 1;
-            valuesWithXPath.push(obj.textCandidate);
-        }else{
-            valuesWithoutXPath.push(obj.textCandidate);
+        if(obj.templateXPath){
+            const indexOfInsertRowIndexHere = obj.templateXPath.lastIndexOf('[INSERT-ROW-INDEX-HERE]');
+            if(indexOfInsertRowIndexHere > -1){
+                const suffix = obj.templateXPath.substring(indexOfInsertRowIndexHere + '[INSERT-ROW-INDEX-HERE]'.length);
+                if(!shortestSuffix || suffix.length < shortestSuffix.length){
+                    shortestSuffix = suffix;
+                    shortestSuffixValueObj = obj;
+                }
+            }
         }
     }
-    //console.log("objWithXPath", objWithXPath);
+    //console.log("shortestSuffix", shortestSuffix);
+
+    if(shortestSuffix){
+        objWithXPath = shortestSuffixValueObj;
+
+        // Populate valuesWithXPath; we only need to check the values with the same template, because we won't be accessing the other values through out indexing anyway
+        for(let obj of valueAndXPathObjList){
+            if(obj.templateXPath === objWithXPath.templateXPath){
+                valuesWithXPath.push(obj.textCandidate);
+            }
+        }
+    }else{
+
+        // We don't have any values with templates, so let's try to find a "template" ourselves
+
+        // Define objWithXPath to be a "representative" param value, one whose xpath is of a similar form to the rest
+        // We'll figure that out by finding the most popular common pairwise xpath prefix between param value xpaths.
+        // We want to choose a "representative" xpath so that when we try to find a robust xpath with classes/attributes, we're doing
+        // this for an xpath that we know is close to as many other xpaths already.
+        // This will help us avoid choosing a param value xpath that is too high up, which would be caused by an outlier
+        // param value xpath that is somewhere totally different on the page; we don't want this outlier to prevent us
+        // from finding a common pattern among the other xpaths
+
+        const xPathOptions = {};
+        for(let i = 0; i < valueAndXPathObjList.length-1; i++){
+            for(let j = i+1; j < valueAndXPathObjList.length; j++){
+                if(valueAndXPathObjList[i].xPath && valueAndXPathObjList[j].xPath){
+                    const commonPrefixLength = getCommonPrefixLength(valueAndXPathObjList[i].xPath, valueAndXPathObjList[j].xPath);
+                    const commonPrefix = valueAndXPathObjList[i].xPath.substring(0, commonPrefixLength);
+                    if(xPathOptions[commonPrefix]){
+                        // Increment
+                        xPathOptions[commonPrefix] = xPathOptions[commonPrefix] + 1;
+                    }else{
+                        // Add it to map for first time
+                        xPathOptions[commonPrefix] = 1;
+                    }
+                }
+            }
+        }
+        //console.log("xPathOptions", xPathOptions);
+        const mostCommonPairwisePrefixCount = Math.max(...Object.values(xPathOptions));
+        //console.log("mostCommonPairwisePrefixCount", mostCommonPairwisePrefixCount);
+        // Filter to only include the most common
+        const mostCommonPairwisePrefixOptions = Object.keys(xPathOptions).filter(xPathOption => xPathOptions[xPathOption] === mostCommonPairwisePrefixCount);
+        //console.log("mostCommonPairwisePrefixOptions", mostCommonPairwisePrefixOptions);
+        // Choose the most common xpath (or if there are multiple common xpaths, just choose one of them)
+        let commonPrefix = mostCommonPairwisePrefixOptions[0];
+        //console.log("commonPrefix", commonPrefix)
+    
+        // Loop through valueAndXPathObjList to find one whose xpath has commonPrefix
+        for(let obj of valueAndXPathObjList){
+            valuesWithXPath.push(obj.textCandidate);
+            if(obj.xPath && obj.xPath.indexOf(commonPrefix) === 0){
+                objWithXPath = obj;
+            }
+        }
+    
+        if(objWithXPath && !objWithXPath.templateXPath){
+            // We need to construct a templateXPath since this param value doesn't have one yet (which could be if it was found individually, with an individual string match, and not alongside other relative param values)
+            
+            // Trim off the partial node string at the end of commonPrefix
+            let trimmedCommonPrefix = commonPrefix.substring(0, commonPrefix.lastIndexOf("/"));
+            console.log("trimmedCommonPrefix", trimmedCommonPrefix);
+            let thisValueSuffix = objWithXPath.xPath.substring(commonPrefix.length);
+            // Trim off the partial node string at the beginning
+            thisValueSuffix = thisValueSuffix.substring(thisValueSuffix.indexOf("/"));
+            console.log("thisValueSuffix", thisValueSuffix);
+    
+            const templateXPath = `${trimmedCommonPrefix}/*[INSERT-ROW-INDEX-HERE]${thisValueSuffix}`;
+            console.log("templateXPath", templateXPath);
+            objWithXPath.templateXPath = templateXPath;
+        }
+    }
+    console.log("objWithXPath", objWithXPath);
+
+    if(!objWithXPath){
+        return {
+            valueAndXPathObjList,
+            xPathSuffix: "",
+        }
+    }
+
+
+    // Probably should recalculate numRows based on templateXPath
+    let rowPrefix = objWithXPath.templateXPath.substring(0, objWithXPath.templateXPath.lastIndexOf('[INSERT-ROW-INDEX-HERE]'));
+    rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
+    const parentOfRowsElement = fontoxpath.evaluateXPathToNodes(rowPrefix, document.documentElement)[0];
+    let numRows = parentOfRowsElement.children.length;
+    //console.log("rowPrefix", rowPrefix);
+    //console.log("numRows", numRows);
+
     //console.log("valuesWithoutXPath", valuesWithoutXPath);
 
     // Now traverse up DOM for objWithXPath
@@ -271,6 +407,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         // using toLowerCase because it'll be easier, since we don't know what case text will be on website; this of course relies on users not giving multiple values that are the same word except different case
         bestSoFar[valueAndXPathObj.textCandidate.toLowerCase()] = _.cloneDeep(valueAndXPathObj);
     }
+    console.log("initial bestSoFar", bestSoFar);
     let xPathPrefix = objWithXPath.templateXPath;
     let xPathSuffix = ""; // we'll build this up at each level; it'll include any modifications we make
     let curNode = fontoxpath.evaluateXPathToNodes(objWithXPath.xPath, document.documentElement)[0];
@@ -278,6 +415,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
     // Traverse up through the DOM until we hit the top part of the xpath that is the same across all param values (i.e., above [INSERT-ROW-INDEX-HERE])
     // We do want to keep going up until [INSERT-ROW-INDEX-HERE] because we really do want to try to make each step a class or attribute instead of index
     while(curNode.parentNode.parentNode && xPathPrefix.length > 0 && xPathPrefix.indexOf("[INSERT-ROW-INDEX-HERE]") > -1 && xPathSuffix.indexOf("[INSERT-ROW-INDEX-HERE]") === -1){
+        console.log("updated bestSoFar", bestSoFar);
         //console.log("valuesWithoutXPath", valuesWithoutXPath);
         // Try an alternate xPath substring for this level
         //const parentXPath = getXPathForElement(curNode.parentNode); // this does use indices
@@ -354,7 +492,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
         candidateChanges.sort(function(a, b){
             return b.newMatchesFound.length - a.newMatchesFound.length;
         });
-
+        
         let bestCandidateForThisLevel;
 
         if(candidateChanges.length > 0){
@@ -369,18 +507,18 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
             if(filteredByClassOrAttribute.length > 0){
                 candidateChanges = filteredByClassOrAttribute;
             }
-
+            
             // Sort in descending order of newMatchesFound.length
             candidateChanges.sort(function(a, b){
                 return b.newMatchesFound.length - a.newMatchesFound.length;
             });
-
+            
             // Filter to see if there is at least 1 largestSnapshotLength of length 1; if so, only consider these
             const filteredBySnapshotLength = candidateChanges.filter(obj => obj.largestSnapshotLength === 1);
             if(filteredBySnapshotLength.length > 0){
                 candidateChanges = filteredBySnapshotLength;
             }
-
+            
             const mostNewMatchesFound = candidateChanges[0].newMatchesFound;
             candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound.length);
             
@@ -399,8 +537,8 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
             }
         }
 
-        //console.log("final candidateChanges for this level", candidateChanges);
-        //console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
+        console.log("final candidateChanges for this level", candidateChanges);
+        console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
 
         //if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
         if(!bestCandidateForThisLevel){
@@ -419,6 +557,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
             //bestSoFar[valueAndXPathObj.textCandidate]
             //let index = 1; // xpath nodes are 1-indexed
             //while(true){
+            //console.log("numRows for updating", numRows);
             for(let index = 1; index <= numRows; index++){
                 const filledInTemplateXPath = bestCandidateForThisLevel.newTemplateXPath.replace("INSERT-ROW-INDEX-HERE", index);
                 try{
@@ -426,25 +565,36 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
                     if(result[0]){
                         let textCandidate = result[0].textContent.toLowerCase();
                         // If this xpath match corresponds to one of the user specified values, update it in bestSoFar
-                        if(bestSoFar[textCandidate]){
-                            bestSoFar[textCandidate].xPath = filledInTemplateXPath;
-                            bestSoFar[textCandidate].templateXPath = bestCandidateForThisLevel.newTemplateXPath;
-                            bestSoFar[textCandidate].commonXPathPrefix = bestCandidateForThisLevel.newTemplateXPath.substring(0, bestCandidateForThisLevel.newTemplateXPath.indexOf("[INSERT-ROW-INDEX-HERE]"));
-                            bestSoFar[textCandidate].commonXPathSuffix = bestCandidateForThisLevel.newTemplateXPath.substring(bestCandidateForThisLevel.newTemplateXPath.lastIndexOf("[INSERT-ROW-INDEX-HERE]") + "[INSERT-ROW-INDEX-HERE]".length);
+                        
+                        let textToUse = textCandidate;
+                        if(!bestSoFar[textCandidate]){
+                            // bestSoFar doesn't have this value, so try looking for the closest value to use
+                            textToUse = findClosestString(textCandidate, Object.keys(bestSoFar));
+                            console.log("textToUse", textToUse);
+                        }
+
+                        // In case xPath textContent string doesn't exactly match param values (because user typed like 'home run' for param value instead of 'home runs' which is what appears on the page)
+                        if(bestSoFar[textToUse]){
+                            bestSoFar[textToUse].xPath = filledInTemplateXPath;
+                            bestSoFar[textToUse].templateXPath = bestCandidateForThisLevel.newTemplateXPath;
+                            bestSoFar[textToUse].commonXPathPrefix = bestCandidateForThisLevel.newTemplateXPath.substring(0, bestCandidateForThisLevel.newTemplateXPath.indexOf("[INSERT-ROW-INDEX-HERE]"));
+                            bestSoFar[textToUse].commonXPathSuffix = bestCandidateForThisLevel.newTemplateXPath.substring(bestCandidateForThisLevel.newTemplateXPath.lastIndexOf("[INSERT-ROW-INDEX-HERE]") + "[INSERT-ROW-INDEX-HERE]".length);
                         }
 
                         // Update valuesWithoutXPath and valuesWithXPath accordingly
                         //if(valuesWithoutXPath.includes(textCandidate)){
-                        if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
+                        if(indexOfCaseInsensitive(valuesWithoutXPath, textToUse) > -1){
                             // Remove from valuesWithoutXPath
                             //const indexInList = valuesWithoutXPath.indexOf(textCandidate);
-                            const indexInList = indexOfCaseInsensitive(valuesWithoutXPath, textCandidate);
+                            const indexInList = indexOfCaseInsensitive(valuesWithoutXPath, textToUse);
                             valuesWithoutXPath.splice(indexInList, 1);
 
                             // Add to valuesWithXPath
-                            valuesWithXPath.push(textCandidate);
+                            valuesWithXPath.push(textToUse);
                         }
 
+                    }else{
+                        // filledInTemplateXPath didn't work for this row, so let's just use what we have in bestSoFar already?
                     }
                 }catch{
                 }
@@ -464,7 +614,8 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName, numRows){
     //return newValueXPathObjList;
     return {
         newValueXPathObjList,
-        xPathSuffix
+        xPathSuffix,
+        rowPrefix
     };
 }
 

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { makeXPathsMoreRobust, indexOfCaseInsensitive } from './valueExtraction';
+import { makeXPathsMoreRobust, indexOfCaseInsensitive, findClosestString } from './valueExtraction';
 
 import * as fontoxpath from 'fontoxpath';
 
@@ -1209,6 +1209,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         //currentParamValuePairings, paramValueObj
                         let paramNumColDataOptions = [];
                         for(let paramName of Object.keys(currentParamValuePairings)){
+                            //console.log("paramName", paramName)
                             // Find the most popular common pairwise xpath prefix between param value xpaths.
                                 // We want the rowPrefix that we use below to point to the parent of the column elements
                                 // Since we're basically relying on just a single demonstration, we want to choose the rowPrefix
@@ -1268,12 +1269,13 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 });
                             }
                         }
+                        //console.log("paramNumColDataOptions 0", paramNumColDataOptions);
                     
                         const valueRowNumCols = rowColData.colData.levelParent.children.length;
                         paramNumColDataOptions.sort(function(a, b){
                             return Math.abs(a.numCols - valueRowNumCols) - Math.abs(b.numCols - valueRowNumCols);
                         });
-                        
+                        //console.log("paramNumColDataOptions 1", paramNumColDataOptions);
                         // Be smarter about which item from paramNumColDataOptions we choose
                         // Filter paramNumColDataOptions to include only ones with smallest differential
                         //const necessaryColNum = paramNumColDataOptions[0].numCols;
@@ -1330,6 +1332,13 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                         if(valueNode.textContent.trim().toLowerCase() === expectedValue.trim().toLowerCase()){
                                             // Should consider this param/value option
                                             possibleParamOptions.push(paramNumColDataOption);
+                                        }else{
+                                            // We'll say that if valueNode.textContent is a substring of expectedValue or vice versa, that that counts (e.g., 'home run', 'home runs')
+                                            const lowerCaseTrimmedStr1 = valueNode.textContent.trim().toLowerCase();
+                                            const lowerCaseTrimmedStr2 = expectedValue.trim().toLowerCase();
+                                            if(lowerCaseTrimmedStr1.indexOf(lowerCaseTrimmedStr2) > -1 || lowerCaseTrimmedStr2.indexOf(lowerCaseTrimmedStr1) > -1){
+                                                possibleParamOptions.push(paramNumColDataOption);
+                                            }
                                         }
                                     }
                                 }

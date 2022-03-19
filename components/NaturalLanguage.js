@@ -2234,21 +2234,6 @@ class NaturalLanguage extends React.Component {
                 for(let item of Object.values(idToItemClone)){
                     if(item.paramTypeData && item.paramTypeData.type !== "superlative"){
                         // This item is a param. Run makeXPathsMoreRobust on its values and update 
-
-                        let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
-                        let rowPrefix;
-                        for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
-                            for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
-                                if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
-                                    const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
-                                    //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
-                                    if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
-                                        commonPrefixLengthAmongstXPaths = commonPrefixLength;
-                                        rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
-                                    }
-                                }
-                            }
-                        }
                         
                         // Only make xpaths more robust if an xpath exists for at least one param value; if it doesn't, then we'll just skip this (this could happen if none of the param value text actually appears on the page)
                         //let newValueXPathObjList = item.paramTypeData.possibleValues;
@@ -2260,54 +2245,14 @@ class NaturalLanguage extends React.Component {
                                 newValueXPathObjList.push(possibleValueObj);
                             }
                         }
+                        console.log("newValueXPathObjList", newValueXPathObjList);
 
-                        const paramValues = newValueXPathObjList.map(x => x.textCandidate);
-
-                        // User may have added to/removed from/edited the param values list, so run getCandidateLists to make sure we have up to date xpaths and maybe even to uncover better xpaths that match the new set of values better
-                        const candidateLists = getCandidateLists(paramValues, false, embeddedWebsiteXPathPrefix);
-
-                        // Look through candidateLists and choose the one that has the most values from paramValuesWithNullXPathToStillTry
-                        let bestMatchList = [];
-                        for(let candidateList of candidateLists){
-                            const matchList = [];
-                            for(let valueObj of candidateList){
-                                for(let paramValue of paramValues){
-                                    if(valueObj.textCandidate.trim().toLowerCase() === paramValue.trim().toLowerCase()){
-                                        // Update valueObj to use same text user had
-                                        valueObj.textCandidate = paramValue;
-                                        matchList.push(valueObj);
-                                    }
-                                }
-                            }
-                            if(matchList.length > bestMatchList.length){
-                                bestMatchList = matchList;
-                            }
-                        }
-                        //console.log("first bestMatchList", bestMatchList);
-                        newValueXPathObjList = bestMatchList;
-
-                        let xPathSuffix;
-                        if(rowPrefix){
-                            console.log("rowPrefix for numRows", rowPrefix);
-                            // Trimming off last partial node to make sure the xpath is valid (it prob has a partial node, e.g., "/div["" at the end right before row index)
-                            rowPrefix = rowPrefix.substring(0, rowPrefix.lastIndexOf("/"));
-                            const parentOfRowsElement = fontoxpath.evaluateXPathToNodes(rowPrefix, document.documentElement)[0];
-                            const numRows = parentOfRowsElement.children.length;
-                            
-                            // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
-                            const result = makeXPathsMoreRobust(item.paramTypeData.possibleValues, item.paramName, numRows);
-                            newValueXPathObjList = result.newValueXPathObjList;
-                            xPathSuffix = result.xPathSuffix;
-                            console.log("newValueXPathObjList", newValueXPathObjList);
-                        }
-
-                        // Now, see if there are still any param values that have a null xpath, and try to fill those in
-                            
                         let paramValuesWithNullXPathToStillTry = [];
                         for(let valueObj of newValueXPathObjList){
-                            if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
+                            // Just add them all
+                            //if(!valueObj.xPath){ // xPath not defined, so add to paramValuesWithNullXPathToStillTry
                                 paramValuesWithNullXPathToStillTry.push(valueObj.textCandidate);
-                            }
+                            //}
                         }
                         //console.log("paramValuesWithNullXPathToStillTry", paramValuesWithNullXPathToStillTry);
                         // Now, use getCandidateLists to fill in xpaths
@@ -2346,6 +2291,11 @@ class NaturalLanguage extends React.Component {
                                     const existingValueObj = newValueXPathObjList[i];
                                     if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
                                         match.textCandidate = existingValueObj.textCandidate;
+                                        // Remove templateXPath if this list only has 1 match (because a template is meaningless here and we don't want to try using it later)
+                                        if(bestMatchList.length === 1){
+                                            match.templateXPath = null;
+                                        }
+
                                         newValueXPathObjList[i] = match;
                                     }
                                 }
@@ -2378,27 +2328,7 @@ class NaturalLanguage extends React.Component {
                             }
                         }
 
-                        // Check and see if there are still values in newValueXPathObjList without an xpath
-                            // We should try a more refined search now for these strings.
-                            // Before we just looked for exact string match to textContent (allowing whitespace/differences in case).
-                            // Now, let's see if there's a partial string match (doesn't have to equal textContent, could just be part of it)
-                        
-                        let commonXPathPrefix;
-                        // Compute commonXPathPrefix
-                        for(let valueObj of newValueXPathObjList){
-                            if(valueObj.xPath){
-                                if(commonXPathPrefix === undefined){
-                                    commonXPathPrefix = valueObj.xPath;
-                                }
-                                const commonPrefixLength = getCommonPrefixLength(valueObj.xPath, commonXPathPrefix);
-                                commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-
-                                // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
-                                commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                            }
-                        }
-                        console.log("commonXPathPrefix", commonXPathPrefix);
-
+                        const listOfXPathObjsToRetry = []; // These are values that were single and had multiple matches, so we're not really sure what the right option is. We'll see if we can find a better option later after running makeXPathsMoreRobust and making our existing xpaths more robust
                         for(let valueObj of newValueXPathObjList){
                             // Check if this value has an xpath
                             if(!valueObj.xPath){
@@ -2406,28 +2336,99 @@ class NaturalLanguage extends React.Component {
                                 // If stringMatchesAnywhere has multiple text node matches, look at each of the matches and see which one is the "best" match, e.g., could be adjusted to have xPathSuffix at the end (that would be the most semantically meaningful one)
                                 let newXPath;
                                 const stringMatches = fontoxpath.evaluateXPathToNodes(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document.documentElement);
-                                // A lot of this adapted from below; should make helper function
-                                if(xPathSuffix){
-                                    let newSuffix = xPathSuffix;
-                                    // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
-                                    if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
-                                        newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
+                                console.log("stringMatches", stringMatches);
+                                
+                                if(stringMatches.length > 1){
+                                    listOfXPathObjsToRetry.push(valueObj);
+                                }
+                                for(let snapshotIndex = 0; snapshotIndex < stringMatches.length; snapshotIndex++){   
+                                    const matchingNode = stringMatches[snapshotIndex];
+                                    console.log("matchingNode", matchingNode);
+                                    if(matchingNode){
+                                        const potentialXPath = getXPathForElement(matchingNode, document);
+                                        // Make sure this xPath isn't/within a <script> or <style> tag; that wouldn't be a meaningful string match
+                                        if(!potentialXPath.includes("script") && !potentialXPath.includes("style")){         
+                                            newXPath = potentialXPath;
+                                            break;
+                                        }
                                     }
-                                    // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
-                                    // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
-                                    for(let snapshotIndex = 0; snapshotIndex < stringMatches.length; snapshotIndex++){
-                                        const node = stringMatches[snapshotIndex];
-                                        const xPath = getXPathForElement(node, document);
+                                }
+                                //}
+
+                                if(newXPath){
+
+                                    // Update in newValueXPathObjList
+                                    valueObj.xPath = newXPath;
+                                }
+                                console.log("newXPath", newXPath);
+                            }
+                        }
+
+                        let commonPrefixLengthAmongstXPaths = undefined; // common prefix across all xpaths; ideally all param nodes should be siblings; if they aren't, then our algorithm here won't work well, we won't find the "cols" really
+                        //let rowPrefix;
+                        for(let i = 0; i < item.paramTypeData.possibleValues.length-1; i++){
+                            for(let j = i+1; j < item.paramTypeData.possibleValues.length; j++){
+                                if(item.paramTypeData.possibleValues[i].xPath && item.paramTypeData.possibleValues[j].xPath){
+                                    const commonPrefixLength = getCommonPrefixLength(item.paramTypeData.possibleValues[i].xPath, item.paramTypeData.possibleValues[j].xPath);
+                                    //console.log(`commonPrefixLength ${i} ${j}`, commonPrefixLength);
+                                    if(commonPrefixLengthAmongstXPaths === undefined || commonPrefixLength < commonPrefixLengthAmongstXPaths){
+                                        commonPrefixLengthAmongstXPaths = commonPrefixLength;
+                                        //rowPrefix = item.paramTypeData.possibleValues[i].xPath.substring(0, commonPrefixLengthAmongstXPaths);
+                                    }
+                                }
+                            }
+                        }
+                        console.log("handleStartRecordingDemo commonPrefixLengthAmongstXPaths", commonPrefixLengthAmongstXPaths);
+                        //console.log("handleStartRecordingDemo rowPrefix", rowPrefix);
+
+                        let xPathSuffix;
+                        
+                        // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
+                        const result = makeXPathsMoreRobust(newValueXPathObjList, item.paramName);
+                        newValueXPathObjList = result.newValueXPathObjList;
+                        xPathSuffix = result.xPathSuffix;
+                        console.log("newValueXPathObjList", newValueXPathObjList);
+                        //}
+
+                        console.log("xPathSuffix", xPathSuffix);
+                        // Do we need this last part now or no?
+
+                        if(xPathSuffix){
+                            // Try these again, since we now know a common xPathSuffix and so we can try that xPathSuffix to try to see which xpath (of the multiple matches) is closest
+                            for(let valueObj of listOfXPathObjsToRetry){
+                                let newXPath;
+                                const stringMatches = fontoxpath.evaluateXPathToNodes(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document.documentElement);
+                                console.log("stringMatches", stringMatches);
+                                let newSuffix = xPathSuffix;
+                                // if xPathSuffix includes [INSERT-ROW-INDEX-HERE], trim and only use suffix lower than that because we don't know what the index should be here
+                                if(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') > -1){
+                                    newSuffix = xPathSuffix.substring(xPathSuffix.lastIndexOf('[INSERT-ROW-INDEX-HERE]') + '[INSERT-ROW-INDEX-HERE]'.length);
+                                }
+                                console.log("newSuffix", newSuffix);
+                                // For each of these matches, see if we can adjust the xpath to make it have suffix xPathSuffix. Then, choose the/an xpath that has this suffix
+                                // (having suffix xPathSuffix is a good indicator that this param value node is semantically related to the other param value nodes)
+                                for(let snapshotIndex = 0; snapshotIndex < stringMatches.length; snapshotIndex++){
+                                    const node = stringMatches[snapshotIndex];
+                                    //console.log("node", node);
+                                    const xPath = getXPathForElement(node, document);
+                                    //console.log("xPath", xPath);
+                                    
+                                    // Make sure this xPath isn't/within a <script> or <style> tag; that wouldn't be a meaningful string match
+                                    if(!xPath.includes("script") && !xPath.includes("style")){                        
                                         if(xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length){
                                             // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
                                             let xPathPrefix = xPath;
                                             while(xPathPrefix.length > 0){
                                                 const xPathToTry = xPathPrefix + newSuffix;
+                                                //console.log("xPathToTry", xPathToTry);
                                                 // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
-                                                try{
+                                                //try{
                                                     const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
+                                                    //console.log("new node", node);
                                                     if(node){
                                                         const indexBasedXPath = getXPathForElement(node, document);
+                                                        //console.log("indexBasedXPath", indexBasedXPath);
+                                                        //console.log("xPath", xPath);
                                                         if(indexBasedXPath === xPath){
                                                             // This means that xPathToTry was valid and does match the original xPath
                                                             // Let's set newXPath and break out of loop
@@ -2435,8 +2436,8 @@ class NaturalLanguage extends React.Component {
                                                             break;
                                                         }
                                                     }
-                                                }catch{
-                                                }
+                                                //}catch{
+                                                //}
                                                 // Update xPathPrefix
                                                 xPathPrefix = xPathPrefix.substring(0, xPathPrefix.lastIndexOf("/"));
                                             }
@@ -2448,25 +2449,16 @@ class NaturalLanguage extends React.Component {
                                             break;
                                         }
                                     }
-                                }else{
-                                    const matchingNode = stringMatches[0];
-                                    newXPath = getXPathForElement(matchingNode, document);
                                 }
+                            
 
                                 if(newXPath){
-                                    // Update commonXPathPrefix
-                                    const commonPrefixLength = getCommonPrefixLength(newXPath, commonXPathPrefix);
-                                    commonXPathPrefix = commonXPathPrefix.substring(0, commonPrefixLength);
-                                    
-                                    // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
-                                    commonXPathPrefix = commonXPathPrefix.substring(0, commonXPathPrefix.lastIndexOf("/"));
-                                    
                                     // Update in newValueXPathObjList
                                     valueObj.xPath = newXPath;
                                 }
-                                console.log("newXPath", newXPath);
                             }
                         }
+
 
                         // Now, if some of the xpaths have already been made more robust through makeXPathsMoreRobust, then some of them have classes/attributes as the suffix of their xpath
                             // Because new xpaths have been added since then, let's now check these xpaths to see if they can be adjusted to use this more generalized xPathSuffix
