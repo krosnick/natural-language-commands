@@ -97,12 +97,10 @@ export async function executeProgram(programList, paramValuePairings){
                 }
             } catch (error) {
                 // An error happened, let's return it
-                return [
-                    {
-                        message: "Program failed for this set of values",
-                        type: "error"
-                    }
-                ];
+                valuesToReturn.push({
+                    message: "Program failed for this set of values",
+                    type: "error"
+                });
             }
         }
     }else{
