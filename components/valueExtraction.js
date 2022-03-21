@@ -195,7 +195,7 @@ export function getCandidateLists(positiveExamplesList, exactStringBoolean, embe
     }
 } */
 
-function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selectorType, valuesWithoutXPath, valuesWithXPath, numRows){
+function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selectorType, valuesWithoutXPath, valuesWithXPath, allValues, numRows){
     // Now try using this nodeXPathSubstring and see if we match more example values than before
     //console.log("parentXPath", parentXPath);
     //console.log("nodeXPathSubstring", nodeXPathSubstring);
@@ -209,6 +209,7 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
     //let index = 1; // xpath nodes are 1-indexed
     const newMatchesFound = [];
     let numExtraneousNodesFound = 0;
+    const totalMatchesFound = [];
     //while(true){
     let largestSnapshotLength = 0;
     for(let index = 1; index <= numRows; index++){
@@ -218,7 +219,10 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
         if(filledInTemplateXPath.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
             const result = fontoxpath.evaluateXPathToNodes(filledInTemplateXPath, document.documentElement);
             if(result[0]){
-                let textCandidate = result[0].textContent;
+                let textCandidate = result[0].textContent.trim();
+                if(indexOfCaseInsensitive(allValues, textCandidate) > -1){
+                    totalMatchesFound.push(textCandidate);
+                }
                 //if(valuesWithoutXPath.includes(textCandidate)){
                 if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
                     newMatchesFound.push(textCandidate);
@@ -250,6 +254,7 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
     }
 
     return {
+        totalMatchesFound,
         newMatchesFound,
         numExtraneousNodesFound,
         nodeXPathSubstring,
@@ -403,9 +408,11 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
     // Now traverse up DOM for objWithXPath
     //let bestListSoFar = valueAndXPathObjList;
     let bestSoFar = {}; // Put into a map, so it's easier to index into later
+    let allValues = [];
     for(let valueAndXPathObj of valueAndXPathObjList){
         // using toLowerCase because it'll be easier, since we don't know what case text will be on website; this of course relies on users not giving multiple values that are the same word except different case
         bestSoFar[valueAndXPathObj.textCandidate.toLowerCase()] = _.cloneDeep(valueAndXPathObj);
+        allValues.push(valueAndXPathObj.textCandidate.trim().toLowerCase());
     }
     console.log("initial bestSoFar", bestSoFar);
     let xPathPrefix = objWithXPath.templateXPath;
@@ -428,11 +435,17 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
 
         let candidateChanges = [];
 
+        // Start by using original node as an option
+        {
+            const attempt = tryAlternativeXPath(parentXPath, curNodeXPathSubstring, xPathSuffix, "indexBased", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+            candidateChanges.push(attempt);
+        }
+
         // Try inserting a / (so that it's //) on the right of this xpath. So that this could match values whose DOM node is deeper
         // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
         if(xPathSuffix.length > 0){
             const nodeXPathSubstring = `${curNodeXPathSubstring}/`;
-            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "insertSlash", valuesWithoutXPath, valuesWithXPath, numRows);
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "insertSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
             candidateChanges.push(attempt);
         }
 
@@ -442,14 +455,14 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
             //const nodeXPathSubstring1 = `/*[contains(@class, '${className}')]`;
             //const nodeXPathSubstring1 = `/*[contains(concat(' ', normalize-space(@class), ' '), '${className}')]`;
             const nodeXPathSubstring1 = `/*[count(index-of(tokenize(@class, ' ' ), '${className}')) = 1]`;
-            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath, numRows);
+            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
             candidateChanges.push(attempt1);
 
             // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
             if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
                 // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
                 const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, numRows);
+                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
                 candidateChanges.push(attempt2);
             }
         }
@@ -467,14 +480,14 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
                 //nodeXPathSubstring1 = `/${tag}[@${attrName}]`;
                 nodeXPathSubstring1 = `/*[@${attrName}]`;
             }
-            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "attribute", valuesWithoutXPath, valuesWithXPath, numRows);
+            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "attribute", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
             candidateChanges.push(attempt1);
 
             // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
             if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
                 // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
                 const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, numRows);
+                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
                 candidateChanges.push(attempt2);
             }
         }
@@ -483,18 +496,19 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
         // Try just ignoring/excluding this level, aka, allowing any number of levels to happen here (this could help us include values whose DOM node is not as deep, but not sure if this could over-select, select too many nodes on the page)
         if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
             const nodeXPathSubstring = `/`;
-            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "replaceWithSlash", valuesWithoutXPath, valuesWithXPath, numRows);
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "replaceWithSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
             candidateChanges.push(attempt);
         }
 
         // Choose the best option from candidateChanges; or, if none of the options increase length of newMatchesFound, then just use original index-based substring
         // Sort in descending order of newMatchesFound.length
-        candidateChanges.sort(function(a, b){
+        /*candidateChanges.sort(function(a, b){
             return b.newMatchesFound.length - a.newMatchesFound.length;
-        });
+        });*/
         
         let bestCandidateForThisLevel;
 
+        console.log("candidateChanges 0", candidateChanges);
         if(candidateChanges.length > 0){
 
             /*const mostNewMatchesFound = candidateChanges[0].newMatchesFound.length;
@@ -502,30 +516,59 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
             // Filter to only include candidates with mostNewMatchesFound; note it's ok if mostNewMatchesFound is 0; we still want to make a change to something more robust
             candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound);*/
 
-            // We'd prefer a class or attribute change over insertSlash or replaceWithSlash if possible
+            // We'd prefer a class or attribute change over the original index-based node, insertSlash, or replaceWithSlash if possible
+            
+            /*// Sort in descending order of newMatchesFound.length
+            candidateChanges.sort(function(a, b){
+                return b.newMatchesFound.length - a.newMatchesFound.length;
+            });*/
+            
+            /*// Filter to see if there is at least 1 largestSnapshotLength of length 1; if so, only consider these
+            const filteredBySnapshotLength = candidateChanges.filter(obj => obj.largestSnapshotLength === 1);
+            if(filteredBySnapshotLength.length > 0){
+                candidateChanges = filteredBySnapshotLength;
+            }*/
+            
+            //const mostNewMatchesFound = candidateChanges[0].newMatchesFound;
+            //candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound.length);
+            
+            // Sort in ascending order largestSnapshotLength (want to choose the one with the fewest matching nodes, aka, the least generic)
+            candidateChanges.sort(function(a, b){
+                return a.largestSnapshotLength - b.largestSnapshotLength;
+            });
+            console.log("candidateChanges 1", candidateChanges);
+            const lowestLargestSnapshotLength = candidateChanges[0].largestSnapshotLength;
+            console.log("lowestLargestSnapshotLength", lowestLargestSnapshotLength);
+            if(lowestLargestSnapshotLength === 1){
+                // If only 1 match, we'll want one of these filter by this
+                candidateChanges = candidateChanges.filter(obj => obj.largestSnapshotLength === lowestLargestSnapshotLength);
+            }
+            console.log("candidateChanges 2", candidateChanges);
+
+            if(candidateChanges.length > 0){
+                candidateChanges.sort(function(a, b){
+                    return b.totalMatchesFound.length - a.totalMatchesFound.length;
+                });
+                console.log("candidateChanges 3", candidateChanges);
+                const mostTotalMatchesFound = candidateChanges[0].totalMatchesFound.length;
+                console.log("mostTotalMatchesFound", mostTotalMatchesFound);
+                // Filter to only include candidates with totalMatchesFound
+                candidateChanges = candidateChanges.filter(obj => obj.totalMatchesFound.length === mostTotalMatchesFound);
+    
+            }
+            console.log("candidateChanges 4", candidateChanges);
+
+            const smallestLargestSnapshotLength = candidateChanges[0].largestSnapshotLength;
+            console.log("smallestLargestSnapshotLength", smallestLargestSnapshotLength);
+            // Filter to only include those with the smallestLargestSnapshotLength at this time
+            candidateChanges = candidateChanges.filter(obj => obj.largestSnapshotLength === smallestLargestSnapshotLength);
+            console.log("candidateChanges 5", candidateChanges);
+
             const filteredByClassOrAttribute = candidateChanges.filter(obj => obj.selectorType === "class" || obj.selectorType === "attribute");
             if(filteredByClassOrAttribute.length > 0){
                 candidateChanges = filteredByClassOrAttribute;
             }
-            
-            // Sort in descending order of newMatchesFound.length
-            candidateChanges.sort(function(a, b){
-                return b.newMatchesFound.length - a.newMatchesFound.length;
-            });
-            
-            // Filter to see if there is at least 1 largestSnapshotLength of length 1; if so, only consider these
-            const filteredBySnapshotLength = candidateChanges.filter(obj => obj.largestSnapshotLength === 1);
-            if(filteredBySnapshotLength.length > 0){
-                candidateChanges = filteredBySnapshotLength;
-            }
-            
-            const mostNewMatchesFound = candidateChanges[0].newMatchesFound;
-            candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound.length);
-            
-            // Sort in ascending order largestSnapshotLength (want to choose the one with the fewest matching nodes, aka, the least generic)
-            candidateChanges.sort(function(a, b){
-                return a.largestSnapshotLength.length - b.largestSnapshotLength.length;
-            });
+            console.log("candidateChanges 6", candidateChanges);
 
             /*// Now sort in ascending order of numExtraneousNodesFound (we want the xpath with the highest mostNewMatchesFound and then the least numExtraneousNodesFound)
             candidateChanges.sort(function(a, b){
@@ -537,8 +580,8 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
             }
         }
 
-        console.log("final candidateChanges for this level", candidateChanges);
-        console.log("bestCandidateForThisLevel", bestCandidateForThisLevel);
+        //console.log("final candidateChanges for this level", candidateChanges);
+        console.log("valueExtraction bestCandidateForThisLevel", bestCandidateForThisLevel);
 
         //if(!bestCandidateForThisLevel || bestCandidateForThisLevel.newMatchesFound.length === 0){
         if(!bestCandidateForThisLevel){

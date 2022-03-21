@@ -7,6 +7,7 @@ import ChipotleClone from './website_clones/ChipotleClone';
 import OscarsClone from './website_clones/OscarsClone';
 import ForbesClone from './website_clones/ForbesClone';
 // import MLBClone from './website_clones/MLBClone';
+import WikipediaClone from './website_clones/WikipediaClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists, makeXPathsMoreRobust } from './valueExtraction';
 import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo, getCommonPrefixLength } from './generateProgram';
@@ -2293,7 +2294,7 @@ class NaturalLanguage extends React.Component {
                                     if(existingValueObj.textCandidate.trim().toLowerCase() === match.textCandidate.trim().toLowerCase()){
                                         match.textCandidate = existingValueObj.textCandidate;
                                         // Remove templateXPath if this list only has 1 match (because a template is meaningless here and we don't want to try using it later)
-                                        if(bestMatchList.length === 1){
+                                        if(bestMatchList.length === 1 && candidateLists.length > 1){
                                             match.templateXPath = null;
                                             listOfXPathObjsToRetry.push(match.textCandidate);
                                         }
@@ -4272,6 +4273,9 @@ class NaturalLanguage extends React.Component {
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             {/* <ForbesClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
+                            {/* <WikipediaClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             <Clone
