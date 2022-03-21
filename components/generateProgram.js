@@ -1045,6 +1045,12 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 let otherOptions = [];
 
                 // Try looking for relevant param for all colIndexOptionObjects; then choose the one
+
+                // TODO - if header row and data row have different number of cols, then shouldn't choose specifically
+                    // by col index, but instead check colParentElement and see which child has closest offsetLeft (and same width?)
+                    // we'll probably need to check the row data element offsetLeft for colIndexOptionObject.dataValueColIndex, will prob need
+                    // to pass in from caller
+
                 for(let colIndexOptionObject of colIndexOptionObjects){
                     console.log("colIndexOptionObject", colIndexOptionObject);
                     let possibleParamOptions = [];
@@ -1166,6 +1172,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             }
                         }
             
+                        // TODO - if colParentElement.children.length !== paramRowElement.children.length,
+                            // don't use childIndex directly in colParentElement.children. Instead, check colParentElement
+                            // and see which child has closest offsetLeft (and same width?)
+
                         // Then, use that index for identifying xPath suffix
             
                         const colParentXPath = rowXPathPrefix + middlePortionOfXPath;
@@ -1643,93 +1653,112 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     superlativeValueForRowSelectionOptions = superlativeValueForRowSelectionOptions.slice(0, 10);
                 }
 
-                // Construct combo and for each combo obj, see if current generateColXPathSuffix works or not
-                let paramValueCombinations = {};
-                const paramCombosWhereXPathIsValid = [];
-                const paramCombosWhereXPathIsNotValid = [];
-                for(let filterValueForRowSelectionOption of filterValueForRowSelectionOptions){
-                    for(let colParamValueForSuperlativeForRowSelectionOption of colParamValueForSuperlativeForRowSelectionOptions){
-                        for(let superlativeValueForRowSelectionOption of superlativeValueForRowSelectionOptions){
-                            // TODO - assuming that generateRowXPathPrefix works and returns an xpath
-                            try{
-                                const generatedRowXPathPrefix = generateRowXPathPrefix(filterValueForRowSelectionOption, colParamValueForSuperlativeForRowSelectionOption, superlativeValueForRowSelectionOption);
-                                const comboObj = {
-                                    rowXPathPrefix: generatedRowXPathPrefix,
-                                    filterValueForRowSelection: filterValueForRowSelectionOption,
-                                    colParamValueForSuperlativeForRowSelection: colParamValueForSuperlativeForRowSelectionOption,
-                                    superlativeValueForRowSelection: superlativeValueForRowSelectionOption
-                                };
-                                const comboStringID = `${comboObj.filterValueForRowSelection}_${comboObj.colParamValueForSuperlativeForRowSelection}_${comboObj.superlativeValueForRowSelection}`;
+                // Calling makeXPathSuffixMoreRobust multiple times allows us to test out an intermediate xPathRelativeSuffixToInclude change and see if that helps us make any other nodes more robust
+                    // For example, for chipotle if we demo printing calories for brown rice, with only a single call to makeXPathSuffixMoreRobust, our xPathRelativeSuffixToInclude is: /*[count(index-of(tokenize(@class, ' ' ), 'cost-and-calories')) = 1]/div[1],
+                    // but that unfortunately selects price for the foods that have a price label.
+                    // By calling makeXPathSuffixMoreRobust a second time, with that new part of the suffix /*[count(index-of(tokenize(@class, ' ' ), 'cost-and-calories')) = 1], we can now see that swapping /div[1] with /*[count(index-of(tokenize(@class, ' ' ), 'mobile-calories')) = 1]
+                    // is valid (results in a match for all the param values), and we opt to choose class over index-based because we have a heuristic that class/attribute is more robust
+                // Keep calling makeXPathSuffixMoreRobust until we see no change to xPathRelativeSuffixToInclude
+                let oldXPathRelativeSuffixToInclude;
+                let xPathRelativeSuffixToInclude = 'dummyValue'; // just to make sure they're not equal at first
+                while(oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude){
+                    console.log("oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude");
+                    oldXPathRelativeSuffixToInclude = xPathRelativeSuffixToInclude;
+                    console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
+                    // Construct combo and for each combo obj, see if current generateColXPathSuffix works or not
+                    let paramValueCombinations = {};
+                    const paramCombosWhereXPathIsValid = [];
+                    const paramCombosWhereXPathIsNotValid = [];
+                    for(let filterValueForRowSelectionOption of filterValueForRowSelectionOptions){
+                        for(let colParamValueForSuperlativeForRowSelectionOption of colParamValueForSuperlativeForRowSelectionOptions){
+                            for(let superlativeValueForRowSelectionOption of superlativeValueForRowSelectionOptions){
+                                console.log("in loop");
+                                // TODO - assuming that generateRowXPathPrefix works and returns an xpath
+                                try{
+                                    const generatedRowXPathPrefix = generateRowXPathPrefix(filterValueForRowSelectionOption, colParamValueForSuperlativeForRowSelectionOption, superlativeValueForRowSelectionOption);
+                                    const comboObj = {
+                                        rowXPathPrefix: generatedRowXPathPrefix,
+                                        filterValueForRowSelection: filterValueForRowSelectionOption,
+                                        colParamValueForSuperlativeForRowSelection: colParamValueForSuperlativeForRowSelectionOption,
+                                        superlativeValueForRowSelection: superlativeValueForRowSelectionOption
+                                    };
+                                    const comboStringID = `${comboObj.filterValueForRowSelection}_${comboObj.colParamValueForSuperlativeForRowSelection}_${comboObj.superlativeValueForRowSelection}`;
 
-                                // See if full xpath for this combo is valid
+                                    // See if full xpath for this combo is valid
 
-                                const colParamValue = null; // no param influences col selection for this program
-                                const generatedColXPathSuffix = generateColXPathSuffix(colParamValue, generatedRowXPathPrefix); // I think generateColXPathSuffix returns a static string here because no relevantParamForCol
+                                    const colParamValue = null; // no param influences col selection for this program
+                                    const generatedColXPathSuffix = generateColXPathSuffix(colParamValue, generatedRowXPathPrefix); // I think generateColXPathSuffix returns a static string here because no relevantParamForCol
+                                    console.log("generatedColXPathSuffix", generatedColXPathSuffix);
+                                    // If xPathRelativeSuffixToInclude not set yet, set it
+                                    if(!xPathRelativeSuffixToInclude){
+                                        xPathRelativeSuffixToInclude = generatedColXPathSuffix;
+                                    }
 
-                                const fullXPath = generatedRowXPathPrefix + generatedColXPathSuffix;
-                                //console.log(`fullXPath for ${comboStringID}`, fullXPath);
+                                    const fullXPath = generatedRowXPathPrefix + generatedColXPathSuffix;
+                                    //console.log(`fullXPath for ${comboStringID}`, fullXPath);
 
-                                const domElement = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement)[0];
-                                
-                                if(domElement){
-                                    paramCombosWhereXPathIsValid.push(comboStringID);
-                                    comboObj.xPath = fullXPath;
-                                }else{
-                                    paramCombosWhereXPathIsNotValid.push(comboStringID);
+                                    const domElement = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement)[0];
+                                    
+                                    if(domElement){
+                                        paramCombosWhereXPathIsValid.push(comboStringID);
+                                        comboObj.xPath = fullXPath;
+                                    }else{
+                                        paramCombosWhereXPathIsNotValid.push(comboStringID);
+                                    }
+                                    paramValueCombinations[comboStringID] = comboObj;
+                                }catch{
+                                    // Don't include the comboStringID if a failure happened while trying to run generateRowXPathPrefix or generateColXPathSuffix
                                 }
-                                paramValueCombinations[comboStringID] = comboObj;
-                            }catch{
-                                // Don't include the comboStringID if a failure happened while trying to run generateRowXPathPrefix or generateColXPathSuffix
                             }
                         }
                     }
-                }
-                console.log("paramValueCombinations", paramValueCombinations);
-                
-                // For the demo's given input values, compute col suffix and full xpath
-                const exampleRowXPathPrefix = generateRowXPathPrefix(
-                    filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
-                    colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
-                    superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : constantSuperlativeValueForRowSelection
-                );
-                //console.log("exampleRowXPathPrefix", exampleRowXPathPrefix);
-                const colParamValue = null;
-                const exampleColXPathSuffix = generateColXPathSuffix(colParamValue, exampleRowXPathPrefix);
-                //console.log("exampleColXPathSuffix", exampleColXPathSuffix);
-                const exampleFullXPath = exampleRowXPathPrefix + exampleColXPathSuffix;
-                //console.log("exampleFullXPath", exampleFullXPath);
-
-                const exampleDataObj = {
-                    exampleRowXPathPrefix,
-                    exampleColXPathSuffix,
-                    exampleFullXPath,
-                    filterValueForRowSelection: filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
-                    colParamValueForSuperlativeForRowSelection: colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
-                    superlativeValueForRowSelection: superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : null
-                };
-                //console.log("exampleDataObj", exampleDataObj);
-
-                let checkIfThisIsDemoConfig = function(exampleDataObj, candidateParamValueCombination){
-                    return (
-                        exampleDataObj.filterValueForRowSelection === candidateParamValueCombination.filterValueForRowSelection
-                        && exampleDataObj.colParamValueForSuperlativeForRowSelection === candidateParamValueCombination.colParamValueForSuperlativeForRowSelection
-                        && exampleDataObj.superlativeValueForRowSelection === candidateParamValueCombination.superlativeValueForRowSelection
-                    );
-                };
-                
-                const moreRobustXPathSuffixData = makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj, checkIfThisIsDemoConfig);
-                //console.log("moreRobustXPathSuffixData", moreRobustXPathSuffixData);
-                //console.log("moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix", moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix);
-                if(moreRobustXPathSuffixData){
-                    // Only update xPathRelativeSuffixToInclude if moreRobustXPathSuffixData actually returned something (it will return undefined if all param values actually already have an xpath, so no need to make more robust)
+                    console.log("paramValueCombinations", paramValueCombinations);
                     
-                    // At this point, (oldXPathRelativeSuffixPrefix + xPathSuffix) should be the new suffix to use. Update generateColXPathSuffix accordingly
-                    generateColXPathSuffix = function(inputValue, rowXPathPrefix){
-                        // Returning an xpath suffix that we tried to make more robust
-                        return moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
-                    }
-                    console.log("updated generateColXPathSuffix", generateColXPathSuffix);
-                }                        
+                    // For the demo's given input values, compute col suffix and full xpath
+                    const exampleRowXPathPrefix = generateRowXPathPrefix(
+                        filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
+                        colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
+                        superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : constantSuperlativeValueForRowSelection
+                    );
+                    //console.log("exampleRowXPathPrefix", exampleRowXPathPrefix);
+                    const colParamValue = null;
+                    const exampleColXPathSuffix = generateColXPathSuffix(colParamValue, exampleRowXPathPrefix);
+                    //console.log("exampleColXPathSuffix", exampleColXPathSuffix);
+                    const exampleFullXPath = exampleRowXPathPrefix + exampleColXPathSuffix;
+                    //console.log("exampleFullXPath", exampleFullXPath);
+
+                    const exampleDataObj = {
+                        exampleRowXPathPrefix,
+                        exampleColXPathSuffix,
+                        exampleFullXPath,
+                        filterValueForRowSelection: filterParamForRowSelection ? currentParamValuePairings[filterParamForRowSelection] : null,
+                        colParamValueForSuperlativeForRowSelection: colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
+                        superlativeValueForRowSelection: superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : null
+                    };
+                    //console.log("exampleDataObj", exampleDataObj);
+
+                    let checkIfThisIsDemoConfig = function(exampleDataObj, candidateParamValueCombination){
+                        return (
+                            exampleDataObj.filterValueForRowSelection === candidateParamValueCombination.filterValueForRowSelection
+                            && exampleDataObj.colParamValueForSuperlativeForRowSelection === candidateParamValueCombination.colParamValueForSuperlativeForRowSelection
+                            && exampleDataObj.superlativeValueForRowSelection === candidateParamValueCombination.superlativeValueForRowSelection
+                        );
+                    };
+                    
+                    const moreRobustXPathSuffixData = makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj, checkIfThisIsDemoConfig);
+                    //console.log("moreRobustXPathSuffixData", moreRobustXPathSuffixData);
+                    //console.log("moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix", moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix);
+                    if(moreRobustXPathSuffixData){
+                        // Only update xPathRelativeSuffixToInclude if moreRobustXPathSuffixData actually returned something (it will return undefined if all param values actually already have an xpath, so no need to make more robust)
+                        xPathRelativeSuffixToInclude = moreRobustXPathSuffixData.xPathSuffix;
+                        // At this point, (oldXPathRelativeSuffixPrefix + xPathSuffix) should be the new suffix to use. Update generateColXPathSuffix accordingly
+                        generateColXPathSuffix = function(inputValue, rowXPathPrefix){
+                            // Returning an xpath suffix that we tried to make more robust
+                            return moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
+                        }
+                        console.log("updated generateColXPathSuffix", generateColXPathSuffix);
+                    }  
+                }                      
             }
 
             // Make sure we don't accidentally find a column correspondence? Or I guess we couldn't "accidentally" do it?
@@ -1837,73 +1866,85 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 let xPathRelativeSuffixToRemove = origValueXPath.substring(currentNodeXPath.length);
                 console.log("Final xPathRelativeSuffixToRemove", xPathRelativeSuffixToRemove);
 
-                // TODO - make xPathRelativeSuffixToInclude more robust
-                // Create paramValueCombinations - only param is matchingParam
-                // Construct combo and for each combo obj, see if current generateColXPathSuffix works or not
-                let paramValueCombinations = {};
-                const paramCombosWhereXPathIsValid = [];
-                const paramCombosWhereXPathIsNotValid = [];
-                console.log("Object.keys(paramValueObj[matchingParam])", Object.keys(paramValueObj[matchingParam]));
-                for(let paramValue of Object.keys(paramValueObj[matchingParam])){
-                    //const generatedRowXPathPrefix = generalizedXPathFunction(paramValue);
-                    var valueXPath = paramValueObj[matchingParam][paramValue];
-                    console.log("valueXPath", valueXPath);
-                    if(valueXPath){ // in case we weren't able to infer an xpath for this param value
-                        var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
-                        var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
+                // Calling makeXPathSuffixMoreRobust multiple times allows us to test out an intermediate xPathRelativeSuffixToInclude change and see if that helps us make any other nodes more robust
+                    // For example, for chipotle if we demo printing calories for brown rice, with only a single call to makeXPathSuffixMoreRobust, our xPathRelativeSuffixToInclude is: /*[count(index-of(tokenize(@class, ' ' ), 'cost-and-calories')) = 1]/div[1],
+                    // but that unfortunately selects price for the foods that have a price label.
+                    // By calling makeXPathSuffixMoreRobust a second time, with that new part of the suffix /*[count(index-of(tokenize(@class, ' ' ), 'cost-and-calories')) = 1], we can now see that swapping /div[1] with /*[count(index-of(tokenize(@class, ' ' ), 'mobile-calories')) = 1]
+                    // is valid (results in a match for all the param values), and we opt to choose class over index-based because we have a heuristic that class/attribute is more robust
+                // Keep calling makeXPathSuffixMoreRobust until we see no change to xPathRelativeSuffixToInclude
+                let oldXPathRelativeSuffixToInclude;
+                while(oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude){
+                    console.log("oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude");
+                    oldXPathRelativeSuffixToInclude = xPathRelativeSuffixToInclude;
+                    
+                    // Make xPathRelativeSuffixToInclude more robust
+                        // Create paramValueCombinations - only param is matchingParam
+                        // Construct combo and for each combo obj, see if current generateColXPathSuffix works or not        
+                    let paramValueCombinations = {};
+                    const paramCombosWhereXPathIsValid = [];
+                    const paramCombosWhereXPathIsNotValid = [];
+                    console.log("Object.keys(paramValueObj[matchingParam])", Object.keys(paramValueObj[matchingParam]));
+                    for(let paramValue of Object.keys(paramValueObj[matchingParam])){
+                        //const generatedRowXPathPrefix = generalizedXPathFunction(paramValue);
+                        var valueXPath = paramValueObj[matchingParam][paramValue];
+                        console.log("valueXPath", valueXPath);
+                        if(valueXPath){ // in case we weren't able to infer an xpath for this param value
+                            var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
+                            var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
 
-                        const comboObj = {
-                            rowXPathPrefix: xPathPrefixToUse,
-                            exampleRowXPathPrefix: xPathPrefixToUse,
-                            exampleColXPathSuffix: xPathRelativeSuffixToInclude,
-                            exampleFullXPath: xPathPrefixToUse + xPathRelativeSuffixToInclude,
-                            paramValue,
-                        };
-                        const comboStringID = paramValue;
+                            const comboObj = {
+                                rowXPathPrefix: xPathPrefixToUse,
+                                exampleRowXPathPrefix: xPathPrefixToUse,
+                                exampleColXPathSuffix: xPathRelativeSuffixToInclude,
+                                exampleFullXPath: xPathPrefixToUse + xPathRelativeSuffixToInclude,
+                                paramValue,
+                            };
+                            const comboStringID = paramValue;
 
-                        // See if full xpath for this combo is valid
-                        const fullXPath = xPathPrefixToUse + xPathRelativeSuffixToInclude;
+                            // See if full xpath for this combo is valid
+                            const fullXPath = xPathPrefixToUse + xPathRelativeSuffixToInclude;
 
-                        const domElement = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement)[0];
-                        console.log("domElement", domElement);
-                        
-                        if(domElement){
-                            paramCombosWhereXPathIsValid.push(comboStringID);
-                            comboObj.xPath = fullXPath;
-                        }else{
-                            paramCombosWhereXPathIsNotValid.push(comboStringID);
+                            const domElement = fontoxpath.evaluateXPathToNodes(fullXPath, document.documentElement)[0];
+                            console.log("domElement", domElement);
+                            
+                            if(domElement){
+                                paramCombosWhereXPathIsValid.push(comboStringID);
+                                comboObj.xPath = fullXPath;
+                            }else{
+                                paramCombosWhereXPathIsNotValid.push(comboStringID);
+                            }
+                            paramValueCombinations[comboStringID] = comboObj;   
                         }
-                        paramValueCombinations[comboStringID] = comboObj;   
                     }
-                }
-                console.log("paramValueCombinations", paramValueCombinations);
-                
-                
-                // For the demo's given input values, compute col suffix and full xpath
-                var valueXPath = paramValueObj[matchingParam][currentParamValuePairings[matchingParam]];
-                var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
-                var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
-                const exampleRowXPathPrefix = xPathPrefixToUse;
-                const exampleColXPathSuffix = xPathRelativeSuffixToInclude;
-                const exampleFullXPath = exampleRowXPathPrefix + exampleColXPathSuffix;
+                    console.log("paramValueCombinations", paramValueCombinations);
+                    
+                    
+                    // For the demo's given input values, compute col suffix and full xpath
+                    var valueXPath = paramValueObj[matchingParam][currentParamValuePairings[matchingParam]];
+                    var indexOfSuffixToRemove = valueXPath.lastIndexOf(xPathRelativeSuffixToRemove);
+                    var xPathPrefixToUse = valueXPath.substring(0, indexOfSuffixToRemove);
+                    const exampleRowXPathPrefix = xPathPrefixToUse;
+                    const exampleColXPathSuffix = xPathRelativeSuffixToInclude;
+                    const exampleFullXPath = exampleRowXPathPrefix + exampleColXPathSuffix;
 
-                const exampleDataObj = {
-                    exampleRowXPathPrefix,
-                    exampleColXPathSuffix,
-                    exampleFullXPath,
-                    paramValue: currentParamValuePairings[matchingParam]
-                };
+                    const exampleDataObj = {
+                        exampleRowXPathPrefix,
+                        exampleColXPathSuffix,
+                        exampleFullXPath,
+                        paramValue: currentParamValuePairings[matchingParam]
+                    };
 
-                let checkIfThisIsDemoConfig = function(exampleDataObj, candidateParamValueCombination){
-                    return exampleDataObj.paramValue === candidateParamValueCombination.paramValue;
-                };
-                
-                const moreRobustXPathSuffixData = makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj, checkIfThisIsDemoConfig);
-                console.log("moreRobustXPathSuffixData", moreRobustXPathSuffixData);
-                if(moreRobustXPathSuffixData){
-                    // Only update xPathRelativeSuffixToInclude if moreRobustXPathSuffixData actually returned something (it will return undefined if all param values actually already have an xpath, so no need to make more robust)
-                    xPathRelativeSuffixToInclude = moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
-                    console.log("Final xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
+                    let checkIfThisIsDemoConfig = function(exampleDataObj, candidateParamValueCombination){
+                        return exampleDataObj.paramValue === candidateParamValueCombination.paramValue;
+                    };
+                    
+                    const moreRobustXPathSuffixData = makeXPathSuffixMoreRobust(paramValueCombinations, paramCombosWhereXPathIsNotValid, paramCombosWhereXPathIsValid, exampleDataObj, checkIfThisIsDemoConfig);
+                    console.log("moreRobustXPathSuffixData", moreRobustXPathSuffixData);
+                    if(moreRobustXPathSuffixData){
+                        // Only update xPathRelativeSuffixToInclude if moreRobustXPathSuffixData actually returned something (it will return undefined if all param values actually already have an xpath, so no need to make more robust)
+                        xPathRelativeSuffixToInclude = moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
+                        console.log("Final xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
+                    }
                 }
 
                 var generalizedXPathFunction = function(inputValue){
