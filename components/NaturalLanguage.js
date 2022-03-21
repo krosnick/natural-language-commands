@@ -2386,10 +2386,11 @@ class NaturalLanguage extends React.Component {
                         let xPathSuffix;
                         
                         // Try to make existing xpaths more robust (so that hopefully param values that currently have a null xpath can get filled in)
+                        console.log("newValueXPathObjList before makeXPathsMoreRobust", newValueXPathObjList);
                         const result = makeXPathsMoreRobust(newValueXPathObjList, item.paramName);
                         newValueXPathObjList = result.newValueXPathObjList;
                         xPathSuffix = result.xPathSuffix;
-                        console.log("newValueXPathObjList", newValueXPathObjList);
+                        console.log("newValueXPathObjList after makeXPathsMoreRobust", newValueXPathObjList);
                         //}
 
                         console.log("xPathSuffix", xPathSuffix);
@@ -2401,6 +2402,7 @@ class NaturalLanguage extends React.Component {
                             for(let valueObj of newValueXPathObjList){
                                 // Only need to try this for listOfXPathObjsToRetry
                                 if(listOfXPathObjsToRetry.indexOf(valueObj.textCandidate) > -1){
+                                    console.log("valueObj.textCandidate", valueObj.textCandidate);
                                     let newXPath;
                                     const stringMatches = fontoxpath.evaluateXPathToNodes(`${embeddedWebsiteXPathPrefix} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${valueObj.textCandidate.toLowerCase()}\")] /..`, document.documentElement);
                                     console.log("stringMatches", stringMatches);
@@ -2481,19 +2483,23 @@ class NaturalLanguage extends React.Component {
                                 // Check if this param value xpath has newSuffix at the end
                                 const xPath = valueObj.xPath;
                                 if(xPath && (xPath.lastIndexOf(newSuffix) === -1 || (xPath.lastIndexOf(newSuffix) + newSuffix.length) !== xPath.length)){
+                                    console.log("xPath to try to make more robust", xPath);
+                                    console.log("valueObj.textCandidate", valueObj.textCandidate);
                                     // newSuffix is not the suffix. Let's try to see if we can adjust this xpath to use this newSuffix suffix (let's take a node off at a time and see if replace with this helps)
                                     let xPathPrefix = xPath;
                                     while(xPathPrefix.length > 0){
-                                        //console.log("xPathPrefix", xPathPrefix);
-                                        //console.log("newSuffix",newSuffix);
+                                        console.log("xPathPrefix", xPathPrefix);
+                                        console.log("newSuffix",newSuffix);
                                         const xPathToTry = xPathPrefix + newSuffix;
-                                        //console.log("xPathToTry", xPathToTry);
+                                        console.log("xPathToTry", xPathToTry);
                                         // See if xPathToTry is a valid xpath, and if it's index-based version equals xPath
                                         try{
                                             const node = fontoxpath.evaluateXPathToNodes(xPathToTry, document.documentElement)[0];
-                                            //console.log("node", node);
+                                            console.log("xPathToTry node", node);
                                             if(node){
                                                 const indexBasedXPath = getXPathForElement(node, document);
+                                                console.log("indexBasedXPath", indexBasedXPath);
+                                                console.log("xPath", xPath);
                                                 if(indexBasedXPath === xPath){
                                                     // This means that xPathToTry was valid and does match the original xPath
                                                     // Let's update our valueObj and then break out of loop

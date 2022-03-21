@@ -222,7 +222,16 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
                 let textCandidate = result[0].textContent.trim();
                 if(indexOfCaseInsensitive(allValues, textCandidate) > -1){
                     totalMatchesFound.push(textCandidate);
+                }else{
+                    console.log("textCandidate", textCandidate);
+                    // See if a string similar to textCandidate is in allValues (like if the user wrote 'chorizo' instead of 'plant-based chorizo')
+                    const closestString = findClosestString(textCandidate, allValues);
+                    console.log("closestString", closestString);
+                    if(closestString){
+                        totalMatchesFound.push(closestString);
+                    }
                 }
+
                 //if(valuesWithoutXPath.includes(textCandidate)){
                 if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
                     newMatchesFound.push(textCandidate);
@@ -532,6 +541,10 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
             //const mostNewMatchesFound = candidateChanges[0].newMatchesFound;
             //candidateChanges = candidateChanges.filter(obj => obj.newMatchesFound.length === mostNewMatchesFound.length);
             
+            // some largestSnapshotLength are 0 which is a mistake, let's filter out
+            candidateChanges = candidateChanges.filter(obj => obj.largestSnapshotLength > 0);
+            console.log("candidateChanges 0a", candidateChanges);
+
             // Sort in ascending order largestSnapshotLength (want to choose the one with the fewest matching nodes, aka, the least generic)
             candidateChanges.sort(function(a, b){
                 return a.largestSnapshotLength - b.largestSnapshotLength;
