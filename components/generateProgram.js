@@ -1661,7 +1661,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 // Keep calling makeXPathSuffixMoreRobust until we see no change to xPathRelativeSuffixToInclude
                 let oldXPathRelativeSuffixToInclude;
                 let xPathRelativeSuffixToInclude = 'dummyValue'; // just to make sure they're not equal at first
-                while(oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude){
+                let numIterations = 0;
+                while(oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude && numIterations < 5){
                     console.log("oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude");
                     oldXPathRelativeSuffixToInclude = xPathRelativeSuffixToInclude;
                     console.log("xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
@@ -1758,6 +1759,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         }
                         console.log("updated generateColXPathSuffix", generateColXPathSuffix);
                     }  
+                    numIterations += 1;
                 }                      
             }
 
@@ -1873,7 +1875,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     // is valid (results in a match for all the param values), and we opt to choose class over index-based because we have a heuristic that class/attribute is more robust
                 // Keep calling makeXPathSuffixMoreRobust until we see no change to xPathRelativeSuffixToInclude
                 let oldXPathRelativeSuffixToInclude;
-                while(oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude){
+                let numIterations = 0;
+                while(oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude && numIterations < 5){
                     console.log("oldXPathRelativeSuffixToInclude !== xPathRelativeSuffixToInclude");
                     oldXPathRelativeSuffixToInclude = xPathRelativeSuffixToInclude;
                     
@@ -1945,6 +1948,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         xPathRelativeSuffixToInclude = moreRobustXPathSuffixData.oldXPathRelativeSuffixPrefix + moreRobustXPathSuffixData.xPathSuffix;
                         console.log("Final xPathRelativeSuffixToInclude", xPathRelativeSuffixToInclude);
                     }
+                    numIterations += 1;
                 }
 
                 var generalizedXPathFunction = function(inputValue){
