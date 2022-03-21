@@ -1022,7 +1022,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     }
                 }
                 //console.log("paramNumColDataOptions 0", paramNumColDataOptions);
-            
+
+                // Seems we're deciding which param row to try simply based on being the right number of columns (or closest to right)
+                    // That won't work well if multiple parameters have same/similar number of child items as valueRowNumCols
+                    // Or if data and desired col header rows have different number of items, then that could cause us to choose the the wrong param to try
                 const valueRowNumCols = rowColData.colData.levelParent.children.length;
                 paramNumColDataOptions.sort(function(a, b){
                     return Math.abs(a.numCols - valueRowNumCols) - Math.abs(b.numCols - valueRowNumCols);
@@ -1036,6 +1039,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     necessaryColNum = paramNumColDataOptions[0].numCols;
                 }
                 //console.log("necessaryColNum", necessaryColNum);
+                
+                // Actually, shouldn't do this filter. Should just try all paramNumColDataOptions and see which one has a relevant param value
+                    // If multiple paramNumColDataOptions have a relevant param value, then that means we have multiple possible param rows to consider,
+                    // but this is probably unlikely, because we're not just looking for the param value text; we're also making sure that the xpath for that
+                    // param value is actually meaningfully "close" to the col item that we're looking at
                 paramNumColDataOptions = paramNumColDataOptions.filter(obj => obj.numCols === necessaryColNum);
                 
                 console.log("paramNumColDataOptions", paramNumColDataOptions);
@@ -1046,67 +1054,97 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
 
                 // Try looking for relevant param for all colIndexOptionObjects; then choose the one
 
-                // TODO - if header row and data row have different number of cols, then shouldn't choose specifically
-                    // by col index, but instead check colParentElement and see which child has closest offsetLeft (and same width?)
-                    // we'll probably need to check the row data element offsetLeft for colIndexOptionObject.dataValueColIndex, will prob need
-                    // to pass in from caller
-
                 for(let colIndexOptionObject of colIndexOptionObjects){
-                    console.log("colIndexOptionObject", colIndexOptionObject);
+                    //console.log("colIndexOptionObject", colIndexOptionObject);
                     let possibleParamOptions = [];
                     for(let paramNumColDataOption of paramNumColDataOptions){
                         const paramName = paramNumColDataOption.paramName;
-                        console.log("paramName", paramName);
+                        //console.log("paramName", paramName);
                         const expectedValue = currentParamValuePairings[paramName];
                         
-                        // Check col colIndexOptionObject.dataValueColIndex of param row to see if value is expectedValue
-                        if(paramNumColDataOption.paramRowElement.children.length > colIndexOptionObject.dataValueColIndex){
-                            const paramColItem = paramNumColDataOption.paramRowElement.children[colIndexOptionObject.dataValueColIndex];
-                            const paramColItemXPath = getXPathForElement(paramColItem, document);
-                            console.log("paramColItemXPath", paramColItemXPath);
-                            
-                            // Find the param value (from paramValueObj[param]) whose xpath is closest to paramColItem's xpath                        
-                            let longestCommonPrefixLengthSoFar = 0;
-                            let valuesLongestCommonPrefixLengthSoFar = [];
-                            
-                            const valueObj = paramValueObj[paramName];
-                            for(let [value, xPath] of Object.entries(valueObj)){
-                                if(xPath){ // because could be null/undefined
-                                    let indexBasedXPath = getXPathForElement(fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0], document);
-                                    console.log(`indexBasedXPath for ${value}`, indexBasedXPath);
-                                    let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, paramColItemXPath);
-                                    if(commonPrefixLength > longestCommonPrefixLengthSoFar){
-                                        longestCommonPrefixLengthSoFar = commonPrefixLength;
-                                        valuesLongestCommonPrefixLengthSoFar = [value];
-                                    }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
-                                        valuesLongestCommonPrefixLengthSoFar.push(value);
+                        // Given the data row column (colIndexOptionObject), identify the corresponding header row column
+                            // TODO - if header row and data row have different number of cols, then shouldn't choose specifically
+                            // by col index, but instead check colParentElement and see which child has closest offsetLeft (and same width?)
+                            // we'll probably need to check the row data element offsetLeft for colIndexOptionObject.dataValueColIndex
+                        let paramColItem;
+                        if(valueRowNumCols !== necessaryColNum){
+                            // Different number of columns for data row and header row
+
+                            const dataRowColItem = rowColData.colData.levelParent.children[colIndexOptionObject.dataValueColIndex];
+                            const dataRowColItemOffsetLeft = dataRowColItem.offsetLeft;
+
+                            let headerRowColIndexWithClosestOffsetLeft;
+                            let smallestOffsetLeftDiffSoFar = null;
+                            // Loop through paramNumColDataOption.paramRowElement.children and find the column that has the closest offsetLeft to dataRowColItemOffsetLeft
+                            for(let headerRowColItemIndex = 0; headerRowColItemIndex < paramNumColDataOption.paramRowElement.children.length; headerRowColItemIndex++){
+                                let headerRowColItem = paramNumColDataOption.paramRowElement.children[headerRowColItemIndex];
+                                // Only consider this headerRowColItem if it has text (don't want to choose an empty "spacer" node, which could still have a similar offsetLeft to dataRowColItemOffsetLeft)
+                                if(headerRowColItem.textContent.trim()){
+                                    const headerRowColItemOffsetLeft = headerRowColItem.offsetLeft;
+                                    const offsetLeftDiff = Math.abs(headerRowColItemOffsetLeft - dataRowColItemOffsetLeft);
+                                    if(smallestOffsetLeftDiffSoFar === null || offsetLeftDiff < smallestOffsetLeftDiffSoFar){
+                                        smallestOffsetLeftDiffSoFar = offsetLeftDiff;
+                                        headerRowColIndexWithClosestOffsetLeft = headerRowColItemIndex;
                                     }
                                 }
                             }
-                            console.log("longestCommonPrefixLengthSoFar", longestCommonPrefixLengthSoFar);
-                            console.log("valuesLongestCommonPrefixLengthSoFar", valuesLongestCommonPrefixLengthSoFar);
-                            // Don't consider if more than 1 value whose xpath is "close" to paramColItemXPath
-                            if(valuesLongestCommonPrefixLengthSoFar.length === 1){
-                                const valueXPath = valueObj[valuesLongestCommonPrefixLengthSoFar[0]];
-                                const valueNode = fontoxpath.evaluateXPathToNodes(valueXPath, document.documentElement)[0];
-                                if(valueNode.textContent.trim().toLowerCase() === expectedValue.trim().toLowerCase()){
-                                    // Should consider this param/value option
-                                    possibleParamOptions.push(paramNumColDataOption);
-                                }else{
-                                    // We'll say that if valueNode.textContent is a substring of expectedValue or vice versa, that that counts (e.g., 'home run', 'home runs')
-                                    const lowerCaseTrimmedStr1 = valueNode.textContent.trim().toLowerCase();
-                                    const lowerCaseTrimmedStr2 = expectedValue.trim().toLowerCase();
-                                    if(lowerCaseTrimmedStr1.indexOf(lowerCaseTrimmedStr2) > -1 || lowerCaseTrimmedStr2.indexOf(lowerCaseTrimmedStr1) > -1){
-                                        possibleParamOptions.push(paramNumColDataOption);
-                                    }
+                            console.log("headerRowColIndexWithClosestOffsetLeft", headerRowColIndexWithClosestOffsetLeft);
+                            paramColItem = paramNumColDataOption.paramRowElement.children[headerRowColIndexWithClosestOffsetLeft];
+                        }else{
+                            // Same number of columns for data row and header row
+                            paramColItem = paramNumColDataOption.paramRowElement.children[colIndexOptionObject.dataValueColIndex];
+                        }
+
+                        // Check col colIndexOptionObject.dataValueColIndex of param row to see if value is expectedValue
+                        //if(paramNumColDataOption.paramRowElement.children.length > colIndexOptionObject.dataValueColIndex){
+                            //const paramColItem = paramNumColDataOption.paramRowElement.children[colIndexOptionObject.dataValueColIndex];
+                        const paramColItemXPath = getXPathForElement(paramColItem, document);
+                        //console.log("paramColItemXPath", paramColItemXPath);
+                        
+                        // Find the param value (from paramValueObj[param]) whose xpath is closest to paramColItem's xpath                        
+                        let longestCommonPrefixLengthSoFar = 0;
+                        let valuesLongestCommonPrefixLengthSoFar = [];
+                        
+                        const valueObj = paramValueObj[paramName];
+                        for(let [value, xPath] of Object.entries(valueObj)){
+                            if(xPath){ // because could be null/undefined
+                                let indexBasedXPath = getXPathForElement(fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0], document);
+                                //console.log(`indexBasedXPath for ${value}`, indexBasedXPath);
+                                let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, paramColItemXPath);
+                                if(commonPrefixLength > longestCommonPrefixLengthSoFar){
+                                    longestCommonPrefixLengthSoFar = commonPrefixLength;
+                                    valuesLongestCommonPrefixLengthSoFar = [value];
+                                }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
+                                    valuesLongestCommonPrefixLengthSoFar.push(value);
                                 }
                             }
                         }
+                        //console.log("longestCommonPrefixLengthSoFar", longestCommonPrefixLengthSoFar);
+                        console.log("valuesLongestCommonPrefixLengthSoFar", valuesLongestCommonPrefixLengthSoFar);
+                        // Don't consider if more than 1 value whose xpath is "close" to paramColItemXPath
+                        if(valuesLongestCommonPrefixLengthSoFar.length === 1){
+                            const valueXPath = valueObj[valuesLongestCommonPrefixLengthSoFar[0]];
+                            const valueNode = fontoxpath.evaluateXPathToNodes(valueXPath, document.documentElement)[0];
+                            if(valueNode.textContent.trim().toLowerCase() === expectedValue.trim().toLowerCase()){
+                                // Should consider this param/value option
+                                possibleParamOptions.push(paramNumColDataOption);
+                            }else{
+                                // We'll say that if valueNode.textContent is a substring of expectedValue or vice versa, that that counts (e.g., 'home run', 'home runs')
+                                const lowerCaseTrimmedStr1 = valueNode.textContent.trim().toLowerCase();
+                                const lowerCaseTrimmedStr2 = expectedValue.trim().toLowerCase();
+                                if(lowerCaseTrimmedStr1.indexOf(lowerCaseTrimmedStr2) > -1 || lowerCaseTrimmedStr2.indexOf(lowerCaseTrimmedStr1) > -1){
+                                    possibleParamOptions.push(paramNumColDataOption);
+                                }
+                            }
+                        }
+                        //}
                     }
                     console.log("possibleParamOptions", possibleParamOptions);
 
                     if(possibleParamOptions.length === 1){
                         // For now, just choose the first col where we see a relevant param
+                        // TODO - this is wrong; I think this is our bug, why when there are multiple columns that satisfy the superlative
+                            // we sometimes choose a static col and not one aligned with a specific parameter value. I think.
                         bestChoice = {
                             possibleParamOptions,
                             colIndexOptionObject
@@ -1171,16 +1209,42 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 closestChildIndex = childIndex;
                             }
                         }
-            
-                        // TODO - if colParentElement.children.length !== paramRowElement.children.length,
-                            // don't use childIndex directly in colParentElement.children. Instead, check colParentElement
-                            // and see which child has closest offsetLeft (and same width?)
 
-                        // Then, use that index for identifying xPath suffix
-            
                         const colParentXPath = rowXPathPrefix + middlePortionOfXPath;
                         const colParentElement = fontoxpath.evaluateXPathToNodes(colParentXPath, document.documentElement)[0];
-                        const colElement = colParentElement.children[closestChildIndex];
+                        
+                        let colElement;
+                        if(paramRowElement.children.length !== colParentElement.children.length){
+                            // Different number of columns for data row and header row
+
+                            // Instead of just using closestChildIndex, need to use check all colParentElement.children and see which has closest offsetLeft to paramRowElement.children[closestChildIndex]
+                            const headerRowColItem = paramRowElement.children[closestChildIndex];
+                            const headerRowColItemOffsetLeft = headerRowColItem.offsetLeft;
+
+                            let dataRowColIndexWithClosestOffsetLeft;
+                            let smallestOffsetLeftDiffSoFar = null;
+
+                            // Loop through colParentElement.children and find the column that has the closest offsetLeft to headerRowColItemOffsetLeft
+                            for(let dataRowColItemIndex = 0; dataRowColItemIndex < colParentElement.children.length; dataRowColItemIndex++){
+                                let dataRowColItem = colParentElement.children[dataRowColItemIndex];
+                                // Only consider this dataRowColItem if it has text (don't want to choose an empty "spacer" node, which could still have a similar offsetLeft to headerRowColItemOffsetLeft)
+                                if(dataRowColItem.textContent.trim()){
+                                    const dataRowColItemOffsetLeft = dataRowColItem.offsetLeft;
+                                    const offsetLeftDiff = Math.abs(headerRowColItemOffsetLeft - dataRowColItemOffsetLeft);
+                                    if(smallestOffsetLeftDiffSoFar === null || offsetLeftDiff < smallestOffsetLeftDiffSoFar){
+                                        smallestOffsetLeftDiffSoFar = offsetLeftDiff;
+                                        dataRowColIndexWithClosestOffsetLeft = dataRowColItemIndex;
+                                    }
+                                }
+                            }
+                            console.log("dataRowColIndexWithClosestOffsetLeft", dataRowColIndexWithClosestOffsetLeft);
+                            colElement = colParentElement.children[dataRowColIndexWithClosestOffsetLeft];
+                        }else{
+                            // Same number of columns for data row and header row
+                            colElement = colParentElement.children[closestChildIndex];
+                        }
+            
+                        // Then, use that element for identifying xPath suffix
                         const colXPath = getXPathForElement(colElement, document);
                         const colXPathSuffix = colXPath.substring(rowXPathPrefix.length);
                         return colXPathSuffix;
