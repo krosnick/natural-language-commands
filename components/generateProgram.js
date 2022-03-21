@@ -1611,9 +1611,17 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 //console.log(`filterNodeXPathSuffix for ${filterValueForRowSelection}`, filterNodeXPathSuffix);
                                 //console.log(`attempted valueNode full xpath for ${filterValueForRowSelection}`, `${rowXPath}${filterNodeXPathSuffix}`);
                                 const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
-                                if(valueNodeToCheck && indexOfCaseInsensitive(paramValues, valueNodeToCheck.textContent) > -1){
+                                if(valueNodeToCheck && indexOfCaseInsensitive(paramValues, valueNodeToCheck.textContent) > -1 || findClosestString(valueNodeToCheck.textContent, paramValues)){
                                     // The text found is one of the parameter values; aka, the xpath formula works for this param value
-                                    const paramValue = paramValues[indexOfCaseInsensitive(paramValues, valueNodeToCheck.textContent)];
+                                    let paramValue;
+                                    if(indexOfCaseInsensitive(paramValues, valueNodeToCheck.textContent) > -1){
+                                        paramValue = paramValues[indexOfCaseInsensitive(paramValues, valueNodeToCheck.textContent)];
+                                    }else{
+                                        const closestString = findClosestString(valueNodeToCheck.textContent, paramValues);
+                                        if(closestString){
+                                            paramValue = paramValues[indexOfCaseInsensitive(paramValues, closestString)];
+                                        }
+                                    }
                                     // Add to map. It's ok if the value appears in multiple rows, in the end we'll just take the last one, which is fine; we only need one instance per param value; we're just trying to find more robust suffix (which should hopefully work for all rows)
                                     valueAndXPathObjMap[paramValue] = {
                                         textCandidate: paramValue,
