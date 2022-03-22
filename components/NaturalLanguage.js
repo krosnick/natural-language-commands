@@ -2801,7 +2801,11 @@ class NaturalLanguage extends React.Component {
                 generatedProgramClone[programVersion_index].program[step_index].static = false;
             }
         }else{
-            generatedProgramClone[programVersion_index].program[step_index][variableToChange] = staticOrInferred;
+            // Here, staticOrInferred is an object
+            for(let [attr, newValue] of Object.entries(staticOrInferred)){
+                generatedProgramClone[programVersion_index].program[step_index][attr] = newValue;
+            }
+            //generatedProgramClone[programVersion_index].program[step_index][variableToChange] = staticOrInferred;
         }
 
         // Need to update code string to reflect program change we just made
@@ -3856,7 +3860,98 @@ class NaturalLanguage extends React.Component {
                                                                             {step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
                                                                                 <>
                                                                                     Superlative: 
-                                                                                    {step.colParamForSuperlativeForRowSelection ?
+                                                                                    {step.superlativeColPossibleParamOptions.map((possibleParamOption) => {
+                                                                                        return <>
+                                                                                            <input
+                                                                                                type="radio"
+                                                                                                log-this-element=""
+                                                                                                name={`superlativeColParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                id={`superlativeColParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                value={possibleParamOption.paramName}
+                                                                                                checked={step.paramNameForSuperlativeCol === possibleParamOption.paramName}
+                                                                                                onChange={() => this.handleProgramStepInfluencedByChange("paramNameForSuperlativeCol", { paramNameForSuperlativeCol: possibleParamOption.paramName, valueForCurrentParamForSuperlativeCol: null, paramForValueForCurrentParamForSuperlativeCol: null, staticColIndexForSuperlativeCol: null }, step_index, programVersion_index)}
+                                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                            />
+                                                                                            <label htmlFor={`superlativeColParam_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                                <span
+                                                                                                    className={styles.importantPieceOfInfo}
+                                                                                                    style={
+                                                                                                        {
+                                                                                                            backgroundColor: this.getParamColor(possibleParamOption.paramName)
+                                                                                                        }
+                                                                                                    }
+                                                                                                >
+                                                                                                    {possibleParamOption.paramName}
+                                                                                                </span>
+                                                                                            </label>
+                                                                                        </>
+                                                                                    })}
+                                                                                    {step.superlativeColPossibleStaticOptions.map((possibleStaticOption) => {
+                                                                                        // there should only be 1 static col option for the selected col, but will still do a loop here
+                                                                                        return <>
+                                                                                            {possibleStaticOption.visibleColName ? (
+                                                                                                <>
+                                                                                                    <input
+                                                                                                        type="radio"
+                                                                                                        log-this-element=""
+                                                                                                        name={`superlative_colStaticValue_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                        id={`superlative_colStaticValue_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                        value={possibleStaticOption.visibleColName}
+                                                                                                        checked={step.valueForCurrentParamForSuperlativeCol === possibleStaticOption.visibleColName}
+                                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("valueForCurrentParamForSuperlativeCol", { paramNameForSuperlativeCol: null, valueForCurrentParamForSuperlativeCol: possibleStaticOption.visibleColName, paramForValueForCurrentParamForSuperlativeCol: possibleStaticOption.paramName, staticColIndexForSuperlativeCol: null }, step_index, programVersion_index)}
+                                                                                                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                                    />
+                                                                                                    <label htmlFor={`superlative_colStaticValue_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                                        <span
+                                                                                                            className={styles.importantPieceOfInfo}
+                                                                                                        >
+                                                                                                            Column { possibleStaticOption.visibleColName }
+                                                                                                        </span>
+                                                                                                    </label>
+                                                                                                </>
+                                                                                            ):(
+                                                                                                <>
+                                                                                                    <input
+                                                                                                        type="radio"
+                                                                                                        log-this-element=""
+                                                                                                        name={`superlative_colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                        id={`superlative_colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                        value={ possibleStaticOption.colIndexOptionObject.dataValueColIndex }
+                                                                                                        checked={(step.staticColIndexForSuperlativeCol) === (possibleStaticOption.colIndexOptionObject.dataValueColIndex)}
+                                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("staticColIndexForSuperlativeCol", { paramNameForSuperlativeCol: null, valueForCurrentParamForSuperlativeCol: null, paramForValueForCurrentParamForSuperlativeCol: null, staticColIndexForSuperlativeCol: possibleStaticOption.colIndexOptionObject.dataValueColIndex }, step_index, programVersion_index)}
+                                                                                                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                                    />
+                                                                                                    <label htmlFor={`superlative_colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                                        <span
+                                                                                                            className={styles.importantPieceOfInfo}
+                                                                                                        >
+                                                                                                            Column { possibleStaticOption.colIndexOptionObject.dataValueColIndex + 1 }
+                                                                                                        </span>
+                                                                                                    </label>
+                                                                                                </>
+                                                                                            )}
+                                                                                        </>
+                                                                                    })}
+                                                                                    <>
+                                                                                        <input
+                                                                                            type="radio"
+                                                                                            log-this-element=""
+                                                                                            name={`noSuperlative_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                            id={`noSuperlative_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                            value={"noSuperlative"}
+                                                                                            checked={step.paramNameForSuperlativeCol === null && step.valueForCurrentParamForSuperlativeCol === null && step.paramForValueForCurrentParamForSuperlativeCol === null && step.staticColIndexForSuperlativeCol === null}
+                                                                                            onChange={() => this.handleProgramStepInfluencedByChange("noSuperlative", { paramNameForSuperlativeCol: null, valueForCurrentParamForSuperlativeCol: null, paramForValueForCurrentParamForSuperlativeCol: null, staticColIndexForSuperlativeCol: null }, step_index, programVersion_index)}
+                                                                                            disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                        />
+                                                                                        <label htmlFor={`noSuperlative_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                            <span
+                                                                                                className={styles.importantPieceOfInfo}
+                                                                                            >
+                                                                                                No superlative
+                                                                                            </span>
+                                                                                        </label>
+                                                                                    </>
+                                                                                    {/* {step.colParamForSuperlativeForRowSelection ?
                                                                                         <span
                                                                                             className={styles.importantPieceOfInfo}
                                                                                             style={
@@ -3867,7 +3962,7 @@ class NaturalLanguage extends React.Component {
                                                                                         >
                                                                                             {step.colParamForSuperlativeForRowSelection};
                                                                                         </span>
-                                                                                    :""}
+                                                                                    :""} */}
                                                                                     {step.superlativeParamForRowSelection ?
                                                                                         <span
                                                                                             className={styles.importantPieceOfInfo}
@@ -3892,20 +3987,20 @@ class NaturalLanguage extends React.Component {
                                                                         </div>
                                                                     </div>
                                                                 : "" }
-                                                                { step.relevantParamForCol ?
+                                                                { step.relevantParamForCol || (step.selectedColPossibleStaticOptions && step.selectedColPossibleStaticOptions.length > 0) ?
                                                                     <>
                                                                         <span
                                                                             className={styles.inferenceExplanationIndentation}
                                                                         >
                                                                             Column determined by:
-                                                                            <input
+                                                                            {/* <input
                                                                                 type="radio"
                                                                                 log-this-element=""
                                                                                 name={`colStatic_influencedBy_${step_index}_${programVersion_index}`}
                                                                                 id={`colStatic_influencedBy_${step_index}_${programVersion_index}`}
                                                                                 value="useParamValue"
-                                                                                checked={step.valueForRelevantParamForCol === "useParamValue"}
-                                                                                onChange={() => this.handleProgramStepInfluencedByChange("valueForRelevantParamForCol", "useParamValue", step_index, programVersion_index)}
+                                                                                checked={step.currentParamForSelectedCol === "useParamValue"}
+                                                                                onChange={() => this.handleProgramStepInfluencedByChange("currentParamForSelectedCol", "useParamValue", step_index, programVersion_index)}
                                                                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                             />
                                                                             <label htmlFor={`colStatic_influencedBy_${step_index}_${programVersion_index}`}>
@@ -3919,25 +4014,96 @@ class NaturalLanguage extends React.Component {
                                                                                 >
                                                                                     {step.relevantParamForCol}
                                                                                 </span>
-                                                                            </label>
-                                                                            <input
-                                                                                type="radio"
-                                                                                log-this-element=""
-                                                                                name={`colStatic_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                id={`colStatic_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                value="static"
-                                                                                checked={step.valueForRelevantParamForCol === "static"}
-                                                                                onChange={() => this.handleProgramStepInfluencedByChange("valueForRelevantParamForCol", "static", step_index, programVersion_index)}
-                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
-                                                                            />
-                                                                            <label htmlFor={`colStatic_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                >
-                                                                                    None
-                                                                                </span>
-                                                                                &nbsp; (same column from recording)
-                                                                            </label>
+                                                                            </label> */}
+                                                                            {step.selectedColPossibleParamOptions.map((possibleParamOption) => {
+                                                                                return <>
+                                                                                    <input
+                                                                                        type="radio"
+                                                                                        log-this-element=""
+                                                                                        name={`colParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                        id={`colParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                        //value="useParamValue"
+                                                                                        value={possibleParamOption.paramName}
+                                                                                        //value={possibleParamOption.paramName}
+                                                                                        //checked={step.currentParamForSelectedCol === "useParamValue"}
+                                                                                        checked={step.paramNameForSelectedCol === possibleParamOption.paramName}
+                                                                                        //onChange={() => this.handleProgramStepInfluencedByChange("currentParamForSelectedCol", step.currentParamForSelectedCol, step_index, programVersion_index)}
+                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("paramNameForSelectedCol", { paramNameForSelectedCol: possibleParamOption.paramName, valueForCurrentParamForSelectedCol: null, paramForValueForCurrentParamForSelectedCol: null, colIndexForSelectedCol: null }, step_index, programVersion_index)}
+                                                                                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                    />
+                                                                                    <label htmlFor={`colParam_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                        <span
+                                                                                            className={styles.importantPieceOfInfo}
+                                                                                            style={
+                                                                                                {
+                                                                                                    backgroundColor: this.getParamColor(possibleParamOption.paramName)
+                                                                                                }
+                                                                                            }
+                                                                                        >
+                                                                                            {possibleParamOption.paramName}
+                                                                                        </span>
+                                                                                    </label>
+                                                                                </>
+                                                                            })}
+                                                                            {step.selectedColPossibleStaticOptions.map((possibleStaticOption) => {
+                                                                                // there should only be 1 static col option for the selected col, but will still do a loop here
+                                                                                return <>
+                                                                                    {possibleStaticOption.visibleColName ? (
+                                                                                        <>
+                                                                                            <input
+                                                                                                type="radio"
+                                                                                                log-this-element=""
+                                                                                                name={`colStaticValue_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                id={`colStaticValue_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                value={possibleStaticOption.visibleColName}
+                                                                                                //value="static"
+                                                                                                //value="useStaticColValue"
+                                                                                                //value="useParamValue"
+                                                                                                //value={possibleParamOption.paramName}
+                                                                                                //checked={step.currentParamForSelectedCol === "useParamValue"}
+                                                                                                //checked={step.currentParamForSelectedCol === "static"}
+                                                                                                checked={step.valueForCurrentParamForSelectedCol === possibleStaticOption.visibleColName}
+                                                                                                onChange={() => this.handleProgramStepInfluencedByChange("valueForCurrentParamForSelectedCol", { paramNameForSelectedCol: null, valueForCurrentParamForSelectedCol: possibleStaticOption.visibleColName, paramForValueForCurrentParamForSelectedCol: possibleStaticOption.paramName, colIndexForSelectedCol: null }, step_index, programVersion_index)}
+                                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                            />
+                                                                                            <label htmlFor={`colStaticValue_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                                <span
+                                                                                                    className={styles.importantPieceOfInfo}
+                                                                                                >
+                                                                                                    Column { possibleStaticOption.visibleColName }
+                                                                                                </span>
+                                                                                            </label>
+                                                                                        </>
+                                                                                    ):(
+                                                                                        <>
+                                                                                            <input
+                                                                                                type="radio"
+                                                                                                log-this-element=""
+                                                                                                name={`colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                id={`colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                value={ possibleStaticOption.colIndexOptionObject.dataValueColIndex }
+                                                                                                //value="static"
+                                                                                                //value="useStaticColValue"
+                                                                                                //value="useParamValue"
+                                                                                                //value={possibleParamOption.paramName}
+                                                                                                //checked={step.currentParamForSelectedCol === "useParamValue"}
+                                                                                                //checked={step.currentParamForSelectedCol === "static"}
+                                                                                                checked={(step.colIndexForSelectedCol) === (possibleStaticOption.colIndexOptionObject.dataValueColIndex)}
+                                                                                                onChange={() => this.handleProgramStepInfluencedByChange("colIndexForSelectedCol", { paramNameForSelectedCol: null, valueForCurrentParamForSelectedCol: null, paramForValueForCurrentParamForSelectedCol: null, colIndexForSelectedCol: possibleStaticOption.colIndexOptionObject.dataValueColIndex }, step_index, programVersion_index)}
+                                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                            />
+                                                                                            <label htmlFor={`colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                                <span
+                                                                                                    className={styles.importantPieceOfInfo}
+                                                                                                >
+                                                                                                    Column { possibleStaticOption.colIndexOptionObject.dataValueColIndex + 1 }
+                                                                                                </span>
+                                                                                            </label>
+                                                                                        </>
+                                                                                    )}
+                                                                                    
+                                                                                </>
+                                                                            })}
                                                                         </span>
                                                                     </>
                                                                 : "" }
