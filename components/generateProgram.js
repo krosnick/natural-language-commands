@@ -83,10 +83,10 @@ export async function executeProgram(programList, paramValuePairings){
                     let paramNameForSuperlativeCol = programStep.paramNameForSuperlativeCol || programStep.paramForValueForCurrentParamForSuperlativeCol;
 
                     let filterValueForRowSelection;
-                    if(programStep.valueForFilterParamForRowSelection === "static"){
-                        filterValueForRowSelection = null;
-                    }else{
+                    if(programStep.valueForFilterParamForRowSelection){
                         filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
+                    }else{
+                        filterValueForRowSelection = null;
                     }
                     
                     //let colParamValueForSuperlativeForRowSelection = paramValuePairings[programStep.colParamForSuperlativeForRowSelection];
@@ -2103,14 +2103,13 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         relevantParamForCol,
                         customGetElement: false,
                         static: false,
-                        valueForFilterParamForRowSelection: "useParamValue",
+                        valueForFilterParamForRowSelection: filterParamForRowSelection,
                         //currentParamForSelectedCol: "useParamValue",
                         paramNameForSelectedCol: selectedColPossibleParamOptions.length > 0 ? selectedColPossibleParamOptions[0].paramName : null,
                         //currentParamForSelectedCol: selectedColPossibleParamOptions.length > 0 ? selectedColPossibleParamOptions[0].paramName : null,
                         valueForCurrentParamForSelectedCol: selectedColPossibleParamOptions.length === 0 ? selectedColPossibleStaticOptions[0].visibleColName : null,
                         paramForValueForCurrentParamForSelectedCol: selectedColPossibleParamOptions.length === 0 ? selectedColPossibleStaticOptions[0].paramName : null,
                         colIndexForSelectedCol: selectedColPossibleParamOptions.length === 0 ? (selectedColPossibleStaticOptions[0].visibleColName === null ? selectedColPossibleStaticOptions[0].colIndexOptionObject.dataValueColIndex : null) : null,
-                        valueForColParamForSuperlativeForRowSelection: "useParamValue",
                         //paramNameForSelectedCol: relevantParamForCol,
                         /*paramNameForSuperlativeCol: colParamForSuperlativeForRowSelection,
                         staticColIndexForSuperlativeCol: defaultStaticColIndexForSuperlativeCol,*/

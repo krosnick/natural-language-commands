@@ -3818,14 +3818,14 @@ class NaturalLanguage extends React.Component {
                                                                                     <input
                                                                                         type="radio"
                                                                                         log-this-element=""
-                                                                                        name={`rowFilterStatic_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                        id={`rowFilterStatic_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                        value="useParamValue"
-                                                                                        checked={step.valueForFilterParamForRowSelection === "useParamValue"}
-                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("valueForFilterParamForRowSelection", "useParamValue", step_index, programVersion_index)}
+                                                                                        name={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                        id={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                        value={step.filterParamForRowSelection}
+                                                                                        checked={step.valueForFilterParamForRowSelection === step.filterParamForRowSelection}
+                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("valueForFilterParamForRowSelection", { valueForFilterParamForRowSelection: step.filterParamForRowSelection }, step_index, programVersion_index)}
                                                                                         disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                     />
-                                                                                    <label htmlFor={`rowFilterStatic_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                    <label htmlFor={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}>
                                                                                         <span
                                                                                             className={styles.importantPieceOfInfo}
                                                                                             style={
@@ -3842,9 +3842,9 @@ class NaturalLanguage extends React.Component {
                                                                                         log-this-element=""
                                                                                         name={`rowFilterStatic_influencedBy_${step_index}_${programVersion_index}`}
                                                                                         id={`rowFilterStatic_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                        value="static"
-                                                                                        checked={step.valueForFilterParamForRowSelection === "static"}
-                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("valueForFilterParamForRowSelection", "static", step_index, programVersion_index)}
+                                                                                        value={null}
+                                                                                        checked={step.valueForFilterParamForRowSelection === null}
+                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("valueForFilterParamForRowSelection", { valueForFilterParamForRowSelection: null }, step_index, programVersion_index)}
                                                                                         disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                     />
                                                                                     <label htmlFor={`rowFilterStatic_influencedBy_${step_index}_${programVersion_index}`}>
@@ -3993,28 +3993,6 @@ class NaturalLanguage extends React.Component {
                                                                             className={styles.inferenceExplanationIndentation}
                                                                         >
                                                                             Column determined by:
-                                                                            {/* <input
-                                                                                type="radio"
-                                                                                log-this-element=""
-                                                                                name={`colStatic_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                id={`colStatic_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                value="useParamValue"
-                                                                                checked={step.currentParamForSelectedCol === "useParamValue"}
-                                                                                onChange={() => this.handleProgramStepInfluencedByChange("currentParamForSelectedCol", "useParamValue", step_index, programVersion_index)}
-                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
-                                                                            />
-                                                                            <label htmlFor={`colStatic_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                <span
-                                                                                    className={styles.importantPieceOfInfo}
-                                                                                    style={
-                                                                                        {
-                                                                                            backgroundColor: this.getParamColor(step.relevantParamForCol)
-                                                                                        }
-                                                                                    }
-                                                                                >
-                                                                                    {step.relevantParamForCol}
-                                                                                </span>
-                                                                            </label> */}
                                                                             {step.selectedColPossibleParamOptions.map((possibleParamOption) => {
                                                                                 return <>
                                                                                     <input
@@ -4022,12 +4000,8 @@ class NaturalLanguage extends React.Component {
                                                                                         log-this-element=""
                                                                                         name={`colParam_influencedBy_${step_index}_${programVersion_index}`}
                                                                                         id={`colParam_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                        //value="useParamValue"
                                                                                         value={possibleParamOption.paramName}
-                                                                                        //value={possibleParamOption.paramName}
-                                                                                        //checked={step.currentParamForSelectedCol === "useParamValue"}
                                                                                         checked={step.paramNameForSelectedCol === possibleParamOption.paramName}
-                                                                                        //onChange={() => this.handleProgramStepInfluencedByChange("currentParamForSelectedCol", step.currentParamForSelectedCol, step_index, programVersion_index)}
                                                                                         onChange={() => this.handleProgramStepInfluencedByChange("paramNameForSelectedCol", { paramNameForSelectedCol: possibleParamOption.paramName, valueForCurrentParamForSelectedCol: null, paramForValueForCurrentParamForSelectedCol: null, colIndexForSelectedCol: null }, step_index, programVersion_index)}
                                                                                         disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                     />
@@ -4056,12 +4030,6 @@ class NaturalLanguage extends React.Component {
                                                                                                 name={`colStaticValue_influencedBy_${step_index}_${programVersion_index}`}
                                                                                                 id={`colStaticValue_influencedBy_${step_index}_${programVersion_index}`}
                                                                                                 value={possibleStaticOption.visibleColName}
-                                                                                                //value="static"
-                                                                                                //value="useStaticColValue"
-                                                                                                //value="useParamValue"
-                                                                                                //value={possibleParamOption.paramName}
-                                                                                                //checked={step.currentParamForSelectedCol === "useParamValue"}
-                                                                                                //checked={step.currentParamForSelectedCol === "static"}
                                                                                                 checked={step.valueForCurrentParamForSelectedCol === possibleStaticOption.visibleColName}
                                                                                                 onChange={() => this.handleProgramStepInfluencedByChange("valueForCurrentParamForSelectedCol", { paramNameForSelectedCol: null, valueForCurrentParamForSelectedCol: possibleStaticOption.visibleColName, paramForValueForCurrentParamForSelectedCol: possibleStaticOption.paramName, colIndexForSelectedCol: null }, step_index, programVersion_index)}
                                                                                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
@@ -4082,12 +4050,6 @@ class NaturalLanguage extends React.Component {
                                                                                                 name={`colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}
                                                                                                 id={`colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}
                                                                                                 value={ possibleStaticOption.colIndexOptionObject.dataValueColIndex }
-                                                                                                //value="static"
-                                                                                                //value="useStaticColValue"
-                                                                                                //value="useParamValue"
-                                                                                                //value={possibleParamOption.paramName}
-                                                                                                //checked={step.currentParamForSelectedCol === "useParamValue"}
-                                                                                                //checked={step.currentParamForSelectedCol === "static"}
                                                                                                 checked={(step.colIndexForSelectedCol) === (possibleStaticOption.colIndexOptionObject.dataValueColIndex)}
                                                                                                 onChange={() => this.handleProgramStepInfluencedByChange("colIndexForSelectedCol", { paramNameForSelectedCol: null, valueForCurrentParamForSelectedCol: null, paramForValueForCurrentParamForSelectedCol: null, colIndexForSelectedCol: possibleStaticOption.colIndexOptionObject.dataValueColIndex }, step_index, programVersion_index)}
                                                                                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
