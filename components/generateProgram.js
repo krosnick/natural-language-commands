@@ -76,10 +76,25 @@ export async function executeProgram(programList, paramValuePairings){
                     let relevantParam = programStep.relevantParam;
                     element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, paramValuePairings[relevantParam]);
                 }else{
-                    let filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
+                    let filterValueForRowSelection;
+                    if(programStep.valueForFilterParamForRowSelection === "static"){
+                        filterValueForRowSelection = null;
+                    }else{
+                        filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
+                    }
+                    
                     let colParamValueForSuperlativeForRowSelection = paramValuePairings[programStep.colParamForSuperlativeForRowSelection];
+                    
                     let superlativeValueForRowSelection = paramValuePairings[programStep.superlativeParamForRowSelection] || programStep.constantSuperlativeValueForRowSelection;
-                    let paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
+                    
+                    let paramValueForCol;
+                    if(programStep.valueForRelevantParamForCol === "static"){
+                        paramValueForCol = null;
+                    }else{
+                        // use value from paramValuePairings
+                        paramValueForCol = paramValuePairings[programStep.relevantParamForCol];
+                    }
+
                     element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol);
                 }
     
@@ -1181,6 +1196,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     //const finalOpenBracketIndex = colXPath.lastIndexOf("[");
                     const middlePortionOfXPath = colParentXPath.substring(rowXPath.length);
                     let generateColXPathSuffix = function(inputValue, rowXPathPrefix){
+                        if(!inputValue){
+                            // No input value provided, e.g., user chose to use static column (from demonstration)
+                            return staticColXPathSuffix;
+                        }
                         /*console.log("generateColXPathSuffix");
                         console.log("inputValue", inputValue);
                         console.log("rowXPathPrefix", rowXPathPrefix);*/
@@ -1332,6 +1351,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 // For now, return default (the original printed item's xpath suffix that doesn't contain the row xpath)
                 return eventObj.targetXPath.substring(rowXPath.length);
             }
+            const staticRowXPathPrefix = generateRowXPathPrefix();
+            const staticColXPathSuffix = generateColXPathSuffix();
 
             let filterParamForRowSelection;
             let relevantParamForCol;
@@ -1569,6 +1590,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 }
 
                 generateRowXPathPrefix = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection){
+                    if(!filterValueForRowSelection && !colParamValueForSuperlativeForRowSelection){
+                        // Both no filter value and no col param value provided, e.g., user chose to use static row (from demonstration)
+                        return staticRowXPathPrefix;
+                    }
                     //console.log("generateRowXPathPrefix");
                     // Loop through the row siblings and find (the first one) that has filterValueForRowSelection at filterNodeXPathSuffix
                     //console.log("rowXPath", rowXPath);
@@ -1581,7 +1606,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     let rowsToConsider = parentNode.children;
                     //console.log("rowsToConsider 0", rowsToConsider);
 
-                    if(filterNodeXPathSuffix){
+                    //if(filterNodeXPathSuffix){
+                    if(filterValueForRowSelection){
                         //console.log("filterNodeXPathSuffix", filterNodeXPathSuffix);
                         // Row selection should be by filter. Find all the rows matching the filter
                         const newRowsToConsider = [];
@@ -1875,6 +1901,9 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         relevantParamForCol,
                         customGetElement: false,
                         static: false,
+                        valueForFilterParamForRowSelection: "useParamValue",
+                        valueForRelevantParamForCol: "useParamValue",
+                        valueForColParamForSuperlativeForRowSelection: "useParamValue",
                         getElement: function(paramValuePairings, originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol){
                             // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
                             //const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
