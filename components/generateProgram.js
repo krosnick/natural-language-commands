@@ -84,7 +84,7 @@ export async function executeProgram(programList, paramValuePairings){
 
                     let filterValueForRowSelection;
                     if(programStep.valueForFilterParamForRowSelection){
-                        filterValueForRowSelection = paramValuePairings[programStep.filterParamForRowSelection];
+                        filterValueForRowSelection = paramValuePairings[programStep.valueForFilterParamForRowSelection];
                     }else{
                         filterValueForRowSelection = null;
                     }
@@ -124,7 +124,7 @@ export async function executeProgram(programList, paramValuePairings){
 
                     let staticColIndexForSuperlativeCol = programStep.staticColIndexForSuperlativeCol;
 
-                    element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol);
+                    element = programStep.getElement(paramValuePairings, programStep.originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, programStep.valueForFilterParamForRowSelection);
                 }
     
                 // Should throw an error if no xpath found, etc
@@ -1457,7 +1457,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     var nodesContainingTextValue = fontoxpath.evaluateXPathToNodes(`${rowXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${paramValue.toLowerCase()}\")] /..`, document.documentElement);
                     if(nodesContainingTextValue.length > 0){
                         // For now, let's require that the strings are equal (to avoid the issue of seeing the string 'age' in 'beverage')
-                        if(nodesContainingTextValue[0].textContent.toLowerCase() === paramValue.toLowerCase()){
+                        if(nodesContainingTextValue[0].textContent.trim().toLowerCase() === paramValue.trim().toLowerCase()){
                             paramValuesFound.push({
                                 paramName,
                                 paramValue,
@@ -1471,7 +1471,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             
             // Create defaults (which will get overridden later as appropriate)
             //let generateRowXPathPrefix = function(inputValue){
-            let generateRowXPathPrefix = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol){
+            let generateRowXPathPrefix = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection){
                 // For now, return default
                 return rowXPath;
             };
@@ -1487,38 +1487,43 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             let selectedColPossibleParamOptions;
             let selectedColPossibleStaticOptions;
 
+            console.log("paramValuesFound", paramValuesFound);
+            let filterParamNamePossibleOptions = paramValuesFound.map((paramValueObj) => paramValueObj.paramName);
+
             // Define generateRowXPathPrefix; TODO - define based on potential filtering AND superlative
-            let filterNodeXPath;
-            let filterNodeXPathSuffix;
+            //let filterNodeXPath;
             
             let rowsToConsider = rowColData.rowData.levelParent.children; // should this be all rows to start with?
-            if(paramValuesFound.length === 1){
-                // Infer that the user is trying to filter by paramValuesFound[0].paramValue
-                // Create a function that searches for a row that has the desired param value at this relative xpath suffix
-                    // If multiple rows with this value, then for now choose the first one
-                
-                filterNodeXPath = getXPathForElement(paramValuesFound[0].valueNode, document);
-                filterNodeXPathSuffix = filterNodeXPath.substring(rowXPath.length);
-
-                filterParamForRowSelection = paramValuesFound[0].paramName;
-                
-                // Change rowsToConsider to only rows that have inputValue in filterParamForRowSelection
-                const newRowsToConsider = [];
-
-                for(let node of rowsToConsider){
-                    const rowXPath = getXPathForElement(node, document);
-                    const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
-                    if(valueNodeToCheck && valueNodeToCheck.textContent.toLowerCase() === paramValuesFound[0].paramValue.toLowerCase()){
-                        newRowsToConsider.push(node);
-                    }
-                    //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
-                }
-                rowsToConsider = newRowsToConsider;
-            }else{
-                // TODO - Especially if paramValuesFound.length > 1, potentially tell users that you think they're filtering by some value,
-                    // but that we're not sure which one, so show them the options and ask them which one
-
+            
+            // Infer that the user is trying to filter by paramValuesFound[0].paramValue
+            // Create a function that searches for a row that has the desired param value at this relative xpath suffix
+                // If multiple rows with this value, then for now choose the first one
+            
+            let filterNodeXPathSuffixMap = {};
+            // Calculate filter node xpath suffix per each possible param
+            for(let paramValueFound of paramValuesFound){
+                // Use first param option for now, but should show user all options to choose from
+                let curFilterNodeXPath = getXPathForElement(paramValueFound.valueNode, document);
+                let curFilterNodeXPathSuffix = curFilterNodeXPath.substring(rowXPath.length);
+                filterNodeXPathSuffixMap[paramValueFound.paramName] = curFilterNodeXPathSuffix;
             }
+            
+            // Use first param option for now, but should show user all options to choose from
+            filterParamForRowSelection = paramValuesFound[0].paramName;
+            let filterNodeXPathSuffix = filterNodeXPathSuffixMap[filterParamForRowSelection];
+            
+            // Change rowsToConsider to only rows that have inputValue in filterParamForRowSelection
+            const newRowsToConsider = [];
+
+            for(let node of rowsToConsider){
+                const rowXPath = getXPathForElement(node, document);
+                const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
+                if(valueNodeToCheck && valueNodeToCheck.textContent.toLowerCase() === paramValuesFound[0].paramValue.toLowerCase()){
+                    newRowsToConsider.push(node);
+                }
+                //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
+            }
+            rowsToConsider = newRowsToConsider;
 
             let superlativeParamForRowSelection;
             let constantSuperlativeValueForRowSelection;
@@ -1780,10 +1785,15 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     }
                 }
 
-                generateRowXPathPrefix = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol){
+                generateRowXPathPrefix = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection){
                     console.log("staticColIndexForSuperlativeCol", staticColIndexForSuperlativeCol);
                     console.log("filterValueForRowSelection", filterValueForRowSelection);
                     console.log("colParamValueForSuperlativeForRowSelection", colParamValueForSuperlativeForRowSelection);
+                    
+                    console.log("valueForFilterParamForRowSelection", valueForFilterParamForRowSelection);
+
+                    const filterXPathToUse = filterNodeXPathSuffixMap[valueForFilterParamForRowSelection];
+
                     //if(!filterValueForRowSelection && !colParamValueForSuperlativeForRowSelection && (isNaN(staticColIndexForSuperlativeCol) || staticColIndexForSuperlativeCol === -1)){
                     if(!filterValueForRowSelection && !colParamValueForSuperlativeForRowSelection && (staticColIndexForSuperlativeCol === null || staticColIndexForSuperlativeCol === undefined || staticColIndexForSuperlativeCol === -1)){
                         // Both no filter value and no col param value provided, e.g., user chose to use static row (from demonstration)
@@ -1813,9 +1823,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             //console.log(`rowXPath for ${filterValueForRowSelection}`, rowXPath);
                             //console.log(`filterNodeXPathSuffix for ${filterValueForRowSelection}`, filterNodeXPathSuffix);
                             //console.log(`attempted valueNode full xpath for ${filterValueForRowSelection}`, `${rowXPath}${filterNodeXPathSuffix}`);
-                            const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
+                            //const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
+                            const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterXPathToUse}`, document.documentElement)[0];
                             //console.log("valueNodeToCheck", valueNodeToCheck);
-                            if(valueNodeToCheck && valueNodeToCheck.textContent.toLowerCase() === filterValueForRowSelection.toLowerCase()){
+                            if(valueNodeToCheck && valueNodeToCheck.textContent.trim().toLowerCase() === filterValueForRowSelection.trim().toLowerCase()){
                                 // Found a matching row
                                 newRowsToConsider.push(node);
                             }
@@ -1963,7 +1974,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 console.log("in loop");
                                 // TODO - assuming that generateRowXPathPrefix works and returns an xpath
                                 try{
-                                    const generatedRowXPathPrefix = generateRowXPathPrefix(filterValueForRowSelectionOption, colParamValueForSuperlativeForRowSelectionOption, superlativeValueForRowSelectionOption, colParamForSuperlativeForRowSelection, defaultStaticColIndexForSuperlativeCol);
+                                    const generatedRowXPathPrefix = generateRowXPathPrefix(filterValueForRowSelectionOption, colParamValueForSuperlativeForRowSelectionOption, superlativeValueForRowSelectionOption, colParamForSuperlativeForRowSelection, defaultStaticColIndexForSuperlativeCol, filterParamForRowSelection);
                                     const comboObj = {
                                         rowXPathPrefix: generatedRowXPathPrefix,
                                         filterValueForRowSelection: filterValueForRowSelectionOption,
@@ -2009,7 +2020,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         colParamForSuperlativeForRowSelection ? currentParamValuePairings[colParamForSuperlativeForRowSelection] : null,
                         superlativeParamForRowSelection ? currentParamValuePairings[superlativeParamForRowSelection] : constantSuperlativeValueForRowSelection,
                         colParamForSuperlativeForRowSelection,
-                        defaultStaticColIndexForSuperlativeCol
+                        defaultStaticColIndexForSuperlativeCol,
+                        filterParamForRowSelection
                     );
                     //console.log("exampleRowXPathPrefix", exampleRowXPathPrefix);
                     const colParamValue = null;
@@ -2061,14 +2073,14 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
 
 
             //var generalizedXPathFunction = function(paramValueForRow, paramValueForCol){
-            var generalizedXPathFunction = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol){
+            var generalizedXPathFunction = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection){
                 //console.log("generalizedXPathFunction");
                 //console.log("paramValueForRow", paramValueForRow);
                 //console.log("filterValueForRowSelection", filterValueForRowSelection);
                 //console.log("colParamValueForSuperlativeForRowSelection", colParamValueForSuperlativeForRowSelection);
                 //console.log("superlativeValueForRowSelection", superlativeValueForRowSelection);
                 //console.log("paramValueForCol", paramValueForCol);
-                const rowXPathPrefix = generateRowXPathPrefix(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol);
+                const rowXPathPrefix = generateRowXPathPrefix(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection);
                 //console.log("rowXPathPrefix", rowXPathPrefix);
                 //const colXPathSuffix = generateColXPathSuffix(paramValueForCol, paramNameForSelectedCol, rowXPathPrefix, -1);
                 const colXPathSuffix = generateColXPathSuffix(paramValueForCol, paramNameForSelectedCol, rowXPathPrefix, null);
@@ -2122,10 +2134,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         superlativeColPossibleStaticOptions,
                         selectedColPossibleParamOptions,
                         selectedColPossibleStaticOptions,
-                        getElement: function(paramValuePairings, originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol){
+                        filterParamNamePossibleOptions,
+                        getElement: function(paramValuePairings, originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection){
                             // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
                             //const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
-                            const domElement = fontoxpath.evaluateXPathToNodes(generalizedXPathFunction(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol), document.documentElement)[0];
+                            const domElement = fontoxpath.evaluateXPathToNodes(generalizedXPathFunction(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection), document.documentElement)[0];
                             return domElement;
                         },
                         originalTargetXPath: eventObj.targetXPath,

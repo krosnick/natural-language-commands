@@ -3815,28 +3815,32 @@ class NaturalLanguage extends React.Component {
                                                                             {step.filterParamForRowSelection ?
                                                                                 <div>
                                                                                     Filtered by:
-                                                                                    <input
-                                                                                        type="radio"
-                                                                                        log-this-element=""
-                                                                                        name={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                        id={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}
-                                                                                        value={step.filterParamForRowSelection}
-                                                                                        checked={step.valueForFilterParamForRowSelection === step.filterParamForRowSelection}
-                                                                                        onChange={() => this.handleProgramStepInfluencedByChange("valueForFilterParamForRowSelection", { valueForFilterParamForRowSelection: step.filterParamForRowSelection }, step_index, programVersion_index)}
-                                                                                        disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
-                                                                                    />
-                                                                                    <label htmlFor={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                        <span
-                                                                                            className={styles.importantPieceOfInfo}
-                                                                                            style={
-                                                                                                {
-                                                                                                    backgroundColor: this.getParamColor(step.filterParamForRowSelection)
-                                                                                                }
-                                                                                            }
-                                                                                        >
-                                                                                            {step.filterParamForRowSelection};
-                                                                                        </span>
-                                                                                    </label>
+                                                                                    {step.filterParamNamePossibleOptions.map((filterParamNamePossibleOption) => {
+                                                                                        return <>
+                                                                                            <input
+                                                                                                type="radio"
+                                                                                                log-this-element=""
+                                                                                                name={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                id={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                                value={filterParamNamePossibleOption}
+                                                                                                checked={step.valueForFilterParamForRowSelection === filterParamNamePossibleOption}
+                                                                                                onChange={() => this.handleProgramStepInfluencedByChange("valueForFilterParamForRowSelection", { valueForFilterParamForRowSelection: filterParamNamePossibleOption }, step_index, programVersion_index)}
+                                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                                            />
+                                                                                            <label htmlFor={`rowFilterParam_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                                <span
+                                                                                                    className={styles.importantPieceOfInfo}
+                                                                                                    style={
+                                                                                                        {
+                                                                                                            backgroundColor: this.getParamColor(filterParamNamePossibleOption)
+                                                                                                        }
+                                                                                                    }
+                                                                                                >
+                                                                                                    {filterParamNamePossibleOption};
+                                                                                                </span>
+                                                                                            </label>
+                                                                                        </>
+                                                                                    })}
                                                                                     <input
                                                                                         type="radio"
                                                                                         log-this-element=""
