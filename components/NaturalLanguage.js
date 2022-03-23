@@ -3862,6 +3862,14 @@ class NaturalLanguage extends React.Component {
                                                                                         />
                                                                                         <label htmlFor={`rowFilterStatic_influencedBy_${step_index}_${programVersion_index}`}>
                                                                                             None
+                                                                                            {!step.superlativeParamForRowSelection && !step.constantSuperlativeValueForRowSelection ? (
+                                                                                                // No superlative, so here in filter section want to show the original row #
+                                                                                                <>
+                                                                                                    &nbsp;(use original row #{step.originalRowNumber + 1})
+                                                                                                </>
+                                                                                            ):(
+                                                                                                ""
+                                                                                            )}
                                                                                         </label>
                                                                                     </span>
                                                                                 </div>
@@ -3996,6 +4004,14 @@ class NaturalLanguage extends React.Component {
                                                                                                 />
                                                                                                 <label htmlFor={`noSuperlative_influencedBy_${step_index}_${programVersion_index}`}>
                                                                                                     None
+                                                                                                    {!step.filterParamForRowSelection ? (
+                                                                                                        // No filter, so here in superlative section want to show the original row #
+                                                                                                        <>
+                                                                                                            &nbsp;(use original row #{step.originalRowNumber + 1})
+                                                                                                        </>
+                                                                                                    ):(
+                                                                                                        ""
+                                                                                                    )}
                                                                                                 </label>
                                                                                             </span>
                                                                                         </>
@@ -4033,7 +4049,7 @@ class NaturalLanguage extends React.Component {
                                                                                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                             />
                                                                                             <label htmlFor={`noSuperlativeNoFilter_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                                None (select original row from demonstration)
+                                                                                                No filter or superlative (use original row #{step.originalRowNumber + 1})
                                                                                             </label>
                                                                                         </div>
                                                                                     </>
@@ -4124,7 +4140,7 @@ class NaturalLanguage extends React.Component {
                                                                                                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                                 />
                                                                                                 <label htmlFor={`colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                                    column&nbsp;
+                                                                                                    column&nbsp;#
                                                                                                     <span
                                                                                                         className={styles.importantPieceOfInfo}
                                                                                                     >

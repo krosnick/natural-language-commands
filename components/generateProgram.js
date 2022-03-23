@@ -1495,6 +1495,15 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             
             let rowsToConsider = rowColData.rowData.levelParent.children; // should this be all rows to start with?
             
+            let originalRowNumber;
+            for(let rowIndex = 0; rowIndex < rowsToConsider.length; rowIndex++){
+                let row = rowsToConsider[rowIndex];
+                if(row === rowElement){
+                    originalRowNumber = rowIndex;
+                    break;
+                }
+            }
+
             // Infer that the user is trying to filter by paramValuesFound[0].paramValue
             // Create a function that searches for a row that has the desired param value at this relative xpath suffix
                 // If multiple rows with this value, then for now choose the first one
@@ -2138,6 +2147,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         selectedColPossibleParamOptions,
                         selectedColPossibleStaticOptions,
                         filterParamNamePossibleOptions,
+                        originalRowNumber,
                         getElement: function(paramValuePairings, originalTargetXPath, filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramValueForCol, paramNameForSelectedCol, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection){
                             // Note: if you make edits to getElement and want them to take effect, you will need to set the customGetElement field to true
                             //const domElement = document.evaluate(generalizedXPathFunction(paramValueForRow, paramValueForCol), document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
