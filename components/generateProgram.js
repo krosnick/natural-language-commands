@@ -2116,8 +2116,12 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     uuid: uuidv4()
                 });*/
             }else{
+                console.log("matchingParam", matchingParam);
                 // Add program step. Only don't if filterParamForRowSelection was the only param used here and matchingParam was also found; in that case, just use matchingParam approach which we'll do below
-                if(!(matchingParam && filterParamForRowSelection && !colParamForSuperlativeForRowSelection && !constantSuperlativeValueForRowSelection && !relevantParamForCol && !superlativeParamForRowSelection)){
+                //if(!(matchingParam && filterParamForRowSelection && !colParamForSuperlativeForRowSelection && !constantSuperlativeValueForRowSelection && !relevantParamForCol && !superlativeParamForRowSelection)){
+                
+                // If superlative then definitely add this program step. Otherwise, if filterParamForRowSelection but no matchingParam, add this step. Otherwise, if matchingParam, only add this step (and not proceed on to use matchingParam) if filterParamForRowSelection and relevantParamForCol are different
+                if((colParamForSuperlativeForRowSelection || constantSuperlativeValueForRowSelection || superlativeParamForRowSelection) || (!matchingParam && filterParamForRowSelection) || (filterParamForRowSelection && relevantParamForCol && (filterParamForRowSelection !== relevantParamForCol))){
                     program.push({
                         eventType: eventObj.eventType,
                         filterParamForRowSelection,
@@ -2129,19 +2133,19 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         static: false,
                         valueForFilterParamForRowSelection: filterParamForRowSelection,
                         //currentParamForSelectedCol: "useParamValue",
-                        paramNameForSelectedCol: selectedColPossibleParamOptions.length > 0 ? selectedColPossibleParamOptions[0].paramName : null,
+                        paramNameForSelectedCol: selectedColPossibleParamOptions ? (selectedColPossibleParamOptions.length > 0 ? selectedColPossibleParamOptions[0].paramName : null) : null,
                         //currentParamForSelectedCol: selectedColPossibleParamOptions.length > 0 ? selectedColPossibleParamOptions[0].paramName : null,
-                        valueForCurrentParamForSelectedCol: selectedColPossibleParamOptions.length === 0 ? selectedColPossibleStaticOptions[0].visibleColName : null,
-                        paramForValueForCurrentParamForSelectedCol: selectedColPossibleParamOptions.length === 0 ? selectedColPossibleStaticOptions[0].paramName : null,
-                        colIndexForSelectedCol: selectedColPossibleParamOptions.length === 0 ? (selectedColPossibleStaticOptions[0].visibleColName === null ? selectedColPossibleStaticOptions[0].colIndexOptionObject.dataValueColIndex : null) : null,
+                        valueForCurrentParamForSelectedCol: selectedColPossibleParamOptions ? (selectedColPossibleParamOptions.length === 0 ? selectedColPossibleStaticOptions[0].visibleColName : null) : null,
+                        paramForValueForCurrentParamForSelectedCol: selectedColPossibleParamOptions ? (selectedColPossibleParamOptions.length === 0 ? selectedColPossibleStaticOptions[0].paramName : null) : null,
+                        colIndexForSelectedCol: selectedColPossibleParamOptions ? (selectedColPossibleParamOptions.length === 0 ? (selectedColPossibleStaticOptions[0].visibleColName === null ? selectedColPossibleStaticOptions[0].colIndexOptionObject.dataValueColIndex : null) : null) : null,
                         //paramNameForSelectedCol: relevantParamForCol,
                         /*paramNameForSuperlativeCol: colParamForSuperlativeForRowSelection,
                         staticColIndexForSuperlativeCol: defaultStaticColIndexForSuperlativeCol,*/
-                        paramNameForSuperlativeCol: superlativeColPossibleParamOptions.length > 0 ? superlativeColPossibleParamOptions[0].paramName : null,
-                        valueForCurrentParamForSuperlativeCol: superlativeColPossibleParamOptions.length === 0 ? superlativeColPossibleStaticOptions[0].visibleColName : null,
-                        paramForValueForCurrentParamForSuperlativeCol: superlativeColPossibleParamOptions.length === 0 ? superlativeColPossibleStaticOptions[0].paramName : null,
+                        paramNameForSuperlativeCol: superlativeColPossibleParamOptions ? (superlativeColPossibleParamOptions.length > 0 ? superlativeColPossibleParamOptions[0].paramName : null) : null,
+                        valueForCurrentParamForSuperlativeCol: superlativeColPossibleParamOptions ? (superlativeColPossibleParamOptions.length === 0 ? superlativeColPossibleStaticOptions[0].visibleColName : null) : null,
+                        paramForValueForCurrentParamForSuperlativeCol: superlativeColPossibleParamOptions ? (superlativeColPossibleParamOptions.length === 0 ? superlativeColPossibleStaticOptions[0].paramName : null) : null,
                         //staticColIndexForSuperlativeCol: defaultStaticColIndexForSuperlativeCol,
-                        staticColIndexForSuperlativeCol: superlativeColPossibleParamOptions.length === 0 ? (superlativeColPossibleStaticOptions[0].visibleColName === null ? superlativeColPossibleStaticOptions[0].colIndexOptionObject.dataValueColIndex : null) : null,
+                        staticColIndexForSuperlativeCol: superlativeColPossibleParamOptions ? (superlativeColPossibleParamOptions.length === 0 ? (superlativeColPossibleStaticOptions[0].visibleColName === null ? superlativeColPossibleStaticOptions[0].colIndexOptionObject.dataValueColIndex : null) : null) : null,
                         superlativeColPossibleParamOptions,
                         superlativeColPossibleStaticOptions,
                         selectedColPossibleParamOptions,

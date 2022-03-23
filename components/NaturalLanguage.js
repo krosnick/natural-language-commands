@@ -3790,16 +3790,52 @@ class NaturalLanguage extends React.Component {
                                                                 //className={styles.importantPieceOfInfo}
                                                             >
                                                                 { step.relevantParam ?
-                                                                    <span
-                                                                        className={styles.importantPieceOfInfo}
-                                                                        style={
-                                                                            {
-                                                                                backgroundColor: this.getParamColor(step.relevantParam)
-                                                                            }
-                                                                        }
-                                                                    >
-                                                                        {step.relevantParam} &nbsp;&nbsp;&nbsp;
-                                                                    </span>
+                                                                    <>
+                                                                        <div>
+                                                                            <input
+                                                                                type="radio"
+                                                                                log-this-element=""
+                                                                                name={`inferred_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                id={`inferred_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                value="inferred"
+                                                                                checked={!step.static}
+                                                                                onChange={() => this.handleProgramStepInfluencedByChange("overall", "inferred", step_index, programVersion_index)}
+                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                            />
+                                                                            <label htmlFor={`inferred_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                <span
+                                                                                    className={styles.importantPieceOfInfo}
+                                                                                    style={
+                                                                                        {
+                                                                                            backgroundColor: this.getParamColor(step.relevantParam)
+                                                                                        }
+                                                                                    }
+                                                                                >
+                                                                                    {step.relevantParam} &nbsp;&nbsp;&nbsp;
+                                                                                </span>
+                                                                            </label>
+                                                                        </div>
+                                                                        <div>
+                                                                            <input
+                                                                                type="radio"
+                                                                                log-this-element=""
+                                                                                name={`overallStatic_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                id={`overallStatic_influencedBy_${step_index}_${programVersion_index}`}
+                                                                                value="static"
+                                                                                checked={step.static}
+                                                                                onChange={() => this.handleProgramStepInfluencedByChange("overall", "static", step_index, programVersion_index)}
+                                                                                disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
+                                                                            />
+                                                                            <label htmlFor={`overallStatic_influencedBy_${step_index}_${programVersion_index}`}>
+                                                                                <span
+                                                                                    className={styles.importantPieceOfInfo}
+                                                                                >
+                                                                                    None
+                                                                                </span>
+                                                                                &nbsp; (static - simply replays recording)
+                                                                            </label>
+                                                                        </div>
+                                                                    </>
                                                                 : "" }
                                                                 {/* { step.filterParamForRowSelection ? <span> Row determined by: {step.filterParamForRowSelection} &nbsp;&nbsp;&nbsp; </span> : "" } */}
                                                                 { step.filterParamForRowSelection || step.colParamForSuperlativeForRowSelection || step.superlativeParamForRowSelection || step.constantSuperlativeValueForRowSelection ?
