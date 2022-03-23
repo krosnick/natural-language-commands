@@ -1508,22 +1508,25 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 filterNodeXPathSuffixMap[paramValueFound.paramName] = curFilterNodeXPathSuffix;
             }
             
-            // Use first param option for now, but should show user all options to choose from
-            filterParamForRowSelection = paramValuesFound[0].paramName;
-            let filterNodeXPathSuffix = filterNodeXPathSuffixMap[filterParamForRowSelection];
-            
-            // Change rowsToConsider to only rows that have inputValue in filterParamForRowSelection
-            const newRowsToConsider = [];
+            let filterNodeXPathSuffix;
+            if(paramValuesFound.length > 0){
+                // Use first param option for now, but should show user all options to choose from
+                filterParamForRowSelection = paramValuesFound[0].paramName;
+                filterNodeXPathSuffix = filterNodeXPathSuffixMap[filterParamForRowSelection];
+                
+                // Change rowsToConsider to only rows that have inputValue in filterParamForRowSelection
+                const newRowsToConsider = [];
 
-            for(let node of rowsToConsider){
-                const rowXPath = getXPathForElement(node, document);
-                const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
-                if(valueNodeToCheck && valueNodeToCheck.textContent.toLowerCase() === paramValuesFound[0].paramValue.toLowerCase()){
-                    newRowsToConsider.push(node);
+                for(let node of rowsToConsider){
+                    const rowXPath = getXPathForElement(node, document);
+                    const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
+                    if(valueNodeToCheck && valueNodeToCheck.textContent.toLowerCase() === paramValuesFound[0].paramValue.toLowerCase()){
+                        newRowsToConsider.push(node);
+                    }
+                    //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
                 }
-                //const valueNodeToCheck = document.evaluate(`${nodeXPath} //text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"${inputValue.toLowerCase()}\")] /..`, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)[0];
+                rowsToConsider = newRowsToConsider;
             }
-            rowsToConsider = newRowsToConsider;
 
             let superlativeParamForRowSelection;
             let constantSuperlativeValueForRowSelection;
