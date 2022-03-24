@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { makeXPathsMoreRobust, indexOfCaseInsensitive, findClosestString } from './valueExtraction';
 import * as fontoxpath from 'fontoxpath';
 import * as stringSimilarity from 'string-similarity';
+import * as numeral from 'numeral';
 
 /*setTimeout(() => {
     let testMatches1 = fontoxpath.evaluateXPathToNodes(`/html/body[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]/*[count(index-of(tokenize(@class, ' ' ), 'card')) = 1]/*[count(index-of(tokenize(@class, ' ' ), 'item-details')) = 1]`, document.documentElement);
@@ -1595,8 +1596,23 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             // Just double check that this row has a col at that index (could be an edge case, like an ad in the middle of the page, or footer at the bottom of the data)
                             if(thisRowColParent.children[colIndex]){
                                 // Check that text is a number
-                                if(!isNaN(thisRowColParent.children[colIndex].textContent)){
+                                /*if(!isNaN(thisRowColParent.children[colIndex].textContent)){
                                     allValues.push(parseFloat(thisRowColParent.children[colIndex].textContent));
+                                }*/
+                                if(thisRowColParent.children[colIndex]){
+                                    try{
+                                        const numeric = numeral(thisRowColParent.children[colIndex].textContent)._value;
+                                        console.log("numeric", numeric);
+                                        if(!isNaN(numeric)){
+                                            allValues.push(numeric);
+                                        }else{
+                                            allValues.push(null);
+                                        }
+                                    }catch{
+                                        allValues.push(null);
+                                    }
+                                }else{
+                                    allValues.push(null);
                                 }
                             }
                         }
@@ -1871,8 +1887,18 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         for(let rowIndex = 0; rowIndex < rowsToConsider.length; rowIndex++){
                             const rowXPath = getXPathForElement(rowsToConsider[rowIndex], document);
                             const colValueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${colXPathSuffix}`, document.documentElement)[0];
-                            if(colValueNodeToCheck && !isNaN(colValueNodeToCheck.textContent)){ // First want to make sure this node exists and then that text is a number
-                                allValues.push(parseFloat(colValueNodeToCheck.textContent));
+                            if(colValueNodeToCheck){
+                                try{
+                                    const numeric = numeral(colValueNodeToCheck.textContent)._value;
+                                    console.log("numeric", numeric);
+                                    if(!isNaN(numeric)){
+                                        allValues.push(numeric);
+                                    }else{
+                                        allValues.push(null);
+                                    }
+                                }catch{
+                                    allValues.push(null);
+                                }
                             }else{
                                 allValues.push(null);
                             }
