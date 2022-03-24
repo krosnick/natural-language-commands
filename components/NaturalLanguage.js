@@ -3007,7 +3007,7 @@ class NaturalLanguage extends React.Component {
         /*// First, cause website to re-render so we have clean slate
         this.forceReRenderEmbeddedWebsite();*/
 
-        // Check if param value data has changed since demo(s) were recorded;
+        /*// Check if param value data has changed since demo(s) were recorded;
             // if they have, then we'll want to alert user that they probably should re-demo
             // (so we can generate updated program)
         const currentParamValueData = this.getParamValueData();
@@ -3020,46 +3020,47 @@ class NaturalLanguage extends React.Component {
                 console.log("not equal");
                 alertUserToReDemo = true;
             }
-        }
+        }*/
 
         // Clear current program output
         this.setState({
             programOutput: null,
-            programRunInProgress: !alertUserToReDemo
+            //programRunInProgress: !alertUserToReDemo
+            programRunInProgress: true
         });
 
-        if(alertUserToReDemo){
+        /*if(alertUserToReDemo){
             window.alert("You've updated parameter values since you last created a demonstration. You should re-demo so we can generate an updated program.");
-        }else{
-            setTimeout(function(context){
-                // No need to regenerate program anymore, because we won't let user run program if param values have changed (in which case, they'll have to create a new demo which will then regenerate the program)
-                /*// This will regenerate program again, using the new xpaths
-                context.handleStopRecordingDemo();*/
-    
-                // First, cause website to re-render so we have clean slate
-                context.forceReRenderEmbeddedWebsite();
-    
-                // Wait a couple seconds to execute program
-                setTimeout(async function(context){
-                    // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
-                    const paramToValueObj = {};
-                    for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
-                        const paramName = paramNameValueObj.paramName;
-                        const paramValue = paramNameValueObj.paramValue;
-                        paramToValueObj[paramName] = paramValue;
-                    }
-                    
-                    const programExecutionResult = await executeProgram(context.state.generatedProgram, paramToValueObj);
-                    const programOutput = programExecutionResult.valuesToReturn;
-                    const programOutputProgramIndex = programExecutionResult.selectedProgramIndex;
-                    context.setState({
-                        programOutput,
-                        programOutputProgramIndex,
-                        programRunInProgress: false
-                    });
-                }, 2000, context);
-            }, 0, this);
-        }
+        }else{*/
+        setTimeout(function(context){
+            // No need to regenerate program anymore, because we won't let user run program if param values have changed (in which case, they'll have to create a new demo which will then regenerate the program)
+            /*// This will regenerate program again, using the new xpaths
+            context.handleStopRecordingDemo();*/
+
+            // First, cause website to re-render so we have clean slate
+            context.forceReRenderEmbeddedWebsite();
+
+            // Wait a couple seconds to execute program
+            setTimeout(async function(context){
+                // Transform paramValuePairsForRunningProgram into { paramName: paramValue } format
+                const paramToValueObj = {};
+                for(let paramNameValueObj of Object.values(context.state.paramValuePairsForRunningProgram)){
+                    const paramName = paramNameValueObj.paramName;
+                    const paramValue = paramNameValueObj.paramValue;
+                    paramToValueObj[paramName] = paramValue;
+                }
+                
+                const programExecutionResult = await executeProgram(context.state.generatedProgram, paramToValueObj);
+                const programOutput = programExecutionResult.valuesToReturn;
+                const programOutputProgramIndex = programExecutionResult.selectedProgramIndex;
+                context.setState({
+                    programOutput,
+                    programOutputProgramIndex,
+                    programRunInProgress: false
+                });
+            }, 2000, context);
+        }, 0, this);
+        //}
     }
 
     handleDemoReplay(demo_index){
