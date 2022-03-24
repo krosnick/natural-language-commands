@@ -3880,7 +3880,8 @@ class NaturalLanguage extends React.Component {
                                                                         className={styles.inferenceExplanationIndentation}
                                                                     >
                                                                         <div>
-                                                                            Row determined by:
+                                                                            {/* Row determined by: */}
+                                                                            Entry determined by:
                                                                         </div>
                                                                         <div
                                                                             className={styles.inferenceExplanationIndentation}
@@ -3938,7 +3939,7 @@ class NaturalLanguage extends React.Component {
                                                                                             {!step.superlativeParamForRowSelection && !step.constantSuperlativeValueForRowSelection ? (
                                                                                                 // No superlative, so here in filter section want to show the original row #
                                                                                                 <>
-                                                                                                    &nbsp;(use original row #{step.originalRowNumber + 1})
+                                                                                                    &nbsp;(use original entry #{step.originalRowNumber + 1})
                                                                                                 </>
                                                                                             ):(
                                                                                                 ""
@@ -4024,7 +4025,7 @@ class NaturalLanguage extends React.Component {
                                                                                                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                                             />
                                                                                                             <label htmlFor={`superlative_colStaticValue_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                                                column&nbsp;
+                                                                                                                {/* column&nbsp; */}
                                                                                                                 <span
                                                                                                                     className={styles.importantPieceOfInfo}
                                                                                                                 >
@@ -4049,7 +4050,7 @@ class NaturalLanguage extends React.Component {
                                                                                                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                                             />
                                                                                                             <label htmlFor={`superlative_colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                                                column&nbsp;
+                                                                                                                {/* column&nbsp; */}
                                                                                                                 <span
                                                                                                                     className={styles.importantPieceOfInfo}
                                                                                                                 >
@@ -4080,7 +4081,7 @@ class NaturalLanguage extends React.Component {
                                                                                                     {!step.filterParamForRowSelection ? (
                                                                                                         // No filter, so here in superlative section want to show the original row #
                                                                                                         <>
-                                                                                                            &nbsp;(use original row #{step.originalRowNumber + 1})
+                                                                                                            &nbsp;(use original entry #{step.originalRowNumber + 1})
                                                                                                         </>
                                                                                                     ):(
                                                                                                         ""
@@ -4122,7 +4123,7 @@ class NaturalLanguage extends React.Component {
                                                                                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                             />
                                                                                             <label htmlFor={`noSuperlativeNoFilter_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                                No filter or superlative (use original row #{step.originalRowNumber + 1})
+                                                                                                No filter or superlative (use original entry #{step.originalRowNumber + 1})
                                                                                             </label>
                                                                                         </div>
                                                                                     </>
@@ -4138,7 +4139,8 @@ class NaturalLanguage extends React.Component {
                                                                         <div
                                                                             className={styles.inferenceExplanationIndentation}
                                                                         >
-                                                                            Column determined by:
+                                                                            {/* Column determined by: */}
+                                                                            Take attribute:
                                                                             {step.selectedColPossibleParamOptions.map((possibleParamOption) => {
                                                                                 return <>
                                                                                     <span
@@ -4188,7 +4190,7 @@ class NaturalLanguage extends React.Component {
                                                                                                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                                 />
                                                                                                 <label htmlFor={`colStaticValue_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                                    column&nbsp;
+                                                                                                    {/* column&nbsp; */}
                                                                                                     <span
                                                                                                         className={styles.importantPieceOfInfo}
                                                                                                     >
@@ -4213,7 +4215,8 @@ class NaturalLanguage extends React.Component {
                                                                                                     disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.state.viewOnlyMode}
                                                                                                 />
                                                                                                 <label htmlFor={`colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}>
-                                                                                                    column&nbsp;#
+                                                                                                    {/* column&nbsp;# */}
+                                                                                                    attribute&nbsp;#
                                                                                                     <span
                                                                                                         className={styles.importantPieceOfInfo}
                                                                                                     >
