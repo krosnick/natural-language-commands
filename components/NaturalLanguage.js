@@ -2560,7 +2560,13 @@ class NaturalLanguage extends React.Component {
     }
 
     getDemoParamsNotYetFilledIn(demoIndex){
-        const thisDemoParamValuePairs = this.state.demonstrations[demoIndex].paramValuePairs;
+        let thisDemoParamValuePairs;
+        if(demoIndex === "runningProgram"){
+            thisDemoParamValuePairs = this.state.paramValuePairsForRunningProgram;
+        }else{
+            thisDemoParamValuePairs = this.state.demonstrations[demoIndex].paramValuePairs;
+        }
+
         let thisDemoFilledInParamUuids = Object.keys(thisDemoParamValuePairs);
 
         // Filter out the ones whose value is <${paramName}>, because that's just the default value
@@ -4547,6 +4553,7 @@ class NaturalLanguage extends React.Component {
                                             <button
                                                 className={styles.runProgramButton}
                                                 onClick={() => this.handleRunProgram()}
+                                                disabled={this.areAnyDemoParamsNotFilledIn("runningProgram")}
                                             >
                                                 Run program
                                             </button>
