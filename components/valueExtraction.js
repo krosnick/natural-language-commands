@@ -195,7 +195,7 @@ export function getCandidateLists(positiveExamplesList, exactStringBoolean, embe
     }
 } */
 
-function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selectorType, valuesWithoutXPath, valuesWithXPath, allValues, numRows){
+function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selectorType, valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry){
     // Now try using this nodeXPathSubstring and see if we match more example values than before
     //console.log("parentXPath", parentXPath);
     //console.log("nodeXPathSubstring", nodeXPathSubstring);
@@ -259,7 +259,56 @@ function tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, selec
                 }
             }
         }
-        
+    }
+
+    console.log("otherValuesToTry", otherValuesToTry);
+    for(let otherValueToTry of otherValuesToTry){
+        const thisValuePrefixXPath = otherValueToTry.xPath + nodeXPathSubstring;
+        const newXPathToTry = thisValuePrefixXPath + xPathSuffix;
+        console.log("newXPathToTry", newXPathToTry);
+        if(newXPathToTry.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
+            const result = fontoxpath.evaluateXPathToNodes(newXPathToTry, document.documentElement);
+            if(result[0]){
+                let textCandidate = result[0].textContent.trim();
+                if(indexOfCaseInsensitive(allValues, textCandidate) > -1){
+                    totalMatchesFound.push(textCandidate);
+                    console.log("totalMatchesFound adding newXPathToTry");
+                }else{
+                    console.log("textCandidate", textCandidate);
+                    // See if a string similar to textCandidate is in allValues (like if the user wrote 'chorizo' instead of 'plant-based chorizo')
+                    const closestString = findClosestString(textCandidate, allValues);
+                    console.log("closestString", closestString);
+                    if(closestString){
+                        totalMatchesFound.push(closestString);
+                        console.log("totalMatchesFound adding newXPathToTry");
+                    }
+                }
+
+                //if(valuesWithoutXPath.includes(textCandidate)){
+                if(indexOfCaseInsensitive(valuesWithoutXPath, textCandidate) > -1){
+                    newMatchesFound.push(textCandidate);
+                //}else if(!valuesWithXPath.includes(textCandidate)){
+                }else if(indexOfCaseInsensitive(valuesWithXPath, textCandidate) === -1){
+                    // We've matched a node whose value isn't one the user has specified. We want to keep track of how many of these we have (if it's too high, then maybe we shouldn't generalize the xpath in this way)
+                    numExtraneousNodesFound +=1;
+                }
+            }
+        }
+
+        // We also need to test prefixXPath (a prefix of the old xpath + the new generalized node string)
+            // Even if newTemplateXPath is unique, it's possible prefixXPath isn't, which could be a problem
+            // later when we remove a suffix from the param value xpath and then add a new suffix to it; if the first match for
+            // a non-unique xpath prefix isn't actually the right one, it might result in an invalid xpath when the suffix gets added to it
+            // (whereas if we had the correct match then adding the new suffix could work)
+        if(thisValuePrefixXPath.substring(thisValuePrefixXPath.length-1) !== "/" && thisValuePrefixXPath.indexOf("///") === -1){ // invalid xpath if it contains 3 slashes in a row
+            const result = fontoxpath.evaluateXPathToNodes(thisValuePrefixXPath, document.documentElement);
+            if(result.length > 0){
+                // Keep track of the most matches; this will be a factor we consider when choosing the best xpath change
+                if(result.length > largestSnapshotLength){
+                    largestSnapshotLength = result.length;
+                }
+            }
+        }
     }
 
     return {
@@ -302,6 +351,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
     //let numItemsWithXPath = 0;
     let valuesWithoutXPath = [];
     let valuesWithXPath = [];
+    let otherValuesToTry = []; // other param values to try (not using main template)
     let objWithXPath; // to use as an example, as we go up through DOM
 
     // objWithXPath
@@ -330,6 +380,10 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
         for(let obj of valueAndXPathObjList){
             if(obj.templateXPath === objWithXPath.templateXPath){
                 valuesWithXPath.push(obj.textCandidate);
+            }else{
+                if(obj.xPath){
+                    otherValuesToTry.push(obj);
+                }
             }
         }
     }else{
@@ -373,8 +427,12 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
         // Loop through valueAndXPathObjList to find one whose xpath has commonPrefix
         for(let obj of valueAndXPathObjList){
             valuesWithXPath.push(obj.textCandidate);
-            if(obj.xPath && obj.xPath.indexOf(commonPrefix) === 0){
+            if(!objWithXPath && obj.xPath && obj.xPath.indexOf(commonPrefix) === 0){
                 objWithXPath = obj;
+            }else{
+                if(obj.xPath){
+                    otherValuesToTry.push(obj);
+                }
             }
         }
     
@@ -442,11 +500,18 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
         }
         //const tag = curNode.tagName.toLowerCase();
 
+        // For otherValuesToTry, trim off last node so we can try new node
+        for(let otherValueToTry of otherValuesToTry){
+            if(otherValueToTry.xPath){
+                otherValueToTry.xPath = otherValueToTry.xPath.substring(0, otherValueToTry.xPath.lastIndexOf("/"));
+            }
+        }
+
         let candidateChanges = [];
 
         // Start by using original node as an option
         {
-            const attempt = tryAlternativeXPath(parentXPath, curNodeXPathSubstring, xPathSuffix, "indexBased", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+            const attempt = tryAlternativeXPath(parentXPath, curNodeXPathSubstring, xPathSuffix, "indexBased", valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry);
             candidateChanges.push(attempt);
         }
 
@@ -454,7 +519,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
         // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
         if(xPathSuffix.length > 0){
             const nodeXPathSubstring = `${curNodeXPathSubstring}/`;
-            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "insertSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "insertSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry);
             candidateChanges.push(attempt);
         }
 
@@ -464,14 +529,14 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
             //const nodeXPathSubstring1 = `/*[contains(@class, '${className}')]`;
             //const nodeXPathSubstring1 = `/*[contains(concat(' ', normalize-space(@class), ' '), '${className}')]`;
             const nodeXPathSubstring1 = `/*[count(index-of(tokenize(@class, ' ' ), '${className}')) = 1]`;
-            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "class", valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry);
             candidateChanges.push(attempt1);
 
             // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
             if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
                 // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
                 const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "classWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry);
                 candidateChanges.push(attempt2);
             }
         }
@@ -489,14 +554,14 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
                 //nodeXPathSubstring1 = `/${tag}[@${attrName}]`;
                 nodeXPathSubstring1 = `/*[@${attrName}]`;
             }
-            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "attribute", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+            const attempt1 = tryAlternativeXPath(parentXPath, nodeXPathSubstring1, xPathSuffix, "attribute", valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry);
             candidateChanges.push(attempt1);
 
             // Only do this if there's already a suffix node (if there isn't, we can't add the / because a slash at the very end of an xpath string isn't valid xpath)
             if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
                 // Try the same thing, except with an extra / inserted on the right. So that this could match values whose DOM node is deeper
                 const nodeXPathSubstring2 = `${nodeXPathSubstring1}/`;
-                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+                const attempt2 = tryAlternativeXPath(parentXPath, nodeXPathSubstring2, xPathSuffix, "attributeWithInsertedSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry);
                 candidateChanges.push(attempt2);
             }
         }
@@ -505,7 +570,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
         // Try just ignoring/excluding this level, aka, allowing any number of levels to happen here (this could help us include values whose DOM node is not as deep, but not sure if this could over-select, select too many nodes on the page)
         if(xPathSuffix.length > 0 && xPathSuffix.substring(0, 2) !== "//"){ // Also want to make sure we're not inserting more slashes than are allowed in a row (at most 2 in a row)
             const nodeXPathSubstring = `/`;
-            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "replaceWithSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows);
+            const attempt = tryAlternativeXPath(parentXPath, nodeXPathSubstring, xPathSuffix, "replaceWithSlash", valuesWithoutXPath, valuesWithXPath, allValues, numRows, otherValuesToTry);
             candidateChanges.push(attempt);
         }
 
