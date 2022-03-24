@@ -1167,6 +1167,7 @@ class NaturalLanguage extends React.Component {
             demoIndexInCreateMode: null,
             demoIndexInRecordingMode: null,
             demoIndexInAboutToRecordMode: null,
+            demoIndexInProgramInferenceMode: null,
             triggerWebsiteReload: Math.random(),
             generatedProgram: [],
             paramValuePairsForRunningProgram: {},
@@ -2686,67 +2687,75 @@ class NaturalLanguage extends React.Component {
         // Update mode state variables, and also generate program or update existing program
         console.log("handleStopRecordingDemo");
         console.log("demo_index", demo_index);
-        //let generatedProgram = this.state.generatedProgram;
-        let generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
-        let currentProgramCode;
-        let demonstrationsClone = _.cloneDeep(this.state.demonstrations);
-        //if(this.state.demonstrations.length === 1){
-        const demoObj = this.state.demonstrations[demo_index];
-        
-        let demoEventSequence = demoObj.eventSequence;
-        
-        let currentParamValuePairings = {};
-        for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
-            // Don't include this param/value if this demo is specifically for this param/value
-            // When we generate the program, we want to operate as if this param doesn't exist, so don't include it in currentParamValuePairings
-            if(!this.state.demonstrations[demo_index].specificallyForParamUuid || this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName !== paramNameValueObj.paramName){
-                const paramName = paramNameValueObj.paramName;
-                const paramValue = paramNameValueObj.paramValue;
-                currentParamValuePairings[paramName] = paramValue;
-            }
-        }
-        console.log("currentParamValuePairings", currentParamValuePairings);
-
-        const { paramValueObj, superlativeParameters } = this.getParamValueData();
-        
-        const constantSuperlatives = this.getConstantSuperlatives();
-        
-        //generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
-        const programResult = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
-        
-        // If this demo is for a specific param/value, attach this info to the program obj, so that at execution we can figure out which program to run
-        if(this.state.demonstrations[demo_index].specificallyForParamUuid){
-            programResult.specificallyForParamName = this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName;
-            programResult.specificallyForValue = this.state.demonstrations[demo_index].specificallyForValue;
-        }
-        
-        generatedProgramClone[demo_index] = programResult;
-        console.log("generatedProgramClone", generatedProgramClone);
-
-        currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
-
-        // Want to note what the param value data was that was used during the demo;
-            // later on when user runs program, we want to see if the param value data at that time is what it was at the time of the demo(s);
-            // if it's different, then we'll want to warn user that they should probably re-demo so we can generate updated program
-        demonstrationsClone[demo_index].paramValueDataUsed = this.getParamValueData();
 
         this.setState({
-            generatedProgram: generatedProgramClone,
-            demonstrations: demonstrationsClone,
-            //currentProgramCode: "var x = 1; // sample code",
-            currentProgramCode,
-            demoIndexInRecordingMode: null,
-            demoIndexInCreateMode: null, // for now, we'll also exit demo mode
-            websiteSelectedTextObject: null
+            demoIndexInProgramInferenceMode: demo_index
         });
 
-        setTimeout(function(context){
-            //console.log("context.editorRef.current", context.editorRef.current);
-            // only if an editor instance already, format code
-            if(context.editorRef && context.editorRef.current && context.editorRef.current.getAction('editor.action.formatDocument')){
-                context.editorRef.current.getAction('editor.action.formatDocument').run();
+        setTimeout(() => {
+            //let generatedProgram = this.state.generatedProgram;
+            let generatedProgramClone = _.cloneDeep(this.state.generatedProgram);
+            let currentProgramCode;
+            let demonstrationsClone = _.cloneDeep(this.state.demonstrations);
+            //if(this.state.demonstrations.length === 1){
+            const demoObj = this.state.demonstrations[demo_index];
+            
+            let demoEventSequence = demoObj.eventSequence;
+            
+            let currentParamValuePairings = {};
+            for(let paramNameValueObj of Object.values(demoObj.paramValuePairs)){
+                // Don't include this param/value if this demo is specifically for this param/value
+                // When we generate the program, we want to operate as if this param doesn't exist, so don't include it in currentParamValuePairings
+                if(!this.state.demonstrations[demo_index].specificallyForParamUuid || this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName !== paramNameValueObj.paramName){
+                    const paramName = paramNameValueObj.paramName;
+                    const paramValue = paramNameValueObj.paramValue;
+                    currentParamValuePairings[paramName] = paramValue;
+                }
             }
-        }, 1000, this);
+            console.log("currentParamValuePairings", currentParamValuePairings);
+
+            const { paramValueObj, superlativeParameters } = this.getParamValueData();
+            
+            const constantSuperlatives = this.getConstantSuperlatives();
+            
+            //generatedProgram = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
+            const programResult = generateProgramAndIdentifyNeededDemos(demoEventSequence, currentParamValuePairings, paramValueObj, superlativeParameters, constantSuperlatives, superlativeRules);
+            
+            // If this demo is for a specific param/value, attach this info to the program obj, so that at execution we can figure out which program to run
+            if(this.state.demonstrations[demo_index].specificallyForParamUuid){
+                programResult.specificallyForParamName = this.state.idToItem[this.state.demonstrations[demo_index].specificallyForParamUuid].paramName;
+                programResult.specificallyForValue = this.state.demonstrations[demo_index].specificallyForValue;
+            }
+            
+            generatedProgramClone[demo_index] = programResult;
+            console.log("generatedProgramClone", generatedProgramClone);
+
+            currentProgramCode = this.generateCodeStringFromProgramObj(generatedProgramClone);
+
+            // Want to note what the param value data was that was used during the demo;
+                // later on when user runs program, we want to see if the param value data at that time is what it was at the time of the demo(s);
+                // if it's different, then we'll want to warn user that they should probably re-demo so we can generate updated program
+            demonstrationsClone[demo_index].paramValueDataUsed = this.getParamValueData();
+
+            this.setState({
+                generatedProgram: generatedProgramClone,
+                demonstrations: demonstrationsClone,
+                //currentProgramCode: "var x = 1; // sample code",
+                currentProgramCode,
+                demoIndexInRecordingMode: null,
+                demoIndexInCreateMode: null, // for now, we'll also exit demo mode
+                demoIndexInProgramInferenceMode: null,
+                websiteSelectedTextObject: null
+            });
+
+            setTimeout(function(context){
+                //console.log("context.editorRef.current", context.editorRef.current);
+                // only if an editor instance already, format code
+                if(context.editorRef && context.editorRef.current && context.editorRef.current.getAction('editor.action.formatDocument')){
+                    context.editorRef.current.getAction('editor.action.formatDocument').run();
+                }
+            }, 1000, this);
+        }, 0);
     }
 
     handleEditorDidMount(editor, monaco) {
@@ -3532,12 +3541,22 @@ class NaturalLanguage extends React.Component {
                         ? ( // User has indicated they want to create a new demo; show start/stop recording button as appropriate
                         <>
                             {this.state.demoIndexInRecordingMode !== null ? (
-                                <div>
-                                    <button
-                                        className={styles.stopRecordingButton}
-                                        onClick={() => this.handleStopRecordingDemo(demo_index)}
-                                    >Stop recording</button>
-                                </div>
+                                <>{this.state.demoIndexInProgramInferenceMode !== null ? (
+                                    <div>
+                                        <button
+                                            className={styles.waitAMomentButton}
+                                            disabled={true}
+                                        >Wait a moment...</button>
+                                    </div>
+                                ):(
+                                    <div>
+                                        <button
+                                            className={styles.stopRecordingButton}
+                                            onClick={() => this.handleStopRecordingDemo(demo_index)}
+                                        >Stop recording</button>
+                                    </div>
+                                )}
+                                </>
                             ) : (
                                 <div>
                                     {demo_index === 0 || this.state.demonstrations[demo_index].specificallyForParamUuid && this.state.demonstrations[demo_index].specificallyForValue ? (
@@ -3545,7 +3564,7 @@ class NaturalLanguage extends React.Component {
                                         <>
                                         {this.state.demoIndexInAboutToRecordMode === demo_index ? (
                                             <button
-                                                className={styles.aboutToRecordButton}
+                                                className={styles.waitAMomentButton}
                                                 disabled={true}
                                             >Wait a moment...</button>
                                         ):(
