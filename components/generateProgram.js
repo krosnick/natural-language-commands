@@ -1536,6 +1536,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 }
                 rowsToConsider = newRowsToConsider;
             }
+            console.log("filter options paramValuesFound", paramValuesFound);
 
             let superlativeParamForRowSelection;
             let constantSuperlativeValueForRowSelection;
@@ -1768,6 +1769,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                     paramValue = paramValues[indexOfCaseInsensitive(paramValues, closestString)];
                                 }
                             }
+                            console.log("paramValue", paramValue);
                             // Add to map. It's ok if the value appears in multiple rows, in the end we'll just take the last one, which is fine; we only need one instance per param value; we're just trying to find more robust suffix (which should hopefully work for all rows)
                             valueAndXPathObjMap[paramValue] = {
                                 textCandidate: paramValue,
@@ -1922,6 +1924,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     //relevantParamForCol = res.relevantParamForCol;
                     generateColXPathSuffix = res.generateColXPathSuffix;
                     if(res.possibleParamOptions.length > 0){
+                        console.log("res.possibleParamOptions", res.possibleParamOptions);
                         relevantParamForCol = res.possibleParamOptions[0].paramName;
                     }
                     selectedColPossibleParamOptions = res.possibleParamOptions;
@@ -2121,7 +2124,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 //if(!(matchingParam && filterParamForRowSelection && !colParamForSuperlativeForRowSelection && !constantSuperlativeValueForRowSelection && !relevantParamForCol && !superlativeParamForRowSelection)){
                 
                 // If superlative then definitely add this program step. Otherwise, if filterParamForRowSelection but no matchingParam, add this step. Otherwise, if matchingParam, only add this step (and not proceed on to use matchingParam) if filterParamForRowSelection and relevantParamForCol are different
-                if((colParamForSuperlativeForRowSelection || constantSuperlativeValueForRowSelection || superlativeParamForRowSelection) || (!matchingParam && filterParamForRowSelection) || (filterParamForRowSelection && relevantParamForCol && (filterParamForRowSelection !== relevantParamForCol))){
+                //if((colParamForSuperlativeForRowSelection || constantSuperlativeValueForRowSelection || superlativeParamForRowSelection) || (!matchingParam && filterParamForRowSelection) || (filterParamForRowSelection && relevantParamForCol && (filterParamForRowSelection !== relevantParamForCol))){
+                if((colParamForSuperlativeForRowSelection || constantSuperlativeValueForRowSelection || superlativeParamForRowSelection) || (!matchingParam && filterParamForRowSelection) || (filterParamForRowSelection && relevantParamForCol && (filterParamForRowSelection !== relevantParamForCol)) || filterParamNamePossibleOptions.length > 1){
                     program.push({
                         eventType: eventObj.eventType,
                         filterParamForRowSelection,

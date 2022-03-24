@@ -8,6 +8,8 @@ import OscarsClone from './website_clones/OscarsClone';
 import ForbesClone from './website_clones/ForbesClone';
 // import MLBClone from './website_clones/MLBClone';
 import WikipediaClone from './website_clones/WikipediaClone';
+import CSEFacultyClone from './website_clones/CSEFacultyClone';
+import SteveWebsiteClone from './website_clones/SteveWebsiteClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists, makeXPathsMoreRobust } from './valueExtraction';
 import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo, getCommonPrefixLength } from './generateProgram';
@@ -4599,6 +4601,12 @@ class NaturalLanguage extends React.Component {
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             {/* <WikipediaClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
+                            {/* <CSEFacultyClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
+                            {/* <SteveWebsiteClone
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             <Clone
