@@ -2046,7 +2046,12 @@ class NaturalLanguage extends React.Component {
                 const dataObj = {
                     name: this.props.name,
                     idToItem: this.state.idToItem,
-                    userFeedback: this.state.userFeedback
+                    userFeedback: this.state.userFeedback,
+                    text: this.state.text,
+                    demonstrations: this.state.demonstrations,
+                    generatedProgram: this.state.generatedProgram,
+                    paramValuePairsForRunningProgram: this.state.paramValuePairsForRunningProgram,
+                    currentProgramCode: this.state.currentProgramCode
                 };
 
                 this.props.writeToDBAndDirectToNextPage(dataObj);
