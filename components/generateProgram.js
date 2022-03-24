@@ -38,6 +38,7 @@ function delayFor(delay) {
     // paramValuePairings - { param: value } to plug into program
 export async function executeProgram(programList, paramValuePairings){
     const valuesToReturn = [];
+    const xPathsToHighlight = [];
     
     let programToRun;
     let selectedProgramIndex;
@@ -133,6 +134,7 @@ export async function executeProgram(programList, paramValuePairings){
                 if(operations[programStep.eventType]){
                     await delayFor(3000); // Let's wait 1000ms between each click
                     console.log("element", element);
+                    const xPath = getXPathForElement(element, document);
                     const returnValue = operations[programStep.eventType](element);
                     if(returnValue){ // because some operations won't return anything
                         valuesToReturn.push({
@@ -140,6 +142,7 @@ export async function executeProgram(programList, paramValuePairings){
                             type: "output"
                         });
                     }
+                    xPathsToHighlight.push(xPath);
                 }
             } catch (error) {
                 console.error("Execution error", error);
@@ -159,7 +162,8 @@ export async function executeProgram(programList, paramValuePairings){
 
     const toReturn = {
         selectedProgramIndex,
-        valuesToReturn
+        valuesToReturn,
+        xPathsToHighlight
     };
 
     return toReturn;
@@ -167,6 +171,7 @@ export async function executeProgram(programList, paramValuePairings){
 
 export async function replayDemo(demoObj){
     const valuesToReturn = [];
+    const xPathsToHighlight = [];
     for(let step of demoObj){
         const xPath = step.targetXPath;
         //console.log("replayDemo xPath", xPath);
@@ -180,10 +185,15 @@ export async function replayDemo(demoObj){
             if(returnValue){ // because some operations won't return anything
                 valuesToReturn.push(returnValue);
             }
+            xPathsToHighlight.push(xPath);
         }
     }
     //console.log("valuesToReturn", valuesToReturn);
-    return valuesToReturn;
+    //return valuesToReturn;
+    return {
+        valuesToReturn,
+        xPathsToHighlight
+    };
 }
 
 function getTagClassesAttributes(element){

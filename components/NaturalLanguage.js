@@ -3053,6 +3053,8 @@ class NaturalLanguage extends React.Component {
                 const programExecutionResult = await executeProgram(context.state.generatedProgram, paramToValueObj);
                 const programOutput = programExecutionResult.valuesToReturn;
                 const programOutputProgramIndex = programExecutionResult.selectedProgramIndex;
+                const xPathsToHighlight = programExecutionResult.xPathsToHighlight;
+                context.highlightXPaths(xPathsToHighlight);
                 context.setState({
                     programOutput,
                     programOutputProgramIndex,
@@ -3061,6 +3063,13 @@ class NaturalLanguage extends React.Component {
             }, 2000, context);
         }, 0, this);
         //}
+    }
+
+    highlightXPaths(xPathList){
+        for(let xPath of xPathList){
+            const element = fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0];
+            element.style.backgroundColor = 'yellow';
+        }
     }
 
     handleDemoReplay(demo_index){
@@ -3074,10 +3083,10 @@ class NaturalLanguage extends React.Component {
 
         // Wait a couple seconds to execute program
         setTimeout(async function(context){
-            const demoOutput = await replayDemo(context.state.demonstrations[demo_index].eventSequence);
-            /*context.setState({
-                programOutput
-            });*/
+            const replayResult = await replayDemo(context.state.demonstrations[demo_index].eventSequence);
+            let valuesToReturn = replayResult.valuesToReturn;
+            let xPathsToHighlight = replayResult.xPathsToHighlight;
+            context.highlightXPaths(xPathsToHighlight);
         }, 2000, this);
     }
 
