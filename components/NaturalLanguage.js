@@ -2019,6 +2019,20 @@ class NaturalLanguage extends React.Component {
         });
     }
 
+    async handleNext(){
+        const dataObj = {
+            name: this.props.name,
+            idToItem: this.state.idToItem,
+            userFeedback: this.state.userFeedback,
+            text: this.state.text,
+            demonstrations: this.state.demonstrations,
+            generatedProgram: this.state.generatedProgram,
+            paramValuePairsForRunningProgram: this.state.paramValuePairsForRunningProgram,
+            currentProgramCode: this.state.currentProgramCode
+        };
+        this.props.writeAnnotationToDB(dataObj, this.props.queryIndexToAnnotate);
+    }
+
     async handleSubmit(){
         console.log("handleSubmit");
 
@@ -4370,13 +4384,13 @@ class NaturalLanguage extends React.Component {
                             ) : (
                                 ""
                             )}
-                            <button
+                            {/* <button
                                 onClick={() => this.scrollToBottomOfPage()}
                                 className={`${styles.submitButton} ${styles.topButton}`}
                                 disabled={this.state.uuidInEditMode || this.state.groupSelectionMode || this.props.viewOnlyMode}
                             >
                                 Next
-                            </button>
+                            </button> */}
                         </div>
                         <div>
                             <p
@@ -4419,6 +4433,7 @@ class NaturalLanguage extends React.Component {
                             {domTextItems}
                         {/* </span> */}
                     </div>
+                    {this.props.showDemoInterface ? 
                     <div
                         className={styles.demoAndProgramArea}
                         /* Need to put demos and program within this single div because
@@ -4614,6 +4629,23 @@ class NaturalLanguage extends React.Component {
                             ""
                         )}
                     </div>
+                    :
+                    ""}
+                    <button
+                        onClick={() => this.handleNext()}
+                        className={styles.nextButton}
+                        style={{
+                            fontSize: "x-large",
+                            cursor: "pointer",
+                            padding: "10px",
+                            position: "relative",
+                            left: "90%",
+                            margin: "10px",
+                            display: "inline"
+                        }}
+                    >
+                        Next
+                    </button>
                     <div
                         className={styles.websiteIframe}
                     >
@@ -4680,7 +4712,7 @@ class NaturalLanguage extends React.Component {
                         }
                     </div>
                 </div>
-                {!this.props.viewOnlyMode ? (
+                {/* {!this.props.viewOnlyMode ? (
                     <div
                         className={styles.userFeedbackArea}
                     >
@@ -4703,8 +4735,8 @@ class NaturalLanguage extends React.Component {
                     </div>
                 ) : (
                     ""
-                ) }
-                {!this.props.viewOnlyMode ? (
+                ) } */}
+                {!this.props.viewOnlyMode && this.props.showDemoInterface ? (
                     <button
                         onClick={() => this.handleSubmit()}
                         className={`${styles.submitButton} ${styles.topButton}`}

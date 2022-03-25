@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useState, useRef, createRef, useEffect } from 'react';
 import { connectToDatabase } from '../../../util/mongodb';
 import styles from '../../../components/styles.module.css';
 import { ObjectId } from 'mongodb';
@@ -46,8 +46,10 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
     const { clientID/*, participantID*/ } = router.query;
     
     const [userFinishedVideo, updateFinishedVideoStatus] = useState(false);
-    //const [userQueries, updateUserQueries] = useState(['first query']);
     const [userQueries, updateUserQueries] = useState(['Enter your query here', '', '', '', '']);
+    const [mode, updateMode] = useState("textfieldMode");
+    const [checkboxes, updateCheckboxes] = useState([false, false, false, false, false]);    
+    const [queryIndicesToUse, updateQueryIndicesToUse] = useState([]);
 
     try{
         router.events.on('routeChangeComplete', (url, { shallow }) => {
@@ -78,6 +80,68 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                 behavior: "smooth"
             });
         }, 1000); // waiting 100ms to ensure #taskArea element is already rendered
+    }
+
+    async function moveToAnnotationMode(){
+        // Save queries to db
+
+        const dataObj = {
+            sequenceID,
+            taskIndex,
+            clientID,
+            userQueries
+        };
+
+        await fetch('/api/userQueries', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataObj)
+        });
+
+        let newArr = [];
+        for(let i = 0; i < checkboxes.length; i++){
+            if(checkboxes[i]){
+                newArr.push(i);
+            }
+        }
+
+        updateQueryIndicesToUse(newArr);
+
+        updateMode("annotationMode");
+
+    }
+
+    async function writeAnnotationToDB(dataObj, queryIndex){
+        console.log("writeAnnotationToDB", queryIndex);
+        // Augment dataObj with task metadata
+        dataObj.sequenceID = sequenceID;
+        dataObj.taskIndex = taskIndex;
+        dataObj.clientID = clientID;
+        dataObj.queryIndex = queryIndex;
+        //dataObj.participantID = participantID;
+        console.log("dataObj", dataObj);
+        
+        // Save data to db
+        await fetch('/api/userAnnotations', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataObj)
+        });
+
+        const arr = [...queryIndicesToUse];
+        arr.splice(0, 1);
+        console.log("new arr", arr);
+
+        // we've reached the end
+        if(arr.length === 0){
+            updateMode("demoMode");
+        }else{
+            updateQueryIndicesToUse(arr);
+        }
     }
 
     async function writeToDBAndDirectToNextPage(dataObj){
@@ -121,79 +185,171 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
 
     return (
         <div>
-            <div
-                style={
-                    {
-                        height: "min-content",
-                        width: "100%",
-                        position: "fixed",
-                        backgroundColor: "white",
-                        borderBottom: "1px solid black",
-                        zIndex: 2,
-                        padding: "20px"
-                    }
-                }
-            >
-                <ol>
-                    {userQueries.map((userQuery, i) =>
-                        <li
-                            // key={`${value}_${i}`}
-                            //key={value}
-                        >
-                            <>
-                                <span></span>
-                                <input
-                                    log-this-element=""
-                                    style={
-                                        {
-                                            fontSize: "large",
-                                            width: "90%",
-                                            position: "relative",
-                                            //left: "10%"
-                                        }
-                                    }
-                                    type="text"
-                                    value={userQuery}
-                                    onChange={(e) => { let newArr = [...userQueries]; newArr[i] = e.target.value; updateUserQueries(newArr); }}
-                                >
-                                </input>
-                                {/* <button
-                                    onClick={() => { let newArr = [...userQueries]; newArr.splice(i, 1); updateUserQueries(newArr); }}
-                                    style={
-                                        {
-                                            cursor: "pointer"
-                                        }
-                                    }
-                                    title="Delete"
-                                >x</button> */}
-                            </>
-                        </li>
-                    )}
-                </ol>
-                {/* <button
-                    onClick={() => updateUserQueries([...userQueries, ""])}
-                    style={
-                        {
-                            cursor: "pointer"
+            {mode === "textfieldMode" || mode === "checkboxMode" ?
+                <div>
+                    <div
+                        style={
+                            {
+                                height: "min-content",
+                                width: "100%",
+                                position: "fixed",
+                                backgroundColor: "white",
+                                borderBottom: "1px solid black",
+                                zIndex: 2,
+                                padding: "20px"
+                            }
                         }
-                    }
-                >
-                    Add another query
-                </button> */}
-            </div>
-            <div
-                style={
-                    {
-                        height: "80%",
-                        position: "absolute",
-                        top: "20%"
-                    }
-                }
-            >
-                <Clone
+                    >
+                        <ol>
+                            {userQueries.map((userQuery, i) =>
+                                <li
+                                    // key={`${value}_${i}`}
+                                    //key={value}
+                                >
+                                    <>
+                                        {mode === "checkboxMode" ? 
+                                            <input
+                                                type="checkbox"
+                                                checked={checkboxes[i]}
+                                                onChange={() => {let newArr = [...checkboxes]; newArr[i] = !newArr[i]; updateCheckboxes(newArr);}}
+                                            >                                    
+                                            </input>
+                                        :""}
+                                        <span></span>
+                                        <input
+                                            log-this-element=""
+                                            style={
+                                                {
+                                                    fontSize: "large",
+                                                    width: "90%",
+                                                    position: "relative",
+                                                    //left: "10%"
+                                                }
+                                            }
+                                            type="text"
+                                            value={userQuery}
+                                            onChange={(e) => { let newArr = [...userQueries]; newArr[i] = e.target.value; updateUserQueries(newArr); }}
+                                        >
+                                        </input>
+                                        {/* <button
+                                            onClick={() => { let newArr = [...userQueries]; newArr.splice(i, 1); updateUserQueries(newArr); }}
+                                            style={
+                                                {
+                                                    cursor: "pointer"
+                                                }
+                                            }
+                                            title="Delete"
+                                        >x</button> */}
+                                    </>
+                                </li>
+                            )}
+                        </ol>
+                        { mode === "textfieldMode" ? 
+                            <button
+                                onClick={() => updateMode("checkboxMode")}
+                                className={styles.nextButton}
+                                style={{
+                                    fontSize: "x-large",
+                                    cursor: "pointer",
+                                    padding: "10px",
+                                    position: "relative",
+                                    left: "90%",
+                                    margin: "10px",
+                                    display: "inline"
+                                }}
+                            >
+                                Next
+                            </button>
+                            :""
+                        }
+                        { mode === "checkboxMode" ? 
+                            <button
+                                onClick={() => moveToAnnotationMode()}
+                                className={styles.nextButton}
+                                style={{
+                                    fontSize: "x-large",
+                                    cursor: "pointer",
+                                    padding: "10px",
+                                    position: "relative",
+                                    left: "90%",
+                                    margin: "10px",
+                                    display: "inline"
+                                }}
+                            >
+                                Next
+                            </button>
+                            :""
+                        }
+                        {/* <button
+                            onClick={() => updateUserQueries([...userQueries, ""])}
+                            style={
+                                {
+                                    cursor: "pointer"
+                                }
+                            }
+                        >
+                            Add another query
+                        </button> */}
+
+                    </div>
+                    <div
+                        style={
+                            {
+                                height: "80%",
+                                position: "absolute",
+                                top: "20%"
+                            }
+                        }
+                    >
+                        <Clone
+                            websiteHTML={websiteHTML}
+                        />
+                    </div>
+                </div>
+                :
+            ""}
+            {mode === "annotationMode" ?
+                // Show NaturalLanguage for the queries that were checked off
+                <>
+                    <NaturalLanguage
+                        name={name}
+                        text={userQueries[queryIndicesToUse[0]]}
+                        websiteHTML={websiteHTML}
+                        textEditable={false}
+                        groupingSupported={false}
+                        clientID={clientID}
+                        submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
+                        queryIndexToAnnotate={queryIndicesToUse[0]}
+                        writeAnnotationToDB = {(dataObj) => writeAnnotationToDB(dataObj, queryIndicesToUse[0])}
+                        writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
+                        //key={router.asPath}
+                        key={`${router.asPath}_${queryIndicesToUse[0]}`}
+                        showDemoInterface={false}
+                    />
+                </>
+            : ""}
+            {mode === "demoMode" ?
+                <NaturalLanguage
+                    name={name}
+                    text={text}
+                    //text="What were the publications for accessibility?"
+                    //text="What is the office for Ackerman?"
+                    //text="What was the name of the 1st president?"
+                    //text="What is the name of the most rich person in the United States?"
+                    //text="What is the name of the youngest billionaire in the United States?"
+                    //text="What is the lowest rank billionaire in the United States?"
+                    //text="What is the name of the lowest rank billionaire in the United States?"
+                    // websiteUrl={websiteUrl}
                     websiteHTML={websiteHTML}
+                    textEditable={false}
+                    groupingSupported={false}
+                    clientID={clientID}
+                    submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
+                    writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
+                    key={router.asPath}
+                    showDemoInterface={true}
                 />
-            </div>
+            : ""}
             {/* <div
                 className={styles.tutorialArea}
             >
@@ -257,7 +413,6 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                     ""
                 )
             } */}
-            {}
             <style jsx global>{`
                 body {
                     margin: 0px;
