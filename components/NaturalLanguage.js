@@ -471,7 +471,7 @@ class EnumerationParam extends React.Component {
                             removeValue={(i) => this.props.removeValue(i, this.props.uuid)}
                             examplesText="What are some values the user can choose?"
                         />
-                        <div
+                        {/* <div
                             className={styles.paramDataChunk}
                         >
                             How many of these values can the user choose?
@@ -502,7 +502,7 @@ class EnumerationParam extends React.Component {
                                 />
                                 <label htmlFor={`multiple_numValuesAllowed_${this.props.uuid}`}>1 or more</label>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 ):(
                     <ExtractedValueOptions
@@ -923,19 +923,19 @@ class ParamTextItem extends React.Component {
                         className={this.props.incompleteFormParamIDs.includes(this.props.uuid) ? styles.incompleteForm : "" }
                     >
                         <option value="">--Select value type--</option>
-                        <option value="freeform">Something the user types in</option>
+                        {/* <option value="freeform">Something the user types in</option> */}
                         <option value="enumeration">Something user selects from a list</option>
-                        <option value="date">A date</option>
-                        <option value="number">A number</option>
+                        {/* <option value="date">A date</option>
+                        <option value="number">A number</option> */}
                         <option value="superlative">A superlative</option>
-                        <option value="flag">Yes/no</option>
+                        {/* <option value="flag">Yes/no</option> */}
                     </select>
 
                     {paramTypeSpecificForm}
 
                     {/* Only show these questions after the user has selected a parameter type and has selected extracted values (if relevant)
                     (because we want the user to focus on that first) */}
-                    {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" && this.props.paramTypeData.type !== "superlative" && (this.props.paramTypeData.initialValuesSelected || (this.props.paramTypeData.type !== "freeform" && this.props.paramTypeData.type !== "enumeration")) ? (
+                    {/* {this.props.paramTypeData.type !== "" && this.props.paramTypeData.type !== "flag" && this.props.paramTypeData.type !== "superlative" && (this.props.paramTypeData.initialValuesSelected || (this.props.paramTypeData.type !== "freeform" && this.props.paramTypeData.type !== "enumeration")) ? (
                         <div
                             className={styles.paramDataChunk}
                         >
@@ -970,7 +970,7 @@ class ParamTextItem extends React.Component {
                         </div>
                     ) : (
                         ""
-                    ) }
+                    ) } */}
                 </div>
             </span>
         );
@@ -4540,7 +4540,7 @@ class NaturalLanguage extends React.Component {
                                         Run program
                                     </p>
                                     <p>Set values to run program on:</p>
-                                    <div>
+                                    {/* <div>
                                         <input
                                             className={styles.freeformNLQuery}
                                             log-this-element=""
@@ -4570,15 +4570,7 @@ class NaturalLanguage extends React.Component {
                                         ):(
                                             ""
                                         )}
-                                        {/* { this.state.relevantQuery ? (
-                                            <div>
-                                                <p>Did you mean this?</p>
-                                                <div>{this.state.relevantQuery}</div>
-                                            </div>
-                                        ):(
-                                            ""
-                                        )} */}
-                                    </div>
+                                    </div> */}
                                     <div>
                                         {runningProgramNLTemplateItems}
                                     </div>
