@@ -50,6 +50,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
     const [mode, updateMode] = useState("textfieldMode");
     const [checkboxes, updateCheckboxes] = useState([false, false, false, false, false]);    
     const [queryIndicesToUse, updateQueryIndicesToUse] = useState([]);
+    const [numQueriesToParameterize, updateNumQueriesToParameterize] = useState(null);
 
     try{
         router.events.on('routeChangeComplete', (url, { shallow }) => {
@@ -106,6 +107,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                 newArr.push(i);
             }
         }
+        updateNumQueriesToParameterize(newArr.length);
 
         updateQueryIndicesToUse(newArr);
 
@@ -311,6 +313,9 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
             {mode === "annotationMode" ?
                 // Show NaturalLanguage for the queries that were checked off
                 <>
+                    <div>
+                        Query {(numQueriesToParameterize -  queryIndicesToUse.length + 1)} of {numQueriesToParameterize}
+                    </div>
                     <NaturalLanguage
                         name={name}
                         text={userQueries[queryIndicesToUse[0]]}
