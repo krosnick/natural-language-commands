@@ -154,7 +154,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
         //dataObj.participantID = participantID;
 
         // Save data to db
-        await fetch('/api/new', {
+        await fetch('/api/userDemosAndPrograms', {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
@@ -192,12 +192,15 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                     <div
                         style={
                             {
-                                height: "min-content",
+                                /* height: "min-content", */
+                                /* height: "300px", */
+                                height: "230px",
                                 width: "100%",
                                 position: "fixed",
                                 backgroundColor: "white",
                                 borderBottom: "1px solid black",
-                                zIndex: 2,
+                                /*zIndex: 2,*/
+                                zIndex: 7,
                                 padding: "20px"
                             }
                         }
@@ -297,9 +300,12 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                     <div
                         style={
                             {
-                                height: "80%",
+                                /* height: "80%", */
+                                /* height: "calc(100% - 300px)", */
                                 position: "absolute",
-                                top: "20%"
+                                /* top: "20%" */
+                                /* top: "300px" */
+                                top: "230px"
                             }
                         }
                     >

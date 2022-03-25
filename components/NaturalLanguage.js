@@ -2068,6 +2068,15 @@ class NaturalLanguage extends React.Component {
                     currentProgramCode: this.state.currentProgramCode
                 };
 
+                // Remove originalEventObj from demonstrations (otherwise cross-origin issue in trying to save target element from page)
+                for(const demo of dataObj.demonstrations){
+                    for(const eventItem of demo.eventSequence){
+                        if(eventItem.originalEventObj){
+                            delete eventItem.originalEventObj;
+                        }
+                    }
+                }
+
                 this.props.writeToDBAndDirectToNextPage(dataObj);
             }
         }else{
@@ -4631,6 +4640,7 @@ class NaturalLanguage extends React.Component {
                     </div>
                     :
                     ""}
+                    {!this.props.showDemoInterface ? 
                     <button
                         onClick={() => this.handleNext()}
                         className={styles.nextButton}
@@ -4645,7 +4655,7 @@ class NaturalLanguage extends React.Component {
                         }}
                     >
                         Next
-                    </button>
+                    </button> : ""}
                     <div
                         className={styles.websiteIframe}
                     >
