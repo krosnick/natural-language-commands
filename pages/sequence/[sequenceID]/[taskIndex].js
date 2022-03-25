@@ -9,6 +9,7 @@ const NaturalLanguage = dynamic(
     { ssr: false }
 );
 import Tutorial from '../../../components/Tutorial';
+import Clone from '../../../components/website_clones/Clone';
 
 export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, taskIndex, name, taskListLength }) {
     
@@ -45,6 +46,8 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
     const { clientID/*, participantID*/ } = router.query;
     
     const [userFinishedVideo, updateFinishedVideoStatus] = useState(false);
+    //const [userQueries, updateUserQueries] = useState(['first query']);
+    const [userQueries, updateUserQueries] = useState(['Enter your query here', '', '', '', '']);
 
     try{
         router.events.on('routeChangeComplete', (url, { shallow }) => {
@@ -119,6 +122,79 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
     return (
         <div>
             <div
+                style={
+                    {
+                        height: "min-content",
+                        width: "100%",
+                        position: "fixed",
+                        backgroundColor: "white",
+                        borderBottom: "1px solid black",
+                        zIndex: 2,
+                        padding: "20px"
+                    }
+                }
+            >
+                <ol>
+                    {userQueries.map((userQuery, i) =>
+                        <li
+                            // key={`${value}_${i}`}
+                            //key={value}
+                        >
+                            <>
+                                <span></span>
+                                <input
+                                    log-this-element=""
+                                    style={
+                                        {
+                                            fontSize: "large",
+                                            width: "90%",
+                                            position: "relative",
+                                            //left: "10%"
+                                        }
+                                    }
+                                    type="text"
+                                    value={userQuery}
+                                    onChange={(e) => { let newArr = [...userQueries]; newArr[i] = e.target.value; updateUserQueries(newArr); }}
+                                >
+                                </input>
+                                {/* <button
+                                    onClick={() => { let newArr = [...userQueries]; newArr.splice(i, 1); updateUserQueries(newArr); }}
+                                    style={
+                                        {
+                                            cursor: "pointer"
+                                        }
+                                    }
+                                    title="Delete"
+                                >x</button> */}
+                            </>
+                        </li>
+                    )}
+                </ol>
+                {/* <button
+                    onClick={() => updateUserQueries([...userQueries, ""])}
+                    style={
+                        {
+                            cursor: "pointer"
+                        }
+                    }
+                >
+                    Add another query
+                </button> */}
+            </div>
+            <div
+                style={
+                    {
+                        height: "80%",
+                        position: "absolute",
+                        top: "20%"
+                    }
+                }
+            >
+                <Clone
+                    websiteHTML={websiteHTML}
+                />
+            </div>
+            {/* <div
                 className={styles.tutorialArea}
             >
                 <Tutorial
@@ -172,77 +248,16 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                             textEditable={false}
                             groupingSupported={false}
                             clientID={clientID}
-                            //participantID={participantID}
                             submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
                             writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
                             key={router.asPath}
                         />
-                        {/* <NaturalLanguage
-                            text="Which MLB player had the most home runs this year?"
-                            websiteUrl="https://www.mlb.com/stats/"
-                            textEditable={false}
-                            groupingSupported={false}
-                            clientID={clientID}
-                            participantID={participantID}
-                        /> */}
-                        {/* <NaturalLanguage
-                            text="Book a flight from Detroit to Boston on November 20"
-                            websiteUrl="https://www.spirit.com/"
-                            textEditable={false}
-                            groupingSupported={false}
-                            clientID={clientID}
-                            participantID={participantID}
-                        /> */}
-                        {/* <NaturalLanguage
-                            text="Order a chicken burrito bowl with black beans, white rice, sour cream, green salsa, and red salsa from Chipotle. Place the order now and for pickup."
-                            websiteUrl="https://www.chipotle.com/order"
-                            textEditable={false}
-                            groupingSupported={false}
-                            clientID={clientID}
-                            participantID={participantID}
-                        /> */}
-                        {/* <NaturalLanguage
-                            text="Schedule pick-up for a dozen chocolate ganache cupcakes from Georgetown Cupcake tomorrow"
-                            websiteUrl="https://www.georgetowncupcake.com/OrderType.aspx"
-                            textEditable={false}
-                            groupingSupported={false}
-                            clientID={clientID}
-                            participantID={participantID}
-                        /> */}
-                        
-                        
-                        
-                        
-                        
-                        {/* <NaturalLanguage
-                            text="Order one scoop of coffee ice cream from Blank Slate"
-                            websiteUrl="https://blank-slate-creamery.square.site/"
-                            textEditable={false}
-                            groupingSupported={false}
-                            clientID={clientID}
-                            participantID={participantID}
-                        /> */}
-                        {/* <NaturalLanguage
-                            text="Order a little cheeseburger from Five Guys with mayo, lettuce, and grilled onions"
-                            websiteUrl="https://order.fiveguys.com/"
-                            textEditable={false}
-                            groupingSupported={false}
-                            clientID={clientID}
-                            participantID={participantID}
-                        /> */}
-                        {/* <NaturalLanguage
-                            text="What movie won Best Picture at the Oscars in 2011?"
-                            websiteUrl="https://www.oscars.org/oscars/ceremonies/2021"
-                            textEditable={false}
-                            groupingSupported={false}
-                            clientID={clientID}
-                            participantID={participantID}
-                        /> */}
                     </div>
                 ) : (
                     ""
                 )
-            }
+            } */}
+            {}
             <style jsx global>{`
                 body {
                     margin: 0px;
