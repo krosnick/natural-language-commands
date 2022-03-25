@@ -483,7 +483,10 @@ export async function getServerSideProps({params}) {
         const text = taskObject.text;
         //const websiteUrl = taskObject.websiteUrl;
         const websiteHTML = taskObject.websiteHTML;
-        const idToItem = taskObject.idToItem;
+        let idToItem = taskObject.idToItem;
+        if(!idToItem){
+            idToItem = null;
+        }
         
         // Pass data to the page via props
         return {
