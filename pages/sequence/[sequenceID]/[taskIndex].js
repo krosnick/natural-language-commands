@@ -11,8 +11,8 @@ const NaturalLanguage = dynamic(
 import Tutorial from '../../../components/Tutorial';
 import Clone from '../../../components/website_clones/Clone';
 
-export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, taskIndex, name, taskListLength }) {
-    
+export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, taskIndex, name, taskListLength, idToItem }) {
+
     console.log("process.env.NODE_ENV", process.env.NODE_ENV);
     // Only do fullstory logging if we're in production mode
     if(process.env.NODE_ENV === "production"){
@@ -69,6 +69,8 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
         //console.log("router.events error caught");
     }
 
+    //insertIdToItem();
+
     function showNLTask(){
         updateFinishedVideoStatus(true);
         
@@ -81,6 +83,16 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                 behavior: "smooth"
             });
         }, 1000); // waiting 100ms to ensure #taskArea element is already rendered
+    }
+
+    async function insertIdToItem(){
+        /* await fetch('/api/insertIdToItem', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            //body: JSON.stringify(dataObj)
+        }); */
     }
 
     async function moveToAnnotationMode(){
@@ -359,6 +371,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                     writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
                     key={router.asPath}
                     showDemoInterface={true}
+                    idToItem={idToItem}
                 />
             : ""}
             {/* <div
@@ -470,6 +483,7 @@ export async function getServerSideProps({params}) {
         const text = taskObject.text;
         //const websiteUrl = taskObject.websiteUrl;
         const websiteHTML = taskObject.websiteHTML;
+        const idToItem = taskObject.idToItem;
         
         // Pass data to the page via props
         return {
@@ -480,7 +494,8 @@ export async function getServerSideProps({params}) {
                 sequenceID,
                 taskIndex,
                 name: taskName,
-                taskListLength
+                taskListLength,
+                idToItem
             }
         }
     }catch(error){
