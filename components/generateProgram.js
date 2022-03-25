@@ -1573,12 +1573,13 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 const colIndexOptionObjects = [];
                 for(let colIndex = 0; colIndex < chosenRowColItems.length; colIndex++){
                     const colItem = chosenRowColItems[colIndex];
-                    if(!isNaN(colItem.textContent)){
+                    const potentialNumeric = numeral(colItem.textContent)._value;
+                    if(!isNaN(potentialNumeric)){
 
                         let superlativeParamForRowSelectionOption;
                         let constantSuperlativeValueForRowSelectionOption;
 
-                        const chosenValue = parseFloat(colItem.textContent);
+                        const chosenValue = potentialNumeric;
                         //console.log("chosenValue", chosenValue);
                         const allValues = [];
                         // Loop through all rows
