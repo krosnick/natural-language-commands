@@ -66,7 +66,7 @@ export default function DemographicSurvey() {
             <div>
                 <p
                     className={styles.textInstructions}
-                >Your participant ID is: <b>{clientID}</b></p>
+                >Your client ID is: <b>{clientID}</b></p>
                 {/* <p
                     className={styles.textInstructions}
                 >Please enter your participant ID:</p>
