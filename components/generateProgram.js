@@ -1686,28 +1686,11 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         //constantSuperlativeValueForRowSelection = res.colDataToUse.colIndexOptionObject.constantSuperlativeValueForRowSelection;
                     }else{
                         console.log("superlative related res and res.possibleParamOptions.length === 0", res);
-                        //const colXPath = getXPathForElement(chosenRowColItems[colIndexToCheckForSuperlative], document);
-                        /*const colXPath = getXPathForElement(chosenRowColItems[colIndexOptionObjects[0].dataValueColIndex], document);
-                        //console.log("colXPath", colXPath);
-                        generateSuperlativeColXPathSuffix = function(inputValue, rowXPathPrefix){
-                            // For now, return default constant col suffix (for col that we do superlative on)
-                            return colXPath.substring(rowXPath.length);
-                        }*/
-                        //const colXPath = getXPathForElement(chosenRowColItems[colIndexOptionObjects[0].dataValueColIndex], document);
-                        //console.log("colXPath", colXPath);
-                        generateSuperlativeColXPathSuffix = function(inputValue, paramName, rowXPathPrefix, staticColIndex){
+                        /*generateSuperlativeColXPathSuffix = function(inputValue, paramName, rowXPathPrefix, staticColIndex){
                             console.log("paramName", paramName);
                             console.log("staticColIndex", staticColIndex);
                             console.log("rowXPathPrefix", rowXPathPrefix);
-                            //console.log("staticColIndex", staticColIndex);
-                            //console.log("rowXPathPrefix", rowXPathPrefix);
-                            /*let colItems;
-                            try { // this is a hack
-                                const rowElement = getXPathForElement(rowXPathPrefix, document);
-                                colItems = rowElement.children;
-                            }catch{
-                                colItems = chosenRowColItems;
-                            }*/
+
                             fontoxpath.evaluateXPathToNodes(rowXPathPrefix, document.documentElement)[0];
                             const rowElement = fontoxpath.evaluateXPathToNodes(rowXPathPrefix, document.documentElement)[0];
                             const colItems = rowElement.children;
@@ -1720,29 +1703,16 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                                 colElement = colItems[staticColIndex];
                             }
                             console.log("colElement", colElement);
-                            /*console.log("chosenRowColItems", chosenRowColItems);
-                            let colElement;
-                            if(paramName){
-                                console.log("res.allOptions[paramName]", res.allOptions[paramName]);
-                                colElement = chosenRowColItems[res.allOptions[paramName].colIndexOptionObject.dataValueColIndex];
-                            }else{
-                                colElement = chosenRowColItems[staticColIndex];
-                            }*/
-                            //const colXPath = getXPathForElement(chosenRowColItems[res.allOptions[paramName].colIndexOptionObject.dataValueColIndex], document);
                             const colXPath = getXPathForElement(colElement, document);
                             return colXPath.substring(rowXPath.length);
-                        }
-                        //superlativeParamForRowSelection = colIndexOptionObjects[0].superlativeParamForRowSelection;
+                        }*/
+                        generateSuperlativeColXPathSuffix = res.generateColXPathSuffix;
                         // I think superlativeParamForRowSelection is the same for all of them, so can just use one
                         if(res.possibleStaticOptions.length > 0){
                             superlativeParamForRowSelection = res.possibleStaticOptions[0].colIndexOptionObject.superlativeParamForRowSelection;
                             constantSuperlativeValueForRowSelection = res.possibleStaticOptions[0].colIndexOptionObject.constantSuperlativeValueForRowSelection;
                             defaultStaticColIndexForSuperlativeCol = res.possibleStaticOptions[0].colIndexOptionObject.dataValueColIndex;
-                        }/*else{
-                            superlativeParamForRowSelection = res.possibleStaticOptions[0].colIndexOptionObject.superlativeParamForRowSelection
-                            constantSuperlativeValueForRowSelection = res.possibleStaticOptions[0].colIndexOptionObject.constantSuperlativeValueForRowSelection;
-                            defaultStaticColIndexForSuperlativeCol = res.possibleStaticOptions[0].colIndexOptionObject.dataValueColIndex;
-                        }*/
+                        }
                     }
                     superlativeColPossibleParamOptions = res.possibleParamOptions;
                     superlativeColPossibleStaticOptions = res.possibleStaticOptions;

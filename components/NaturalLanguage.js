@@ -10,6 +10,7 @@ import ForbesClone from './website_clones/ForbesClone';
 import WikipediaClone from './website_clones/WikipediaClone';
 import CSEFacultyClone from './website_clones/CSEFacultyClone';
 import SteveWebsiteClone from './website_clones/SteveWebsiteClone';
+import IMDBClone from './website_clones/IMDBClone';
 import Clone from './website_clones/Clone';
 import { /*getValues,*/ indexOfCaseInsensitive, getCandidateLists, makeXPathsMoreRobust } from './valueExtraction';
 import { generateProgramAndIdentifyNeededDemos, executeProgram, replayDemo, getCommonPrefixLength } from './generateProgram';
@@ -4079,6 +4080,7 @@ class NaturalLanguage extends React.Component {
                                                                                                             />
                                                                                                             <label htmlFor={`superlative_colStaticColIndex_influencedBy_${step_index}_${programVersion_index}`}>
                                                                                                                 {/* column&nbsp; */}
+                                                                                                                attribute&nbsp;#
                                                                                                                 <span
                                                                                                                     className={styles.importantPieceOfInfo}
                                                                                                                 >
@@ -4685,6 +4687,10 @@ class NaturalLanguage extends React.Component {
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             {/* <SteveWebsiteClone
+                                triggerWebsiteReload={this.state.triggerWebsiteReload}
+                            /> */}
+                            {/* <IMDBClone
+                                websiteHTML={this.props.websiteHTML}
                                 triggerWebsiteReload={this.state.triggerWebsiteReload}
                             /> */}
                             <Clone
