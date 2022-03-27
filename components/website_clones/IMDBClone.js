@@ -13,10 +13,10 @@ function createHTML() {
             <meta property="fb:app_id" content="115109575169727">
         
               <meta property="og:title" content="Best Picture-Winning
-        (Sorted by Year Descending) - IMDb">
+         - IMDb">
             <meta property="og:site_name" content="IMDb">
             <meta name="title" content="Best Picture-Winning
-        (Sorted by Year Descending) - IMDb">
+         - IMDb">
                 <meta name="description" content="IMDb's advanced search allows you to run extremely powerful queries over all people and titles in the database. Find exactly what you're looking for!">
                 <meta property="og:description" content="IMDb's advanced search allows you to run extremely powerful queries over all people and titles in the database. Find exactly what you're looking for!">
                 <meta name="request_id" content="0YXRHHWMS94AXKT2KJKC">
@@ -52,7 +52,9 @@ function createHTML() {
          #inline20_wrapper, #top_ad_wrapper {
          z-index: 0 !important;
          }
-         </style><style data-styled="" data-styled-version="4.3.2"></style><style data-styled="" data-styled-version="4.3.2"></style></head>
+         </style><style data-styled="" data-styled-version="4.3.2"></style><style data-styled="" data-styled-version="4.3.2"></style>
+         <script src="/website_clones/imdb/custom.js"></script>
+         </head>
             <body id="styleguide-v2" class="fixed">
                 
                     <div id="sis_pixel">
@@ -117,7 +119,7 @@ function createHTML() {
             <div id="main">
                 <div class="article">
                     <h1 class="header">Best Picture-Winning
-        (Sorted by Year Descending) </h1>
+        </h1>
                     <div class="nav">
                         <br class="clear">
             <div class="display-mode float-right">
