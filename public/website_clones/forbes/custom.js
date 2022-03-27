@@ -9,9 +9,9 @@ setTimeout(function(){
             "id": "jeff-bezos",
             "net worth": 177,
             "age": 57,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "Amazon",
-            "category": "Technology",
+            "industry": "Technology",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -20,9 +20,9 @@ setTimeout(function(){
             "id": "elon-musk",
             "net worth": 151,
             "age": 49,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "Tesla, SpaceX",
-            "category": "Automotive",
+            "industry": "Automotive",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -31,9 +31,9 @@ setTimeout(function(){
             "id": "bernard-arnault",
             "net worth": 150,
             "age": 72,
-            "countryOfCitizenship": "France",
+            "country / territory": "France",
             "source": "LVMH",
-            "category": "Fashion & Retail",
+            "industry": "Fashion & Retail",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -42,9 +42,9 @@ setTimeout(function(){
             "id": "bill-gates",
             "net worth": 124,
             "age": 65,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "Microsoft",
-            "category": "Technology",
+            "industry": "Technology",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -53,9 +53,9 @@ setTimeout(function(){
             "id": "mark-zuckerberg",
             "net worth": 97,
             "age": 36,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "Facebook",
-            "category": "Technology",
+            "industry": "Technology",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -64,9 +64,9 @@ setTimeout(function(){
             "id": "warren-buffett",
             "net worth": 96,
             "age": 90,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "Berkshire Hathaway",
-            "category": "Finance & Investments",
+            "industry": "Finance & Investments",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -75,9 +75,9 @@ setTimeout(function(){
             "id": "larry-ellison",
             "net worth": 93,
             "age": 76,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "software",
-            "category": "Technology",
+            "industry": "Technology",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -86,9 +86,9 @@ setTimeout(function(){
             "id": "larry-page",
             "net worth": 91.5,
             "age": 48,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "Google",
-            "category": "Technology",
+            "industry": "Technology",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -97,9 +97,9 @@ setTimeout(function(){
             "id": "sergey-brin",
             "net worth": 89,
             "age": 47,
-            "countryOfCitizenship": "United States",
+            "country / territory": "United States",
             "source": "Google",
-            "category": "Technology",
+            "industry": "Technology",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         },
         {
@@ -108,9 +108,174 @@ setTimeout(function(){
             "id": "mukesh-ambani",
             "net worth": 84.5,
             "age": 63,
-            "countryOfCitizenship": "India",
+            "country / territory": "India",
             "source": "diversified",
-            "category": "Diversified",
+            "industry": "Diversified",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 11,
+            "name": "Amancio Ortega",
+            "id": "amancio-ortega",
+            "net worth": 77,
+            "age": 85,
+            "country / territory": "Spain",
+            "source": "Zara",
+            "industry": "Fashion & Retail",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 12,
+            "name": "Francoise Bettencourt Meyers & family",
+            "id": "francoise-bettencourt-meyers",
+            "net worth": 73.6,
+            "age": 67,
+            "country / territory": "France",
+            "source": "L'Oréal",
+            "industry": "Fashion & Retail",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 13,
+            "name": "Zhong Shanshan",
+            "id": "zhong-shanshan",
+            "net worth": 68.9,
+            "age": 66,
+            "country / territory": "China",
+            "source": "beverages, pharmaceuticals",
+            "industry": "Food & Beverage",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 14,
+            "name": "Steve Ballmer",
+            "id": "steve-ballmer",
+            "net worth": 68.7,
+            "age": 65,
+            "country / territory": "United States",
+            "source": "Microsoft",
+            "industry": "Technology",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 15,
+            "name": "Ma Huateng",
+            "id": "ma-huateng",
+            "net worth": 65.8,
+            "age": 49,
+            "country / territory": "China",
+            "source": "internet media",
+            "industry": "Technology",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 16,
+            "name": "Carlos Slim Helu & family",
+            "id": "carlos-slim-helu",
+            "net worth": 62.8,
+            "age": 81,
+            "country / territory": "Mexico",
+            "source": "telecom",
+            "industry": "Telecom",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 17,
+            "name": "Alice Walton",
+            "id": "alice-walton",
+            "net worth": 61.8,
+            "age": 71,
+            "country / territory": "United States",
+            "source": "Walmart",
+            "industry": "Fashion & Retail",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 18,
+            "name": "Jim Walton",
+            "id": "jim-walton",
+            "net worth": 60.2,
+            "age": 72,
+            "country / territory": "United States",
+            "source": "Walmart",
+            "industry": "Fashion & Retail",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 19,
+            "name": "Rob Walton",
+            "id": "rob-walton",
+            "net worth": 59.5,
+            "age": 76,
+            "country / territory": "United States",
+            "source": "Walmart",
+            "industry": "Fashion & Retail",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 20,
+            "name": "Michael Bloomberg",
+            "id": "michael-bloomberg",
+            "net worth": 59,
+            "age": 79,
+            "country / territory": "United States",
+            "source": "Bloomberg LP",
+            "industry": "Media & Entertainment",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 21,
+            "name": "Colin Zheng Huang",
+            "id": "colin-zheng-huang",
+            "net worth": 55.3,
+            "age": 41,
+            "country / territory": "China",
+            "source": "e-commerce",
+            "industry": "Technology",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 22,
+            "name": "MacKenzie Scott",
+            "id": "macKenzie-scott",
+            "net worth": 53,
+            "age": 50,
+            "country / territory": "United States",
+            "source": "Amazon",
+            "industry": "Technology",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 23,
+            "name": "Daniel Gilbert",
+            "id": "daniel-gilbert",
+            "net worth": 51.9,
+            "age": 59,
+            "country / territory": "United States",
+            "source": "Quicken Loans",
+            "industry": "Finance & Investments",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 24,
+            "name": "Gautam Adani & family",
+            "id": "gautam-adani-1",
+            "net worth": 50.5,
+            "age": 58,
+            "country / territory": "India",
+            "source": "infrastructure, commodities",
+            "industry": "Diversified",
+            "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
+        },
+        {
+            "rank": 25,
+            "name": "Phil Knight & family",
+            "id": "phil-knight",
+            "net worth": 49.9,
+            "age": 83,
+            "country / territory": "United States",
+            "source": "Nike",
+            "industry": "Fashion & Retail",
             "status": '<img src="https://images.forbes.com/assets/list-landers/forbes-400-2020/Forbes400-UpArrow1.svg" alt="up arrow">'
         }
     ];
@@ -136,6 +301,7 @@ setTimeout(function(){
         // If any other header is clicked...
 
     document.querySelectorAll('.rank[role="columnheader"], .netWorth[role="columnheader"], .age[role="columnheader"]').forEach(function(item){ 
+    //document.querySelectorAll('[role="columnheader"]').forEach(function(item){
         item.addEventListener("click", function(event){
             const headerElement = event.target.closest('[role="columnheader"]'); // want the header ancestor
             console.log("headerElement", headerElement);
@@ -240,7 +406,7 @@ setTimeout(function(){
                     <div class="age" role="cell" style="box-sizing: border-box; flex: 150 0 auto; min-width: 0px; width: 150px;">
                         <div>${person.age}</div>
                     </div>
-                    <div class="countryOfCitizenship" role="cell" style="box-sizing: border-box; flex: 150 0 auto; min-width: 0px; width: 150px;">${person.countryOfCitizenship}</div>
+                    <div class="countryOfCitizenship" role="cell" style="box-sizing: border-box; flex: 150 0 auto; min-width: 0px; width: 150px;">${person["country / territory"]}</div>
                     <div class="source" role="cell" style="box-sizing: border-box; flex: 150 0 auto; min-width: 0px; width: 150px;">
                         <div class="source-column">
                             <div>${person.source}<span class="expand-row__icon expand-row__icon--mobile"><svg class="fs-icon fs-icon--chevron-up" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.8 19.8"><path transform="rotate(45.001 12.615 10.187)" d="M7.9 9h9.5v2.4H7.9z"></path><path transform="rotate(134.999 7.586 10.187)" d="M2.8 9h9.5v2.4H2.8z"></path></svg></span></div>
@@ -248,7 +414,7 @@ setTimeout(function(){
                         </div>
                     </div>
                     <div class="category" role="cell" style="box-sizing: border-box; flex: 150 0 auto; min-width: 0px; width: 150px;">
-                        <div>${person.category} <span class="expand-row__icon"><svg class="fs-icon fs-icon--chevron-up" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.8 19.8"><path transform="rotate(45.001 12.615 10.187)" d="M7.9 9h9.5v2.4H7.9z"></path><path transform="rotate(134.999 7.586 10.187)" d="M2.8 9h9.5v2.4H2.8z"></path></svg></span></div>
+                        <div>${person.industry} <span class="expand-row__icon"><svg class="fs-icon fs-icon--chevron-up" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.8 19.8"><path transform="rotate(45.001 12.615 10.187)" d="M7.9 9h9.5v2.4H7.9z"></path><path transform="rotate(134.999 7.586 10.187)" d="M2.8 9h9.5v2.4H2.8z"></path></svg></span></div>
                     </div>
                 </div>
             `;
