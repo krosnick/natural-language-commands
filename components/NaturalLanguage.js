@@ -2054,8 +2054,8 @@ class NaturalLanguage extends React.Component {
         if(incompleteFormParamIDs.length === 0){
             // All parameter forms have been filled in; confirm with user that they are finished, and then complete the submit operation
             
-            const proceed = window.confirm("Are you sure you want to submit? You won't be able to make any further changes.");
-
+            //const proceed = window.confirm("Are you sure you want to submit? You won't be able to make any further changes.");
+            const proceed = true;
             if(proceed){
                 // Save data to db
                 const dataObj = {

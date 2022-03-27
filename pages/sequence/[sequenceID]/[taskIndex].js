@@ -11,7 +11,7 @@ const NaturalLanguage = dynamic(
 import Tutorial from '../../../components/Tutorial';
 import Clone from '../../../components/website_clones/Clone';
 
-export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, taskIndex, name, taskListLength, idToItem }) {
+export default function Task( { taskTextList, websiteHTMLList, idToItemList, sequenceID, taskNames }) {
 
     console.log("process.env.NODE_ENV", process.env.NODE_ENV);
     // Only do fullstory logging if we're in production mode
@@ -51,6 +51,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
     const [checkboxes, updateCheckboxes] = useState([false, false, false, false, false]);    
     const [queryIndicesToUse, updateQueryIndicesToUse] = useState([]);
     const [numQueriesToParameterize, updateNumQueriesToParameterize] = useState(null);
+    const [currentDemoTaskIndex, updateCurrentDemoTaskIndex] = useState(0);
 
     try{
         router.events.on('routeChangeComplete', (url, { shallow }) => {
@@ -61,7 +62,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
             )*/
             //console.log("url", url);
             // If on task page and not first task, fix scroll position to scroll to top of NL task
-            if(url.includes("/sequence/") && taskIndex > 0){
+            if(url.includes("/sequence/") && currentDemoTaskIndex > 0){
                 showNLTask();
             }
         });
@@ -76,13 +77,16 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
         
         // Scroll to the task area; using setTimeout might be a bit hacky
         setTimeout(function(){
-            const taskAreaTop = document.querySelector("#taskArea").getBoundingClientRect().top;
-            window.scroll({
-                top: taskAreaTop + window.scrollY,
-                left: 0,
-                behavior: "smooth"
-            });
-        }, 1000); // waiting 100ms to ensure #taskArea element is already rendered
+            const taskArea = document.querySelector("#taskArea");
+            if(taskArea){
+                const taskAreaTop = taskArea.getBoundingClientRect().top;
+                window.scroll({
+                    top: taskAreaTop + window.scrollY,
+                    left: 0,
+                    behavior: "smooth"
+                });
+            }
+        }, 500); // waiting 500ms to ensure #taskArea element is already rendered
     }
 
     async function insertIdToItem(){
@@ -100,7 +104,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
 
         const dataObj = {
             sequenceID,
-            taskIndex,
+            currentDemoTaskIndex,
             clientID,
             userQueries
         };
@@ -131,7 +135,6 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
         console.log("writeAnnotationToDB", queryIndex);
         // Augment dataObj with task metadata
         dataObj.sequenceID = sequenceID;
-        dataObj.taskIndex = taskIndex;
         dataObj.clientID = clientID;
         dataObj.queryIndex = queryIndex;
         //dataObj.participantID = participantID;
@@ -161,7 +164,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
     async function writeToDBAndDirectToNextPage(dataObj){
         // Augment dataObj with task metadata
         dataObj.sequenceID = sequenceID;
-        dataObj.taskIndex = taskIndex;
+        dataObj.demoTaskIndex = currentDemoTaskIndex;
         dataObj.clientID = clientID;
         //dataObj.participantID = participantID;
 
@@ -174,8 +177,8 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
             body: JSON.stringify(dataObj)
         });
 
-        // Determine if this is the last task in the sequence or not, and based on that decide if we go to "finished" page or to next task page
-        if(taskIndex === taskListLength-1){
+        // Determine if this is the last task in the sequence or not, and based on that decide if we go to "finished" page or to next task
+        if(currentDemoTaskIndex === taskNames.length-1){
             // This is the last task. After user submits their answers, show "finished" view
             router.push({
                 pathname: '/finished',
@@ -184,16 +187,9 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                 },
             });
         }else{
-            // Not the last task, so let's direct to the next task
-            router.push({
-                pathname: '/sequence/[sequenceID]/[taskIndex]',
-                query: {
-                    sequenceID: sequenceID, // sequenceID is the same
-                    taskIndex: (taskIndex + 1), // next task
-                    clientID: clientID/*,
-                    participantID: participantID*/
-                },
-            }, undefined, { shallow: false });
+            // Should update to show next task NaturalLanguage
+            updateCurrentDemoTaskIndex(currentDemoTaskIndex + 1);
+            showNLTask();
         }
     }
 
@@ -322,7 +318,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                         }
                     >
                         <Clone
-                            websiteHTML={websiteHTML}
+                            websiteHTML={websiteHTMLList[0]}
                         />
                     </div>
                 </div>
@@ -335,45 +331,49 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                         Query {(numQueriesToParameterize -  queryIndicesToUse.length + 1)} of {numQueriesToParameterize}
                     </div>
                     <NaturalLanguage
-                        name={name}
+                        name={taskNames[0]}
                         text={userQueries[queryIndicesToUse[0]]}
-                        websiteHTML={websiteHTML}
+                        websiteHTML={websiteHTMLList[0]}
                         textEditable={false}
                         groupingSupported={false}
                         clientID={clientID}
-                        submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
+                        submitText={currentDemoTaskIndex + 1 < taskNames.length ? "Submit and go to next task" : "Submit and finish"}
                         queryIndexToAnnotate={queryIndicesToUse[0]}
                         writeAnnotationToDB = {(dataObj) => writeAnnotationToDB(dataObj, queryIndicesToUse[0])}
                         writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
-                        //key={router.asPath}
                         key={`${router.asPath}_${queryIndicesToUse[0]}`}
                         showDemoInterface={false}
                     />
                 </>
             : ""}
             {mode === "demoMode" ?
-                <NaturalLanguage
-                    name={name}
-                    text={text}
-                    //text="What was the rating for Nomadland?"
-                    //text="What were the publications for accessibility?"
-                    //text="What is the office for Ackerman?"
-                    //text="What was the name of the 1st president?"
-                    //text="What is the name of the most rich person in the United States?"
-                    //text="What is the name of the youngest billionaire in the United States?"
-                    //text="What is the lowest rank billionaire in the United States?"
-                    //text="What is the name of the lowest rank billionaire in the United States?"
-                    // websiteUrl={websiteUrl}
-                    websiteHTML={websiteHTML}
-                    textEditable={false}
-                    groupingSupported={false}
-                    clientID={clientID}
-                    submitText={taskIndex + 1 < taskListLength ? "Submit and go to next task" : "Submit and finish"}
-                    writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
-                    key={router.asPath}
-                    showDemoInterface={true}
-                    idToItem={idToItem}
-                />
+                <div
+                    id="taskArea"
+                    className={styles.taskArea}
+                >
+                    <NaturalLanguage
+                        name={taskNames[currentDemoTaskIndex]}
+                        text={taskTextList[currentDemoTaskIndex]}
+                        //text="What was the rating for Nomadland?"
+                        //text="What were the publications for accessibility?"
+                        //text="What is the office for Ackerman?"
+                        //text="What was the name of the 1st president?"
+                        //text="What is the name of the most rich person in the United States?"
+                        //text="What is the name of the youngest billionaire in the United States?"
+                        //text="What is the lowest rank billionaire in the United States?"
+                        //text="What is the name of the lowest rank billionaire in the United States?"
+                        // websiteUrl={websiteUrl}
+                        websiteHTML={websiteHTMLList[currentDemoTaskIndex]}
+                        textEditable={false}
+                        groupingSupported={false}
+                        clientID={clientID}
+                        submitText={currentDemoTaskIndex + 1 < taskNames.length ? "Submit and go to next task" : "Submit and finish"}
+                        writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
+                        key={`${router.asPath}_${currentDemoTaskIndex}`}
+                        showDemoInterface={true}
+                        idToItem={idToItemList[currentDemoTaskIndex]}
+                    />
+                </div>
             : ""}
             {/* <div
                 className={styles.tutorialArea}
@@ -473,33 +473,37 @@ export async function getServerSideProps({params}) {
 
     try{
         const taskList = sequenceObject.taskList;
-        const taskName = taskList[taskIndex];
-        const taskListLength = taskList.length;
+        const taskNames = taskList;
+        
+        const taskTextList = [];
+        const websiteHTMLList = [];
+        const idToItemList = [];
 
-        const taskCursor = await db
+        for(const taskName of taskNames){
+            const taskCursor = await db
                         .collection("tasks")
                         .find({name: taskName});
-
-        const taskObject = await taskCursor.next();
-        const text = taskObject.text;
-        //const websiteUrl = taskObject.websiteUrl;
-        const websiteHTML = taskObject.websiteHTML;
-        let idToItem = taskObject.idToItem;
-        if(!idToItem){
-            idToItem = null;
+            
+            const taskObject = await taskCursor.next();
+            const text = taskObject.text;
+            taskTextList.push(text);
+            const websiteHTML = taskObject.websiteHTML;
+            websiteHTMLList.push(websiteHTML);
+            let idToItem = taskObject.idToItem;
+            if(!idToItem){
+                idToItem = null;
+            }
+            idToItemList.push(idToItem);
         }
-        
+
         // Pass data to the page via props
         return {
             props: {
-                text, 
-                //websiteUrl,
-                websiteHTML,
+                taskTextList,
+                websiteHTMLList,
+                idToItemList,
                 sequenceID,
-                taskIndex,
-                name: taskName,
-                taskListLength,
-                idToItem
+                taskNames
             }
         }
     }catch(error){
