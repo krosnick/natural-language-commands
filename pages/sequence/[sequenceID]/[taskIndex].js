@@ -327,6 +327,19 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
             {mode === "annotationMode" ?
                 // Show NaturalLanguage for the queries that were checked off
                 <>
+                    {(numQueriesToParameterize -  queryIndicesToUse.length + 1) === 1 ? 
+                        // Only show tutorial video if this first query to annotate
+                        <iframe
+                            width="1200"
+                            height="675"
+                            src={`https://www.youtube.com/embed/hOrgAWrK1Rw?playlist=hOrgAWrK1Rw&modestbranding=1`}
+                            title="YouTube video player"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className='demoVideo'
+                        ></iframe>
+                    :""}
                     <div>
                         Query {(numQueriesToParameterize -  queryIndicesToUse.length + 1)} of {numQueriesToParameterize}
                     </div>
@@ -347,33 +360,48 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
                 </>
             : ""}
             {mode === "demoMode" ?
-                <div
-                    id="taskArea"
-                    className={styles.taskArea}
-                >
-                    <NaturalLanguage
-                        name={taskNames[currentDemoTaskIndex]}
-                        text={taskTextList[currentDemoTaskIndex]}
-                        //text="What was the rating for Nomadland?"
-                        //text="What were the publications for accessibility?"
-                        //text="What is the office for Ackerman?"
-                        //text="What was the name of the 1st president?"
-                        //text="What is the name of the most rich person in the United States?"
-                        //text="What is the name of the youngest billionaire in the United States?"
-                        //text="What is the lowest rank billionaire in the United States?"
-                        //text="What is the name of the lowest rank billionaire in the United States?"
-                        // websiteUrl={websiteUrl}
-                        websiteHTML={websiteHTMLList[currentDemoTaskIndex]}
-                        textEditable={false}
-                        groupingSupported={false}
-                        clientID={clientID}
-                        submitText={currentDemoTaskIndex + 1 < taskNames.length ? "Submit and go to next task" : "Submit and finish"}
-                        writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
-                        key={`${router.asPath}_${currentDemoTaskIndex}`}
-                        showDemoInterface={true}
-                        idToItem={idToItemList[currentDemoTaskIndex]}
-                    />
-                </div>
+                <>
+                    {currentDemoTaskIndex === 0 ? 
+                        // Only want to show tutorial video if this is the first demonstration task
+                        <iframe
+                            width="1200"
+                            height="675"
+                            src={`https://www.youtube.com/embed/DILRBln-sz8?playlist=DILRBln-sz8&modestbranding=1`}
+                            title="YouTube video player"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className='demoVideo'
+                        ></iframe>
+                    : ""}
+                    <div
+                        id="taskArea"
+                        className={styles.taskArea}
+                    >
+                        <NaturalLanguage
+                            name={taskNames[currentDemoTaskIndex]}
+                            text={taskTextList[currentDemoTaskIndex]}
+                            //text="What was the rating for Nomadland?"
+                            //text="What were the publications for accessibility?"
+                            //text="What is the office for Ackerman?"
+                            //text="What was the name of the 1st president?"
+                            //text="What is the name of the most rich person in the United States?"
+                            //text="What is the name of the youngest billionaire in the United States?"
+                            //text="What is the lowest rank billionaire in the United States?"
+                            //text="What is the name of the lowest rank billionaire in the United States?"
+                            // websiteUrl={websiteUrl}
+                            websiteHTML={websiteHTMLList[currentDemoTaskIndex]}
+                            textEditable={false}
+                            groupingSupported={false}
+                            clientID={clientID}
+                            submitText={currentDemoTaskIndex + 1 < taskNames.length ? "Submit and go to next task" : "Submit and finish"}
+                            writeToDBAndDirectToNextPage={(dataObj) => writeToDBAndDirectToNextPage(dataObj)}
+                            key={`${router.asPath}_${currentDemoTaskIndex}`}
+                            showDemoInterface={true}
+                            idToItem={idToItemList[currentDemoTaskIndex]}
+                        />
+                    </div>
+                </>
             : ""}
             {/* <div
                 className={styles.tutorialArea}
