@@ -942,27 +942,29 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         // which we can then more meaningfully compare to eventObj.targetXPath
                     //console.log("xPath", xPath);
                     const node = fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0];
-                    const indexBasedXPath = getXPathForElement(node, document);
-                    //console.log("indexBasedXPath", indexBasedXPath);
-                    //console.log("xPath", xPath);
-                    //console.log("eventObj.targetXPath", eventObj.targetXPath);
-                    //var commonPrefixLength = getCommonPrefixLength(xPath, eventObj.targetXPath);
-                    var commonPrefixLength = getCommonPrefixLength(indexBasedXPath, eventObj.targetXPath);
+                    if(node){ // e.g., if xpath existed because it was in database idToItem, but now the page doesn't have that node (e.g., because we didn't include all entries for imdb)
+                        const indexBasedXPath = getXPathForElement(node, document);
+                        //console.log("indexBasedXPath", indexBasedXPath);
+                        //console.log("xPath", xPath);
+                        //console.log("eventObj.targetXPath", eventObj.targetXPath);
+                        //var commonPrefixLength = getCommonPrefixLength(xPath, eventObj.targetXPath);
+                        var commonPrefixLength = getCommonPrefixLength(indexBasedXPath, eventObj.targetXPath);
 
-                    let commonPrefix = indexBasedXPath.substring(0, commonPrefixLength);
-                    // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
-                    commonPrefix = commonPrefix.substring(0, commonPrefix.lastIndexOf("/"));
-                    // Now correct commonPrefixLength
-                    commonPrefixLength = commonPrefix.length;
+                        let commonPrefix = indexBasedXPath.substring(0, commonPrefixLength);
+                        // Correction, to trim off any partial node at the end (e.g., /div[ if the next char were a different index per string)
+                        commonPrefix = commonPrefix.substring(0, commonPrefix.lastIndexOf("/"));
+                        // Now correct commonPrefixLength
+                        commonPrefixLength = commonPrefix.length;
 
-                    //console.log("commonPrefixLength", commonPrefixLength);
-                    if(commonPrefixLength > longestCommonPrefixLengthSoFar){
-                        longestCommonPrefixLengthSoFar = commonPrefixLength;
-                        paramValuesLongestCommonPrefixLengthSoFar = {}
-                        paramValuesLongestCommonPrefixLengthSoFar[param] = [value];
-                    }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
-                        paramValuesLongestCommonPrefixLengthSoFar[param] = paramValuesLongestCommonPrefixLengthSoFar[param] || [];
-                        paramValuesLongestCommonPrefixLengthSoFar[param].push(value);
+                        //console.log("commonPrefixLength", commonPrefixLength);
+                        if(commonPrefixLength > longestCommonPrefixLengthSoFar){
+                            longestCommonPrefixLengthSoFar = commonPrefixLength;
+                            paramValuesLongestCommonPrefixLengthSoFar = {}
+                            paramValuesLongestCommonPrefixLengthSoFar[param] = [value];
+                        }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
+                            paramValuesLongestCommonPrefixLengthSoFar[param] = paramValuesLongestCommonPrefixLengthSoFar[param] || [];
+                            paramValuesLongestCommonPrefixLengthSoFar[param].push(value);
+                        }
                     }
                 }
             }
@@ -1166,14 +1168,17 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         const valueObj = paramValueObj[paramName];
                         for(let [value, xPath] of Object.entries(valueObj)){
                             if(xPath){ // because could be null/undefined
-                                let indexBasedXPath = getXPathForElement(fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0], document);
-                                //console.log(`indexBasedXPath for ${value}`, indexBasedXPath);
-                                let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, paramColItemXPath);
-                                if(commonPrefixLength > longestCommonPrefixLengthSoFar){
-                                    longestCommonPrefixLengthSoFar = commonPrefixLength;
-                                    valuesLongestCommonPrefixLengthSoFar = [value];
-                                }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
-                                    valuesLongestCommonPrefixLengthSoFar.push(value);
+                                const node = fontoxpath.evaluateXPathToNodes(xPath, document.documentElement)[0];
+                                if(node){ // e.g., if xpath existed because it was in database idToItem, but now the page doesn't have that node (e.g., because we didn't include all entries for imdb)
+                                    let indexBasedXPath = getXPathForElement(node, document);
+                                    //console.log(`indexBasedXPath for ${value}`, indexBasedXPath);
+                                    let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, paramColItemXPath);
+                                    if(commonPrefixLength > longestCommonPrefixLengthSoFar){
+                                        longestCommonPrefixLengthSoFar = commonPrefixLength;
+                                        valuesLongestCommonPrefixLengthSoFar = [value];
+                                    }else if(commonPrefixLength === longestCommonPrefixLengthSoFar){
+                                        valuesLongestCommonPrefixLengthSoFar.push(value);
+                                    }
                                 }
                             }
                         }
@@ -1351,13 +1356,16 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                             //console.log("childXPath", childXPath)
                             
                             //const commonPrefixLength = getCommonPrefixLength(paramValueXPath, childXPath);
-                            let indexBasedXPath = getXPathForElement(fontoxpath.evaluateXPathToNodes(paramValueXPath, document.documentElement)[0], document);
-                            let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, childXPath);
-                            if(commonPrefixLength > longestCommonPrefix){
-                                closestChild = paramRowElement.children[childIndex];
-                                closestChildXPath = childXPath;
-                                longestCommonPrefix = commonPrefixLength;
-                                closestChildIndex = childIndex;
+                            const node = fontoxpath.evaluateXPathToNodes(paramValueXPath, document.documentElement)[0];
+                            if(node){ // e.g., if xpath existed because it was in database idToItem, but now the page doesn't have that node (e.g., because we didn't include all entries for imdb)
+                                let indexBasedXPath = getXPathForElement(node, document);
+                                let commonPrefixLength = getCommonPrefixLength(indexBasedXPath, childXPath);
+                                if(commonPrefixLength > longestCommonPrefix){
+                                    closestChild = paramRowElement.children[childIndex];
+                                    closestChildXPath = childXPath;
+                                    longestCommonPrefix = commonPrefixLength;
+                                    closestChildIndex = childIndex;
+                                }
                             }
                         }
                         console.log("closestChildIndex", closestChildIndex);
@@ -1460,8 +1468,9 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
             
             // See for these params if their given values for this demo appear in the DOM in this row
             const paramValuesFound = [];
-            if(paramsNotYetUsed.length > 0){
-                for(let paramName of paramsNotYetUsed){
+            //if(paramsNotYetUsed.length > 0){
+                //for(let paramName of paramsNotYetUsed){
+                for(let paramName of Object.keys(currentParamValuePairings)){
                     let paramValue = currentParamValuePairings[paramName];
 
                     // Check if paramValue appears as text in this row
@@ -1477,7 +1486,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         }
                     }
                 }  
-            }
+            //}
             //console.log("paramValuesFound", paramValuesFound);
             
             // Create defaults (which will get overridden later as appropriate)
@@ -1830,13 +1839,13 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         const newRowsToConsider = [];
                         for(let node of rowsToConsider){
                             const rowXPath = getXPathForElement(node, document);
-                            //console.log("for filtering - rowXPath", rowXPath);
+                            console.log("for filtering - rowXPath", rowXPath);
                             //console.log(`rowXPath for ${filterValueForRowSelection}`, rowXPath);
                             //console.log(`filterNodeXPathSuffix for ${filterValueForRowSelection}`, filterNodeXPathSuffix);
                             //console.log(`attempted valueNode full xpath for ${filterValueForRowSelection}`, `${rowXPath}${filterNodeXPathSuffix}`);
                             //const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterNodeXPathSuffix}`, document.documentElement)[0];
                             const valueNodeToCheck = fontoxpath.evaluateXPathToNodes(`${rowXPath}${filterXPathToUse}`, document.documentElement)[0];
-                            //console.log("valueNodeToCheck", valueNodeToCheck);
+                            console.log("valueNodeToCheck", valueNodeToCheck);
                             if(valueNodeToCheck && valueNodeToCheck.textContent.trim().toLowerCase() === filterValueForRowSelection.trim().toLowerCase()){
                                 // Found a matching row
                                 newRowsToConsider.push(node);
@@ -1845,7 +1854,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                         }
                         rowsToConsider = newRowsToConsider;
                     }
-                    //console.log("rowsToConsider 1", rowsToConsider);
+                    console.log("rowsToConsider 1", rowsToConsider);
                     
                     //console.log("rowsToConsider", rowsToConsider);
                     if(superlativeParamForRowSelection || constantSuperlativeValueForRowSelection || defaultStaticColIndexForSuperlativeCol){
@@ -2132,7 +2141,7 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                 
                 // If superlative then definitely add this program step. Otherwise, if filterParamForRowSelection but no matchingParam, add this step. Otherwise, if matchingParam, only add this step (and not proceed on to use matchingParam) if filterParamForRowSelection and relevantParamForCol are different
                 //if((colParamForSuperlativeForRowSelection || constantSuperlativeValueForRowSelection || superlativeParamForRowSelection) || (!matchingParam && filterParamForRowSelection) || (filterParamForRowSelection && relevantParamForCol && (filterParamForRowSelection !== relevantParamForCol))){
-                if((colParamForSuperlativeForRowSelection || constantSuperlativeValueForRowSelection || superlativeParamForRowSelection) || (!matchingParam && filterParamForRowSelection) || (filterParamForRowSelection && relevantParamForCol && (filterParamForRowSelection !== relevantParamForCol)) || filterParamNamePossibleOptions.length > 1){
+                if(eventObj.eventType === "print" && ((colParamForSuperlativeForRowSelection || constantSuperlativeValueForRowSelection || superlativeParamForRowSelection) || (!matchingParam && filterParamForRowSelection) || (filterParamForRowSelection && relevantParamForCol && (filterParamForRowSelection !== relevantParamForCol)) || filterParamNamePossibleOptions.length > 1)){
                     program.push({
                         eventType: eventObj.eventType,
                         filterParamForRowSelection,
