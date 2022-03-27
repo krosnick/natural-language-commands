@@ -133,7 +133,7 @@ function createHTML() {
             </div>
                     </div>
            <br class="clear">
-           <div class="sorting">
+           <div class="sorting" style="cursor: pointer;">
                Sort by:
                    <a >Popularity</a>
             <span class="ghost">|</span>           <a >A-Z</a>
