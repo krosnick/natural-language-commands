@@ -11,7 +11,7 @@ const NaturalLanguage = dynamic(
 import Tutorial from '../../../components/Tutorial';
 import Clone from '../../../components/website_clones/Clone';
 
-export default function Task( { taskTextList, websiteHTMLList, idToItemList, sequenceID, taskNames }) {
+export default function Task( { taskTextList, websiteHTMLList, idToItemList, sequenceID, taskNames, commonQuestion }) {
 
     console.log("process.env.NODE_ENV", process.env.NODE_ENV);
     // Only do fullstory logging if we're in production mode
@@ -117,9 +117,26 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
             body: JSON.stringify(dataObj)
         });
 
+        // Add commonQuestion (if there is one) to user queries and checkboxes, so that it'll be used later on
+        let checkboxesToUse = checkboxes;
+        if(commonQuestion){
+            const newUserQueries = [...userQueries];
+            const newCheckboxes = [...checkboxes];
+
+            newUserQueries.push(commonQuestion);
+            newCheckboxes.push(true);
+
+            updateUserQueries(newUserQueries);
+            updateCheckboxes(newCheckboxes);
+
+            checkboxesToUse = newCheckboxes;
+        }
+
+        // A bit of a hack, but we're going to use checkboxesToUse instead of checkboxes because 'checkboxes' won't be updated yet
+
         let newArr = [];
-        for(let i = 0; i < checkboxes.length; i++){
-            if(checkboxes[i]){
+        for(let i = 0; i < checkboxesToUse.length; i++){
+            if(checkboxesToUse[i]){
                 newArr.push(i);
             }
         }
@@ -128,7 +145,6 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
         updateQueryIndicesToUse(newArr);
 
         updateMode("annotationMode");
-
     }
 
     async function writeAnnotationToDB(dataObj, queryIndex){
@@ -503,6 +519,9 @@ export async function getServerSideProps({params}) {
         const taskList = sequenceObject.taskList;
         const taskNames = taskList;
         
+        // Just for user study, to have a common question we ask all participants to parameterize
+        const commonQuestion = sequenceObject.commonQuestion;
+
         const taskTextList = [];
         const websiteHTMLList = [];
         const idToItemList = [];
@@ -531,7 +550,8 @@ export async function getServerSideProps({params}) {
                 websiteHTMLList,
                 idToItemList,
                 sequenceID,
-                taskNames
+                taskNames,
+                commonQuestion
             }
         }
     }catch(error){
