@@ -365,6 +365,7 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
                             <li>Imagine variations of this question that you might ask in the future.</li>
                             <li>Parameterize the question to express those variations.</li>
                             <li>Do this in the context of the website, i.e., create questions that can be answered using the information on this website.</li>
+                            <li>You don't have to use the same number or type of parameters as in the tutorial video. Just do whatever you think makes the most sense.</li>
                         </ul>
                     </div>
                     <NaturalLanguage
