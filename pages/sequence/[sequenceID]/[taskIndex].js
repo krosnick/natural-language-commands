@@ -359,6 +359,14 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
                     <div>
                         Query {(numQueriesToParameterize -  queryIndicesToUse.length + 1)} of {numQueriesToParameterize}
                     </div>
+                    <div>
+                        Instructions:
+                        <ul>
+                            <li>Imagine variations of this question that you might ask in the future.</li>
+                            <li>Parameterize the question to express those variations.</li>
+                            <li>Do this in the context of the website, i.e., create questions that can be answered using the information on this website.</li>
+                        </ul>
+                    </div>
                     <NaturalLanguage
                         name={taskNames[0]}
                         text={userQueries[queryIndicesToUse[0]]}
