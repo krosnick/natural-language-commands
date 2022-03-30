@@ -348,7 +348,7 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
                         <iframe
                             width="1200"
                             height="675"
-                            src={`https://www.youtube.com/embed/hOrgAWrK1Rw?playlist=hOrgAWrK1Rw&modestbranding=1`}
+                            src={`https://www.youtube.com/embed/hOrgAWrK1Rw?playlist=hOrgAWrK1Rw&modestbranding=1&loop=1`}
                             title="YouTube video player"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -391,7 +391,7 @@ export default function Task( { taskTextList, websiteHTMLList, idToItemList, seq
                         <iframe
                             width="1200"
                             height="675"
-                            src={`https://www.youtube.com/embed/DILRBln-sz8?playlist=DILRBln-sz8&modestbranding=1`}
+                            src={`https://www.youtube.com/embed/DILRBln-sz8?playlist=DILRBln-sz8&modestbranding=1&loop=1`}
                             title="YouTube video player"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
