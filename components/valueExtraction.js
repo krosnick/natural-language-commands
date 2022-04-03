@@ -488,7 +488,7 @@ export function makeXPathsMoreRobust(valueAndXPathObjList, paramName){
     //console.log("curNode", curNode);
     // Traverse up through the DOM until we hit the top part of the xpath that is the same across all param values (i.e., above [INSERT-ROW-INDEX-HERE])
     // We do want to keep going up until [INSERT-ROW-INDEX-HERE] because we really do want to try to make each step a class or attribute instead of index
-    while(curNode.parentNode.parentNode && xPathPrefix.length > 0 && xPathPrefix.indexOf("[INSERT-ROW-INDEX-HERE]") > -1 && xPathSuffix.indexOf("[INSERT-ROW-INDEX-HERE]") === -1){
+    while(curNode && curNode.parentNode && curNode.parentNode.parentNode && xPathPrefix.length > 0 && xPathPrefix.indexOf("[INSERT-ROW-INDEX-HERE]") > -1 && xPathSuffix.indexOf("[INSERT-ROW-INDEX-HERE]") === -1){
         console.log("updated bestSoFar", bestSoFar);
         //console.log("valuesWithoutXPath", valuesWithoutXPath);
         // Try an alternate xPath substring for this level
@@ -775,7 +775,8 @@ function getCandidateValueSets(positiveExamplesList, exactStringBoolean, embedde
                 // Now, traverse up through the DOM
                 var ancestorNode = parentNodesContainingKeyword[matchingItemIndex];
                 var possibleExtractions = [];
-                while(ancestorNode.parentNode && ancestorNode.parentNode.parentNode){ // i.e., until we reach the top of the document
+                //while(ancestorNode.parentNode && ancestorNode.parentNode.parentNode){ // i.e., until we reach the top of the document
+                while(ancestorNode.parentNode && ancestorNode.parentNode.parentNode && !ancestorNode.hasAttribute('clone')){ // i.e., until we reach the the [clone]
                     // For each of ancestorNode's siblings, try querying the partial selector and see if there's a match (and if the match is "meaningful"?)
                     var siblingNodes = ancestorNode.parentNode.children;
                     var ancestorNodeXPath = getXPathForElement(ancestorNode, document);

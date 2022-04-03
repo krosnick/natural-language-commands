@@ -159,6 +159,7 @@ export default function Task( { text, /*websiteUrl,*/ websiteHTML, sequenceID, t
                         ><b>Instructions:</b> Below is a command that someone might give to their virtual assistant (e.g., Siri). As demonstrated in the tutorial video, highlight chunks of text that can be “generalized”, and for each one fill out the associated form. To determine what text can be “generalized”, look at the website to understand what commands and values are possible.</p>
                         <NaturalLanguage
                             name={name}
+                            //text="How many home runs did Guerrero have?"
                             text={text}
                             //text="What were the publications for accessibility?"
                             //text="What is the office for Ackerman?"

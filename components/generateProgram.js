@@ -1806,6 +1806,8 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     }
                 }
 
+                console.log("rowXPath at inference time", rowXPath);
+
                 generateRowXPathPrefix = function(filterValueForRowSelection, colParamValueForSuperlativeForRowSelection, superlativeValueForRowSelection, paramNameForSuperlativeCol, staticColIndexForSuperlativeCol, valueForFilterParamForRowSelection){
                     console.log("staticColIndexForSuperlativeCol", staticColIndexForSuperlativeCol);
                     console.log("filterValueForRowSelection", filterValueForRowSelection);
@@ -1824,7 +1826,10 @@ export function generateProgramAndIdentifyNeededDemos(demoEventSequence, current
                     //console.log("generateRowXPathPrefix");
                     // Loop through the row siblings and find (the first one) that has filterValueForRowSelection at filterNodeXPathSuffix
                     //console.log("rowXPath", rowXPath);
-                    const originalRowNode = fontoxpath.evaluateXPathToNodes(rowXPath, document.documentElement)[0];
+                    console.log("rowXPath at program run time", rowXPath);
+                    const evalResult = fontoxpath.evaluateXPathToNodes(rowXPath, document.documentElement);
+                    console.log("evalResult", evalResult);
+                    const originalRowNode = evalResult[0];
                     //console.log("originalRowNode", originalRowNode);
                     const parentNode = originalRowNode.parentNode;
                     //console.log("parentNode", parentNode);
